@@ -1,0 +1,44 @@
+{
+  "hypothese": {
+    "fr": "Le polygone de démo est déjà tracé autour de Sidi Bouzid. Les 2,4 ha du cahier sont un exemple : la surface affichée est celle calculée sur le tracé, la même que celle renvoyée par l'API.",
+    "ar": "مضلع العرض مرسوم مسبقا حول سيدي بوزيد. الـ 2,4 هك في دفتر التحملات مثال : المساحة المعروضة هي المحسوبة على الرسم، وهي نفسها التي ترجعها الواجهة.",
+    "darija": "El polygone demo mersoum min 9bal 7awel Sidi Bouzid. 2,4 ha mta3 el cahier exemple : el mesa7a elli tetwarra hiya elli tethseb 3al tracé, kif elli traja3ha el API."
+  },
+  "proprietaire": {
+    "id": "usr-demo",
+    "nom": "Hedi Ben Ali",
+    "telephone": "+21620000001",
+    "role": "agriculteur",
+    "langue": "darija"
+  },
+  "parcelle": {
+    "id": "parc-04",
+    "nom": "Parcelle du puits",
+    "geometrie": {
+      "type": "Polygon",
+      "coordinates": [
+        [
+          [9.4849, 35.0374],
+          [9.48666, 35.0374],
+          [9.48666, 35.03875],
+          [9.4849, 35.03875],
+          [9.4849, 35.0374]
+        ]
+      ]
+    },
+    "surface_ha_exemple": 2.4,
+    "source_eau": "puits",
+    "profondeur_puits_m": 60,
+    "debit_m3_h": 8,
+    "energie": "gasoil",
+    "culture_actuelle": {
+      "id": "tomate",
+      "nom": {
+        "fr": "Tomate",
+        "ar": "طماطم",
+        "darija": "Tmatem"
+      }
+    },
+    "photo_sol": null
+  }
+}

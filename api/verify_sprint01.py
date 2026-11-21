@@ -32,7 +32,7 @@ def main() -> None:
         corps = sante.json()
         assert corps["statut"] == "ok"
         assert corps["ferme"] == "Ferme Ben Ali"
-        assert corps["enregistrements"]["parcelles"] == 1
+        assert corps["enregistrements"]["parcelles"] >= 1
 
         demo = client.get("/demo")
         assert demo.status_code == 200, demo.text

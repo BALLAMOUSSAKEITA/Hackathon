@@ -27,6 +27,7 @@ class Parcelle(Base):
     debit_m3_h: Mapped[float] = mapped_column(Float)
     energie: Mapped[str] = mapped_column(String)
     culture_actuelle: Mapped[dict] = mapped_column(JSON)
+    photo_sol: Mapped[str | None] = mapped_column(String, nullable=True)
 
 
 class Analyse(Base):

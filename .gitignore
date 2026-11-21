@@ -4,6 +4,7 @@ dist/
 web-build/
 api/.venv/
 api/ardi.db
+api/stockage/
 __pycache__/
 *.pyc
 .pytest_cache/

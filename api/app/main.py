@@ -8,6 +8,7 @@ from app.auth import router as auth_router
 from app.contrat import CONTRAT
 from app.cultures import router as cultures_router
 from app.database import SessionLocal, engine, init_db, load_fixture, postgis_version
+from app.parcelles import router as parcelles_router
 from app.models import Label, Parcelle, Produit, Utilisateur
 from app.seed import seed_cultures, seed_demo
 
@@ -24,6 +25,7 @@ async def lifespan(_app: FastAPI):
 app = FastAPI(title="Ardi", version="0.1.0", lifespan=lifespan)
 app.include_router(auth_router)
 app.include_router(cultures_router)
+app.include_router(parcelles_router)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],

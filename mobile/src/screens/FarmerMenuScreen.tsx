@@ -1,10 +1,11 @@
+import type { NavigationProp } from "@react-navigation/native";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 
 import { LanguageSwitch } from "../components/LanguageSwitch";
 import { fixture } from "../fixture";
 import { useI18n } from "../i18n";
-import type { FarmerStackParamList } from "../navigation/types";
+import type { FarmerStackParamList, RootStackParamList } from "../navigation/types";
 import { colors, tap } from "../theme";
 import { FARMER_SCREENS } from "./catalog";
 
@@ -30,7 +31,13 @@ export function FarmerMenuScreen({ navigation }: Props) {
         <Pressable
           key={screen.id}
           accessibilityRole="button"
-          onPress={() => navigation.navigate("Empty", { screenId: screen.id })}
+          onPress={() => {
+            if (screen.id === "2") {
+              navigation.getParent<NavigationProp<RootStackParamList>>()?.navigate("Parcelle");
+              return;
+            }
+            navigation.navigate("Empty", { screenId: screen.id });
+          }}
           style={({ pressed }) => [styles.row, pressed && styles.pressed]}
         >
           <View style={styles.index}>

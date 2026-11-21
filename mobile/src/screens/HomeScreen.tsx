@@ -80,6 +80,7 @@ export function HomeScreen({ navigation }: Props) {
         </Text>
 
         <Tap label={t("farmer")} onPress={() => navigation.navigate("Farmer")} />
+        <Tap label={t("screen2")} variant="secondary" onPress={() => navigation.navigate("Parcelle")} />
         <Tap label={t("culturesTitle")} variant="secondary" onPress={() => navigation.navigate("Cultures")} />
         <Tap label={t("buyer")} variant="secondary" onPress={() => navigation.navigate("Buyer")} />
 

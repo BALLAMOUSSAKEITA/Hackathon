@@ -1,6 +1,7 @@
 import data from "../../fixtures/sprint-01.json";
 import profilsDemo from "../../fixtures/sprint-02.json";
 import culturesDemo from "../../fixtures/sprint-03.json";
+import parcelleDemo from "../../fixtures/sprint-04.json";
 
 import type { Role } from "./session";
 import type { Fixture, Localized } from "./types";
@@ -40,4 +41,23 @@ export type CultureFiche = {
 export const sprint03 = culturesDemo as {
   hypothese: Localized;
   cultures: CultureFiche[];
+};
+
+export type ParcelleDemo = {
+  id: string;
+  nom: string;
+  geometrie: { type: "Polygon"; coordinates: [number, number][][] };
+  surface_ha_exemple: number;
+  source_eau: "puits" | "gda" | "reseau";
+  profondeur_puits_m: number;
+  debit_m3_h: number;
+  energie: "gasoil" | "reseau" | "solaire";
+  culture_actuelle: { id: string; nom: Localized };
+  photo_sol: string | null;
+};
+
+export const sprint04 = parcelleDemo as unknown as {
+  hypothese: Localized;
+  proprietaire: { id: string };
+  parcelle: ParcelleDemo;
 };

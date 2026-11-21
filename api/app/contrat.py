@@ -40,8 +40,8 @@ CONTRAT = {
             "methode": "POST",
             "chemin": "/parcelles",
             "sprint": 4,
-            "statut": "contrat",
-            "description": "Créer une parcelle : géométrie, eau, puits, énergie, culture actuelle.",
+            "statut": "livre",
+            "description": "Créer une parcelle : géométrie, eau, puits, énergie, culture actuelle. La surface renvoyée est recalculée.",
             "requete": {
                 "geometrie": {"type": "Polygon", "coordinates": []},
                 "surface_ha": 2.4,
@@ -51,7 +51,15 @@ CONTRAT = {
                 "energie": "gasoil",
                 "culture_actuelle": "tomate",
             },
-            "reponse": {"id": "parc-01"},
+            "reponse": {"id": "parc-04", "surface_ha": 2.41, "proprietaire_id": "usr-demo"},
+        },
+        {
+            "methode": "GET",
+            "chemin": "/parcelles/{id}",
+            "sprint": 4,
+            "statut": "livre",
+            "description": "Relire une parcelle et la surface recalculée.",
+            "reponse": {"id": "parc-04", "surface_ha": 2.41},
         },
         {
             "methode": "POST",
