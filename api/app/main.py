@@ -13,6 +13,7 @@ from app.parcelles import router as parcelles_router
 from app.recommandations import router as recommandations_router
 from app.models import Label, Parcelle, Produit, Utilisateur
 from app.seed import seed_cultures, seed_demo
+from app.suite import router as suite_router
 
 
 @asynccontextmanager
@@ -30,6 +31,7 @@ app.include_router(cultures_router)
 app.include_router(parcelles_router)
 app.include_router(analyse_router)
 app.include_router(recommandations_router)
+app.include_router(suite_router)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],

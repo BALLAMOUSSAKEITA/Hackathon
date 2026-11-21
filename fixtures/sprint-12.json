@@ -1,0 +1,168 @@
+{
+  "hypothese": {
+    "fr": "Les sept contrôles et les dix parcelles se vérifient dans ce seul fichier.",
+    "ar": "الفحوص السبعة والقطع العشر تُراجع في هذا الملف فقط.",
+    "darija": "El 7 testat w el 10 parcelles yetfaslou f el fichier hetha barka."
+  },
+  "parcelles": [
+    {
+      "id": "p-1",
+      "profondeur_m": 20,
+      "eta": 0.5,
+      "eau_m3": 1000,
+      "exclues": [
+        "tomate"
+      ]
+    },
+    {
+      "id": "p-2",
+      "profondeur_m": 30,
+      "eta": 0.5,
+      "eau_m3": 1100,
+      "exclues": []
+    },
+    {
+      "id": "p-3",
+      "profondeur_m": 40,
+      "eta": 0.5,
+      "eau_m3": 1200,
+      "exclues": []
+    },
+    {
+      "id": "p-4",
+      "profondeur_m": 50,
+      "eta": 0.5,
+      "eau_m3": 1300,
+      "exclues": []
+    },
+    {
+      "id": "p-5",
+      "profondeur_m": 60,
+      "eta": 0.5,
+      "eau_m3": 1400,
+      "exclues": []
+    },
+    {
+      "id": "p-6",
+      "profondeur_m": 70,
+      "eta": 0.5,
+      "eau_m3": 1500,
+      "exclues": []
+    },
+    {
+      "id": "p-7",
+      "profondeur_m": 80,
+      "eta": 0.5,
+      "eau_m3": 1600,
+      "exclues": []
+    },
+    {
+      "id": "p-8",
+      "profondeur_m": 90,
+      "eta": 0.5,
+      "eau_m3": 1700,
+      "exclues": []
+    },
+    {
+      "id": "p-9",
+      "profondeur_m": 100,
+      "eta": 0.5,
+      "eau_m3": 1800,
+      "exclues": []
+    },
+    {
+      "id": "p-10",
+      "profondeur_m": 120,
+      "eta": 0.5,
+      "eau_m3": 1900,
+      "exclues": []
+    }
+  ],
+  "cartes": [
+    {
+      "id": "langue",
+      "fr": "Darija, profil fellah.",
+      "ar": "الدارجة، ملف الفلاح.",
+      "darija": "Derja, profil fellah."
+    },
+    {
+      "id": "parcelle",
+      "fr": "Puits 60 m, 2,4 ha, tomate.",
+      "ar": "بئر 60 م، 2,4 هك، طماطم.",
+      "darija": "Bir 60 m, 2,4 ha, tmatem."
+    },
+    {
+      "id": "analyse",
+      "fr": "0,33 kWh/m³.",
+      "ar": "0,33 ك.واط/م³.",
+      "darija": "0,33 kWh/m³."
+    },
+    {
+      "id": "classement",
+      "fr": "Câpres en tête, tomate exclue.",
+      "ar": "الكبّار أولا، الطماطم مستبعدة.",
+      "darija": "Kebbar loula, tmatem t-khallet."
+    },
+    {
+      "id": "simulateur",
+      "fr": "Plan sobre adopté, puits respecté.",
+      "ar": "خطة مقتصدة، البئر محترم.",
+      "darija": "Plan sobre, el bir m7taram."
+    },
+    {
+      "id": "label",
+      "fr": "Label A, QR de la ferme.",
+      "ar": "علامة A ورمز الضيعة.",
+      "darija": "Label A, QR el ferma."
+    },
+    {
+      "id": "assistant",
+      "fr": "La réponse cite 2,4 ha et 60 m.",
+      "ar": "الإجابة تذكر 2,4 هك و 60 م.",
+      "darija": "El jawab yedhkor 2,4 ha w 60 m."
+    },
+    {
+      "id": "achat",
+      "fr": "QR des câpres, paiement simulé.",
+      "ar": "رمز الكبّار، دفع تجريبي.",
+      "darija": "QR kebbar, khlass simulé."
+    }
+  ],
+  "pitch": {
+    "eau": {
+      "fr": "Moins d'eau par hectare.",
+      "ar": "ماء أقل للهكتار.",
+      "darija": "A9al ma lel hectare."
+    },
+    "energie": {
+      "fr": "0,33 kWh par m³ à 60 m.",
+      "ar": "0,33 ك.واط لكل م³ عند 60 م.",
+      "darija": "0,33 kWh lel m³ 3and 60 m."
+    },
+    "revenu": {
+      "fr": "Plus de dinars par m³.",
+      "ar": "دنانير أكثر لكل م³.",
+      "darija": "Akther DT lel m³."
+    },
+    "label": {
+      "fr": "Une lettre A à E privée.",
+      "ar": "حرف خاص من A إلى E.",
+      "darija": "7arf A l E khass."
+    },
+    "vente": {
+      "fr": "Le produit labellisé se vend.",
+      "ar": "المنتج ذو العلامة يُباع.",
+      "darija": "El produit b label yetba3."
+    }
+  },
+  "controles": {
+    "kwh_60": 0.33,
+    "label_22": "A",
+    "label_07": "E",
+    "exclue": "tomate",
+    "qr": "ardi-kebbar-01",
+    "produit_qr": "kebbar-01",
+    "tri_revenu_premier": "capres",
+    "tri_eau_premier": "figuier_barbarie"
+  }
+}

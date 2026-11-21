@@ -1,0 +1,58 @@
+{
+  "hypothese": {
+    "fr": "Une image divergente reste à confirmer. Deux images concordantes confirment l'écart.",
+    "ar": "صورة واحدة مختلفة تبقى للتأكيد. صورتان متفقتان تؤكدان الفرق.",
+    "darija": "Taswira wa7da tefred teb9a à confirmer. Zouz tasawer ywakdou el far9."
+  },
+  "parcelle_id": "parc-14",
+  "plan_eau_m3": 6000,
+  "irrigation_m3": 7200,
+  "zones": [
+    {
+      "id": "z1",
+      "nom": {
+        "fr": "Nord",
+        "ar": "شمال",
+        "darija": "Chemel"
+      },
+      "ndvi": 0.42
+    },
+    {
+      "id": "z2",
+      "nom": {
+        "fr": "Sud",
+        "ar": "جنوب",
+        "darija": "Janoub"
+      },
+      "ndvi": 0.28
+    }
+  ],
+  "series": {
+    "une": [
+      {
+        "irrigation_m3": 7200
+      },
+      {
+        "irrigation_m3": 5800
+      }
+    ],
+    "deux": [
+      {
+        "irrigation_m3": 7200
+      },
+      {
+        "irrigation_m3": 7100
+      }
+    ]
+  },
+  "alerte": {
+    "fr": "Irrigation au-dessus du plan.",
+    "ar": "الري فوق الخطة.",
+    "darija": "El ray fou9 el plan."
+  },
+  "audio": {
+    "fr": "L'irrigation dépasse le plan.",
+    "ar": "الري يتجاوز الخطة.",
+    "darija": "El ray fat el plan."
+  }
+}

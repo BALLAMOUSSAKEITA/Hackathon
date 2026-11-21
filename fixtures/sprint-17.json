@@ -1,0 +1,58 @@
+{
+  "hypothese": {
+    "fr": "Le plan déjà adopté garde sa lettre. Seule la parcelle non figée suit le nouveau prix.",
+    "ar": "الخطة المعتمدة تبقي حرفها. القطعة غير المثبتة فقط تتبع السعر الجديد.",
+    "darija": "El plan elli t-adopta yeb9a 7arfou. El parcelle elli machi figée barka tetba3 el sa3er ejdid."
+  },
+  "proprietaire": "usr-demo",
+  "autre_proprietaire": "usr-autre",
+  "profil": {
+    "nom": "Hedi Ben Ali",
+    "langue": "darija",
+    "notifications": true
+  },
+  "cultures": [
+    {
+      "id": "olivier",
+      "nom": {
+        "fr": "Olivier",
+        "ar": "زيتون",
+        "darija": "Zitoun"
+      },
+      "eau_m3_ha": 3500,
+      "rendement_t_ha": 2.5,
+      "couts_dt_ha": 1800,
+      "prix": 4.0
+    },
+    {
+      "id": "capres",
+      "nom": {
+        "fr": "Câpres",
+        "ar": "كبّار",
+        "darija": "Kebbar"
+      },
+      "eau_m3_ha": 2500,
+      "rendement_t_ha": 1.5,
+      "couts_dt_ha": 1600,
+      "prix": 10.0
+    }
+  ],
+  "parcelles": [
+    {
+      "id": "parc-libre",
+      "nom": "Parcelle libre",
+      "figee": false
+    },
+    {
+      "id": "parc-figee",
+      "nom": "Parcelle figée",
+      "figee": true
+    }
+  ],
+  "plan_fige": {
+    "parcelle_id": "parc-figee",
+    "label": "C",
+    "prix_olivier": 4.0,
+    "culture": "olivier"
+  }
+}

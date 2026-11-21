@@ -83,6 +83,20 @@ export function HomeScreen({ navigation }: Props) {
         <Tap label={t("screen2")} variant="secondary" onPress={() => navigation.navigate("Parcelle")} />
         <Tap label={t("screen3")} variant="secondary" onPress={() => navigation.navigate("Analyse")} />
         <Tap label={t("screen4")} variant="secondary" onPress={() => navigation.navigate("Planter")} />
+        <Tap label={t("screen5")} variant="secondary" onPress={() => navigation.navigate("Simulateur")} />
+        <Tap label={t("screen1")} variant="secondary" onPress={() => navigation.navigate("AccueilFermier")} />
+        <Tap label={t("screen7")} variant="secondary" onPress={() => navigation.navigate("Label")} />
+        <Tap label={t("screen6")} variant="secondary" onPress={() => navigation.navigate("Assistant")} />
+        <Tap label={t("buyerPath")} variant="secondary" onPress={() => navigation.navigate("Marche")} />
+        <Tap label={t("screen10")} variant="secondary" onPress={() => navigation.navigate("Ventes")} />
+        <Tap label={t("screen11")} variant="secondary" onPress={() => navigation.navigate("Notifications")} />
+        <Tap label="Démo" variant="secondary" onPress={() => navigation.navigate("Demo")} />
+        <Tap label={t("screen8")} variant="secondary" onPress={() => navigation.navigate("Solaire")} />
+        <Tap label={t("screen9")} variant="secondary" onPress={() => navigation.navigate("Suivi")} />
+        <Tap label="Impact" variant="secondary" onPress={() => navigation.navigate("Impact")} />
+        <Tap label="Hors ligne" variant="secondary" onPress={() => navigation.navigate("HorsLigne")} />
+        <Tap label="Réglages" variant="secondary" onPress={() => navigation.navigate("Reglages")} />
+        <Tap label="Admin" variant="secondary" onPress={() => navigation.navigate("Admin")} />
         <Tap label={t("culturesTitle")} variant="secondary" onPress={() => navigation.navigate("Cultures")} />
         <Tap label={t("buyer")} variant="secondary" onPress={() => navigation.navigate("Buyer")} />
 

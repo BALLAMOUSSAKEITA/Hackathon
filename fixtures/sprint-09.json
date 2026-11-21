@@ -1,0 +1,248 @@
+{
+  "hypothese": {
+    "fr": "Les réponses ne citent que les chiffres de ce fichier. Une question hors sujet est refusée.",
+    "ar": "الإجابات لا تذكر إلا أرقام هذا الملف. السؤال الخارج عن الموضوع يُرفض.",
+    "darija": "El jawabet ma tedhkrouch ken ar9am el fichier hetha. So2el bara yetrefed."
+  },
+  "chiffres_autorises": [
+    "2.4",
+    "60",
+    "8",
+    "0.33",
+    "4.71",
+    "1500",
+    "7000",
+    "2"
+  ],
+  "questions": [
+    {
+      "darija": "qaddach el mesa7a?",
+      "fr": "Quelle est la surface ?",
+      "reponse": "El parcelle fiha 2.4 ha.",
+      "traduction_fr": "La parcelle fait 2,4 ha.",
+      "sources": [
+        "2.4"
+      ],
+      "carte": null
+    },
+    {
+      "darija": "qaddach el bir?",
+      "fr": "Quelle est la profondeur du puits ?",
+      "reponse": "El bir 60 m.",
+      "traduction_fr": "Le puits fait 60 m.",
+      "sources": [
+        "60"
+      ],
+      "carte": null
+    },
+    {
+      "darija": "qaddach el debit?",
+      "fr": "Quel est le débit ?",
+      "reponse": "El debit 8 m³/h.",
+      "traduction_fr": "Le débit est de 8 m³/h.",
+      "sources": [
+        "8"
+      ],
+      "carte": null
+    },
+    {
+      "darija": "qaddach el kwh?",
+      "fr": "Combien de kWh par m³ ?",
+      "reponse": "El pompe takel 0.33 kWh/m³.",
+      "traduction_fr": "La pompe consomme 0,33 kWh/m³.",
+      "sources": [
+        "0.33"
+      ],
+      "carte": null
+    },
+    {
+      "darija": "chnou a7sen culture?",
+      "fr": "Quelle est la meilleure culture ?",
+      "reponse": "A7sen culture Kebbar, 4.71 DT/m³.",
+      "traduction_fr": "La meilleure culture est les câpres, 4,71 DT/m³.",
+      "sources": [
+        "4.71"
+      ],
+      "carte": null
+    },
+    {
+      "darija": "qaddach el ma el moujoued?",
+      "fr": "Combien d'eau disponible ?",
+      "reponse": "El ma el moujoued 7000 m³/ha.",
+      "traduction_fr": "L'eau disponible est de 7 000 m³/ha.",
+      "sources": [
+        "7000"
+      ],
+      "carte": null
+    },
+    {
+      "darija": "chnouwa el culture intercalaire?",
+      "fr": "Quelle est la culture intercalaire ?",
+      "reponse": "El culture intercalaire Kebbar, 4.71 DT/m³.",
+      "traduction_fr": "La culture intercalaire est les câpres, 4,71 DT/m³.",
+      "sources": [
+        "4.71"
+      ],
+      "carte": null
+    },
+    {
+      "darija": "qaddach nezra3 capres?",
+      "fr": "Combien planter en câpres ?",
+      "reponse": "Najem nezra3 2.4 ha capres.",
+      "traduction_fr": "On peut planter 2,4 ha de câpres.",
+      "sources": [
+        "2.4"
+      ],
+      "carte": null
+    },
+    {
+      "darija": "el hindi yechreb?",
+      "fr": "Combien boit le figuier de Barbarie ?",
+      "reponse": "El hindi yechreb 1500 m³/ha.",
+      "traduction_fr": "Le figuier de Barbarie boit 1 500 m³/ha.",
+      "sources": [
+        "1500"
+      ],
+      "carte": null
+    },
+    {
+      "darija": "el pompe w el mesa7a?",
+      "fr": "La pompe et la surface ?",
+      "reponse": "Mesa7a 2.4 ha, pompe 0.33 kWh/m³.",
+      "traduction_fr": "Surface 2,4 ha, pompe 0,33 kWh/m³.",
+      "sources": [
+        "2.4",
+        "0.33"
+      ],
+      "carte": null
+    },
+    {
+      "darija": "el bir w el debit?",
+      "fr": "Le puits et le débit ?",
+      "reponse": "Bir 60 m, debit 8 m³/h.",
+      "traduction_fr": "Puits de 60 m, débit 8 m³/h.",
+      "sources": [
+        "60",
+        "8"
+      ],
+      "carte": null
+    },
+    {
+      "darija": "a7sen w el ma?",
+      "fr": "La meilleure et l'eau ?",
+      "reponse": "Kebbar 4.71 DT/m³, el ma 7000 m³/ha.",
+      "traduction_fr": "Câpres 4,71 DT/m³, eau 7 000 m³/ha.",
+      "sources": [
+        "4.71",
+        "7000"
+      ],
+      "carte": null
+    },
+    {
+      "darija": "chnou nbadel fel simulateur?",
+      "fr": "Que changer dans le simulateur ?",
+      "reponse": "Fel simulateur, Kebbar 4.71 DT/m³ 3la 2.4 ha.",
+      "traduction_fr": "Dans le simulateur, les câpres font 4,71 DT/m³ sur 2,4 ha.",
+      "sources": [
+        "4.71",
+        "2.4"
+      ],
+      "carte": "simulateur"
+    },
+    {
+      "darija": "el solaire yesta7el?",
+      "fr": "Le solaire vaut-il le coup ?",
+      "reponse": "El solaire 3al bir 60 m, 0.33 kWh/m³.",
+      "traduction_fr": "Le solaire sur un puits de 60 m, 0,33 kWh/m³.",
+      "sources": [
+        "60",
+        "0.33"
+      ],
+      "carte": "solaire"
+    },
+    {
+      "darija": "qaddach el far9?",
+      "fr": "Quel est l'écart ?",
+      "reponse": "El far9 howa 4.71 DT/m³.",
+      "traduction_fr": "L'écart est de 4,71 DT/m³.",
+      "sources": [
+        "4.71"
+      ],
+      "carte": null
+    },
+    {
+      "darija": "el hindi w el kebbar?",
+      "fr": "Le cactus et les câpres ?",
+      "reponse": "Hindi 1500 m³/ha, Kebbar 4.71 DT/m³.",
+      "traduction_fr": "Cactus 1 500 m³/ha, câpres 4,71 DT/m³.",
+      "sources": [
+        "1500",
+        "4.71"
+      ],
+      "carte": null
+    },
+    {
+      "darija": "njarreb 2 cultures?",
+      "fr": "Essayer deux cultures ?",
+      "reponse": "Najem njarreb 2 cultures 3la 2.4 ha.",
+      "traduction_fr": "On peut essayer 2 cultures sur 2,4 ha.",
+      "sources": [
+        "2",
+        "2.4"
+      ],
+      "carte": null
+    },
+    {
+      "darija": "el ma w el pompe?",
+      "fr": "L'eau et la pompe ?",
+      "reponse": "7000 m³/ha w 0.33 kWh/m³.",
+      "traduction_fr": "7 000 m³/ha et 0,33 kWh/m³.",
+      "sources": [
+        "7000",
+        "0.33"
+      ],
+      "carte": null
+    },
+    {
+      "darija": "el bir yekfi?",
+      "fr": "Le puits suffit-il ?",
+      "reponse": "El bir 60 m ya3ti 8 m³/h.",
+      "traduction_fr": "Le puits de 60 m donne 8 m³/h.",
+      "sources": [
+        "60",
+        "8"
+      ],
+      "carte": null
+    },
+    {
+      "darija": "a3tini el plan?",
+      "fr": "Donne-moi le plan ?",
+      "reponse": "El plan: 2.4 ha, 4.71 DT/m³.",
+      "traduction_fr": "Le plan : 2,4 ha, 4,71 DT/m³.",
+      "sources": [
+        "2.4",
+        "4.71"
+      ],
+      "carte": null
+    }
+  ],
+  "hors_sujet": {
+    "darija": "Hedhi ma tkhouss el parcelle. Es2elni 3al mesa7a wala el bir.",
+    "fr": "Cela ne concerne pas la parcelle. Demande la surface ou le puits."
+  },
+  "cartes": {
+    "simulateur": {
+      "titre": {
+        "fr": "Câpres",
+        "ar": "كبّار",
+        "darija": "Kebbar"
+      },
+      "dt_m3": 4.71,
+      "surface_ha": 2.4
+    },
+    "solaire": {
+      "profondeur_m": 60,
+      "kwh_m3": 0.33
+    }
+  }
+}

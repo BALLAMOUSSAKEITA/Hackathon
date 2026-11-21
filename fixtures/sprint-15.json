@@ -1,0 +1,48 @@
+{
+  "hypothese": {
+    "fr": "Les totaux égalent la somme des commandes de ce compte. Le gros n'est pas payé ici.",
+    "ar": "المجاميع تساوي مجموع طلبات هذا الحساب. الجملة لا تُدفع هنا.",
+    "darija": "El majmou3 yewafi commandes el compte hetha. El gros ma yethlass hna."
+  },
+  "compte": "amira",
+  "compte_pro": "el-baraka",
+  "commandes": [
+    {
+      "id": "c1",
+      "compte": "amira",
+      "ferme": "Ferme Ben Ali",
+      "label": "A",
+      "eau_m3": 12,
+      "energie_kwh": 4,
+      "montant": 24
+    },
+    {
+      "id": "c2",
+      "compte": "amira",
+      "ferme": "Ferme Trabelsi",
+      "label": "B",
+      "eau_m3": 8,
+      "energie_kwh": 3,
+      "montant": 16
+    },
+    {
+      "id": "c3",
+      "compte": "amira",
+      "ferme": "Ferme Ben Ali",
+      "label": "A",
+      "eau_m3": 5,
+      "energie_kwh": 2,
+      "montant": 10
+    },
+    {
+      "id": "c4",
+      "compte": "el-baraka",
+      "ferme": "Ferme Ben Ali",
+      "label": "A",
+      "eau_m3": 40,
+      "energie_kwh": 12,
+      "montant": 480,
+      "gros": true
+    }
+  ]
+}

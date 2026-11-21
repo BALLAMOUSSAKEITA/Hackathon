@@ -1,0 +1,79 @@
+{
+  "hypothese": {
+    "fr": "La commande de démo peut être acceptée ou recevoir un autre prix. Le SMS réel est hors de ce sprint.",
+    "ar": "طلب العرض يمكن قبوله أو اقتراح سعر آخر.",
+    "darija": "El commande demo tnajjem tet9bel wala te5ou sa3er ekher."
+  },
+  "ferme": "Ferme Ben Ali",
+  "label": "A",
+  "prix_marche": 10.0,
+  "commande_demo": {
+    "id": "cmd-demo",
+    "produit": {
+      "fr": "Câpres",
+      "ar": "كبّار",
+      "darija": "Kebbar"
+    },
+    "quantite": 5,
+    "prix": 12.0,
+    "statut": "en_attente",
+    "acheteur": "Amira Trabelsi"
+  },
+  "devis": {
+    "demandeur": "Épicerie El Baraka",
+    "produit": {
+      "fr": "Câpres",
+      "ar": "كبّار",
+      "darija": "Kebbar"
+    },
+    "quantite": 40,
+    "message": {
+      "fr": "Demande de 40 kg de câpres label A.",
+      "ar": "طلب 40 كغ كبّار علامة A.",
+      "darija": "Talab 40 kg kebbar label A."
+    }
+  },
+  "notifications": [
+    {
+      "id": "n-irrigation",
+      "type": "irrigation",
+      "lue": false,
+      "message": {
+        "fr": "Irrigation prévue demain.",
+        "ar": "الري غدا.",
+        "darija": "El ray ghoudwa."
+      }
+    },
+    {
+      "id": "n-pompage",
+      "type": "pompage",
+      "lue": false,
+      "message": {
+        "fr": "Meilleure heure de pompage : 11 h.",
+        "ar": "أفضل ساعة ضخ : 11.",
+        "darija": "A7sen wa9t pompage : 11 h."
+      }
+    },
+    {
+      "id": "n-commande",
+      "type": "commande",
+      "lue": false,
+      "commande_id": "cmd-demo",
+      "message": {
+        "fr": "Nouvelle commande de câpres.",
+        "ar": "طلب جديد للكبّار.",
+        "darija": "Commande jdida kebbar."
+      }
+    },
+    {
+      "id": "n-label",
+      "type": "label",
+      "lue": false,
+      "message": {
+        "fr": "Le label A est actif.",
+        "ar": "العلامة A نشطة.",
+        "darija": "El label A actif."
+      }
+    }
+  ]
+}

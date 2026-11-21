@@ -60,6 +60,12 @@ const STRINGS = {
   loadDemo: { fr: "Charger la parcelle de démo", ar: "تحميل قطعة العرض", darija: "Charge el parcelle demo" },
   saveParcel: { fr: "Enregistrer la parcelle", ar: "تسجيل القطعة", darija: "Sajjel el parcelle" },
   parcelSaved: { fr: "Parcelle enregistrée.", ar: "القطعة تسجلت.", darija: "El parcelle t-sajlet." },
+  adoptPlan: { fr: "Adopter ce plan", ar: "اعتماد هذه الخطة", darija: "Tbenna had el plan" },
+  planRefused: {
+    fr: "Ce plan dépasse la parcelle ou le puits. Il n'est pas enregistré.",
+    ar: "هذه الخطة تتجاوز القطعة أو البئر. لم تُسجَّل.",
+    darija: "Had el plan yfout el parcelle wala el bir. Ma t-sajjelch.",
+  },
   surfaceSame: {
     fr: "La surface affichée est celle renvoyée par l'API.",
     ar: "المساحة المعروضة هي التي رجعتها الواجهة.",

@@ -1,0 +1,40 @@
+{
+  "hypothese": {
+    "fr": "Dimensionnement d'exemple. Les aides sont informatives, sans promesse de dossier.",
+    "ar": "تحجيم مثال. المساعدات للعلم فقط، دون وعد بملف.",
+    "darija": "Dimensionnement exemple. El aides informatifs, bla wa3d."
+  },
+  "parcelle_id": "parc-13",
+  "profondeur_puits_m": 60,
+  "debit_m3_h": 8,
+  "eta": 0.5,
+  "heures_pompage": 6,
+  "heures_soleil": 5.1,
+  "puissance_panneau_kw": 0.45,
+  "prix_panneau_dt": 700,
+  "prix_gasoil_dt_kwh": 0.4,
+  "prix_steg_dt_kwh": 0.2,
+  "heures": [
+    {
+      "heure": "09 h",
+      "part": 0.12
+    },
+    {
+      "heure": "11 h",
+      "part": 0.2
+    },
+    {
+      "heure": "13 h",
+      "part": 0.22
+    },
+    {
+      "heure": "15 h",
+      "part": 0.18
+    }
+  ],
+  "aides": {
+    "fr": "Des aides publiques existent. Ce texte n'ouvre aucun dossier.",
+    "ar": "توجد مساعدات عمومية. هذا النص لا يفتح أي ملف.",
+    "darija": "Famma aides. El texte hetha ma yot7el 7atta dossier."
+  }
+}

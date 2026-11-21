@@ -1,0 +1,73 @@
+{
+  "hypothese": {
+    "fr": "Le label A exige au moins 2,2 DT/m³, une culture compatible, une irrigation localisée et un plan respecté. Sous 0,8 DT/m³, la lettre est E.",
+    "ar": "العلامة A تتطلب 2,2 د.ت/م³ على الأقل، زراعة مناسبة، ريا موضعيا وخطة محترمة. تحت 0,8 تكون E.",
+    "darija": "Label A yest7a9 2,2 DT/m³, culture mnasba, ray mawdo3i w plan m7taram. Ta7t 0,8 el 7arf E."
+  },
+  "parcelle_id": "parc-08",
+  "accueil": {
+    "label_actuel": "A",
+    "label_potentiel": "A",
+    "bilan": {
+      "eau_m3": 8400,
+      "energie_kwh": 2772,
+      "revenu_dt": 27368
+    },
+    "conseil": {
+      "culture": {
+        "fr": "Câpres",
+        "ar": "كبّار",
+        "darija": "Kebbar"
+      },
+      "ecart_dt_m3": 4.43
+    }
+  },
+  "evaluations": [
+    {
+      "id": "sobre",
+      "dt_m3": 2.2,
+      "compatible": true,
+      "localisee": true,
+      "conforme": true
+    },
+    {
+      "id": "faible",
+      "dt_m3": 0.7,
+      "compatible": true,
+      "localisee": true,
+      "conforme": true
+    },
+    {
+      "id": "riche_incompatible",
+      "dt_m3": 2.4,
+      "compatible": false,
+      "localisee": true,
+      "conforme": true
+    }
+  ],
+  "verifications": [
+    {
+      "id": "v1",
+      "type": "culture",
+      "resultat": "culture conforme"
+    },
+    {
+      "id": "v2",
+      "type": "irrigation",
+      "resultat": "irrigation conforme"
+    }
+  ],
+  "labels": [
+    {
+      "qr": "ardi-ferme-ben-ali",
+      "note": "A",
+      "statut": "actif",
+      "ferme": "Ferme Ben Ali",
+      "produit": {
+        "fr": "Câpres",
+        "ar": "كبّار",
+        "darija": "Kebbar"
+      }
+    }
+  ]
+}

@@ -45,7 +45,7 @@ export function WelcomeScreen({ navigation }: Props) {
       navigation.navigate("Home");
       return;
     }
-    navigation.navigate("Buyer");
+    navigation.navigate("Marche");
   }
 
   return (
