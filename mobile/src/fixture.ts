@@ -3,6 +3,7 @@ import profilsDemo from "../../fixtures/sprint-02.json";
 import culturesDemo from "../../fixtures/sprint-03.json";
 import parcelleDemo from "../../fixtures/sprint-04.json";
 import analyseDemo from "../../fixtures/sprint-05.json";
+import classementDemo from "../../fixtures/sprint-06.json";
 
 import type { Role } from "./session";
 import type { Fixture, Localized } from "./types";
@@ -92,4 +93,10 @@ export const sprint05 = analyseDemo as unknown as {
   hypothese: Localized;
   parcelle: { id: string };
   analyse: AnalyseDemo;
+};
+
+export const sprint06 = classementDemo as unknown as {
+  hypothese: Localized;
+  parcelle_id: string;
+  culture_actuelle: string;
 };

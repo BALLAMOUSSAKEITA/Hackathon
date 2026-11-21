@@ -9,6 +9,7 @@ import { CulturesScreen } from "../screens/CulturesScreen";
 import { FicheCultureScreen } from "../screens/FicheCultureScreen";
 import { HomeScreen } from "../screens/HomeScreen";
 import { AnalyseScreen } from "../screens/AnalyseScreen";
+import { PlanterScreen } from "../screens/PlanterScreen";
 import { ParcelleScreen } from "../screens/ParcelleScreen";
 import { useI18n } from "../i18n";
 import { colors } from "../theme";
@@ -52,6 +53,7 @@ export function RootNavigator() {
         <RootStack.Screen name="Fiche" component={FicheCultureScreen} options={{ title: "Ardi" }} />
         <RootStack.Screen name="Parcelle" component={ParcelleScreen} options={{ title: t("screen2") }} />
         <RootStack.Screen name="Analyse" component={AnalyseScreen} options={{ title: t("screen3") }} />
+        <RootStack.Screen name="Planter" component={PlanterScreen} options={{ title: t("screen4") }} />
       </RootStack.Navigator>
     </NavigationContainer>
   );

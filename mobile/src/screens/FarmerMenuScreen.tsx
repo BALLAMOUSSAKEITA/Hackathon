@@ -32,9 +32,9 @@ export function FarmerMenuScreen({ navigation }: Props) {
           key={screen.id}
           accessibilityRole="button"
           onPress={() => {
-            if (screen.id === "2" || screen.id === "3") {
-              const ecran = screen.id === "2" ? "Parcelle" : "Analyse";
-              navigation.getParent<NavigationProp<RootStackParamList>>()?.navigate(ecran);
+            const ecrans = { "2": "Parcelle", "3": "Analyse", "4": "Planter" } as const;
+            if (screen.id === "2" || screen.id === "3" || screen.id === "4") {
+              navigation.getParent<NavigationProp<RootStackParamList>>()?.navigate(ecrans[screen.id]);
               return;
             }
             navigation.navigate("Empty", { screenId: screen.id });

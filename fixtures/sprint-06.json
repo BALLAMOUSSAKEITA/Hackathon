@@ -1,0 +1,408 @@
+{
+  "hypothese": {
+    "fr": "Classement calculé pour un sol sableux, un sel moyen, une chaleur élevée et 7 000 m³/ha disponibles. Prix de l'énergie 0,4 DT/kWh, efficience 0,9, η 0,5. La pluie incertaine retire 10 %. Les chiffres de culture restent des exemples.",
+    "ar": "الترتيب محسوب لتربة رملية وملح متوسط وحرارة عالية و7 000 م³/هك متاحة. سعر الطاقة 0,4 د.ت/ك.واط، كفاءة 0,9، η 0,5. المطر غير المؤكد ينقص 10 %. أرقام الزراعات تبقى أمثلة.",
+    "darija": "El tartib methsoub 3la torba ramliya, mel7 moyen, skhana 3alya w 7000 m³/ha moujoudin. Sa3er el energie 0,4 DT/kWh, efficience 0,9, η 0,5. El chtar mich sari7 yna9es 10 %. Ar9am el cultures teb9a exemple."
+  },
+  "parcelle_id": "parc-06",
+  "culture_actuelle": "tomate",
+  "surface_ha": 2.4,
+  "sol": "sableux",
+  "sel": "moyenne",
+  "chaleur": "elevee",
+  "eau_disponible_m3_ha": 7000,
+  "kwh_m3": 0.33,
+  "eta": 0.5,
+  "profondeur_puits_m": 60,
+  "prix_kwh_dt": 0.4,
+  "efficience": 0.9,
+  "pluie_incertaine": true,
+  "penalite_pluie": 0.9,
+  "penalite_puits": 0.85,
+  "seuil_puits": 0.8,
+  "cultures": [
+    {
+      "id": "olivier",
+      "nom": {
+        "fr": "Olivier",
+        "ar": "زيتون",
+        "darija": "Zitoun"
+      },
+      "besoin_eau_m3_ha": 3500,
+      "rendement_t_ha": 2.5,
+      "prix_typique": 4.0,
+      "couts_dt_ha": 1800,
+      "sols": [
+        "calcaire",
+        "limoneux",
+        "sableux"
+      ],
+      "tolerance_sel": "moyenne",
+      "tolerance_chaleur": "elevee",
+      "delai": {
+        "fr": "4 à 6 ans",
+        "ar": "4 إلى 6 سنوات",
+        "darija": "4 a 6 snin"
+      },
+      "delai_mois": 60,
+      "intercalaire": false
+    },
+    {
+      "id": "pistachier",
+      "nom": {
+        "fr": "Pistachier",
+        "ar": "فستق",
+        "darija": "Festo9"
+      },
+      "besoin_eau_m3_ha": 5000,
+      "rendement_t_ha": 1.0,
+      "prix_typique": 18.0,
+      "couts_dt_ha": 2500,
+      "sols": [
+        "calcaire",
+        "sableux",
+        "limoneux"
+      ],
+      "tolerance_sel": "moyenne",
+      "tolerance_chaleur": "elevee",
+      "delai": {
+        "fr": "5 à 7 ans",
+        "ar": "5 إلى 7 سنوات",
+        "darija": "5 a 7 snin"
+      },
+      "delai_mois": 72,
+      "intercalaire": false
+    },
+    {
+      "id": "grenadier",
+      "nom": {
+        "fr": "Grenadier",
+        "ar": "رمان",
+        "darija": "Romman"
+      },
+      "besoin_eau_m3_ha": 5500,
+      "rendement_t_ha": 12.0,
+      "prix_typique": 1.8,
+      "couts_dt_ha": 2200,
+      "sols": [
+        "limoneux",
+        "sableux",
+        "calcaire"
+      ],
+      "tolerance_sel": "moyenne",
+      "tolerance_chaleur": "elevee",
+      "delai": {
+        "fr": "3 à 4 ans",
+        "ar": "3 إلى 4 سنوات",
+        "darija": "3 a 4 snin"
+      },
+      "delai_mois": 42,
+      "intercalaire": false
+    },
+    {
+      "id": "figuier_barbarie",
+      "nom": {
+        "fr": "Figuier de Barbarie",
+        "ar": "هندي",
+        "darija": "Hindi"
+      },
+      "besoin_eau_m3_ha": 1500,
+      "rendement_t_ha": 8.0,
+      "prix_typique": 1.0,
+      "couts_dt_ha": 900,
+      "sols": [
+        "sableux",
+        "calcaire"
+      ],
+      "tolerance_sel": "elevee",
+      "tolerance_chaleur": "elevee",
+      "delai": {
+        "fr": "2 à 3 ans",
+        "ar": "2 إلى 3 سنوات",
+        "darija": "2 a 3 snin"
+      },
+      "delai_mois": 30,
+      "intercalaire": false
+    },
+    {
+      "id": "palmier_dattier",
+      "nom": {
+        "fr": "Palmier dattier",
+        "ar": "نخيل",
+        "darija": "Nkhel"
+      },
+      "besoin_eau_m3_ha": 12000,
+      "rendement_t_ha": 6.0,
+      "prix_typique": 3.0,
+      "couts_dt_ha": 3200,
+      "sols": [
+        "sableux",
+        "salin",
+        "limoneux"
+      ],
+      "tolerance_sel": "elevee",
+      "tolerance_chaleur": "elevee",
+      "delai": {
+        "fr": "5 à 7 ans",
+        "ar": "5 إلى 7 سنوات",
+        "darija": "5 a 7 snin"
+      },
+      "delai_mois": 72,
+      "intercalaire": false
+    },
+    {
+      "id": "oignon",
+      "nom": {
+        "fr": "Oignon",
+        "ar": "بصل",
+        "darija": "Bsal"
+      },
+      "besoin_eau_m3_ha": 4500,
+      "rendement_t_ha": 25.0,
+      "prix_typique": 0.7,
+      "couts_dt_ha": 2800,
+      "sols": [
+        "limoneux",
+        "sableux"
+      ],
+      "tolerance_sel": "faible",
+      "tolerance_chaleur": "moyenne",
+      "delai": {
+        "fr": "4 à 5 mois",
+        "ar": "4 إلى 5 أشهر",
+        "darija": "4 a 5 chhou"
+      },
+      "delai_mois": 5,
+      "intercalaire": false
+    },
+    {
+      "id": "tomate",
+      "nom": {
+        "fr": "Tomate",
+        "ar": "طماطم",
+        "darija": "Tmatem"
+      },
+      "besoin_eau_m3_ha": 6000,
+      "rendement_t_ha": 40.0,
+      "prix_typique": 0.9,
+      "couts_dt_ha": 4500,
+      "sols": [
+        "limoneux",
+        "sableux"
+      ],
+      "tolerance_sel": "faible",
+      "tolerance_chaleur": "moyenne",
+      "delai": {
+        "fr": "3 à 4 mois",
+        "ar": "3 إلى 4 أشهر",
+        "darija": "3 a 4 chhou"
+      },
+      "delai_mois": 4,
+      "intercalaire": false
+    },
+    {
+      "id": "pasteque",
+      "nom": {
+        "fr": "Pastèque",
+        "ar": "دلاع",
+        "darija": "Della3"
+      },
+      "besoin_eau_m3_ha": 5000,
+      "rendement_t_ha": 30.0,
+      "prix_typique": 0.5,
+      "couts_dt_ha": 2600,
+      "sols": [
+        "sableux",
+        "limoneux"
+      ],
+      "tolerance_sel": "faible",
+      "tolerance_chaleur": "elevee",
+      "delai": {
+        "fr": "3 mois",
+        "ar": "3 أشهر",
+        "darija": "3 chhou"
+      },
+      "delai_mois": 3,
+      "intercalaire": false
+    },
+    {
+      "id": "orge",
+      "nom": {
+        "fr": "Orge",
+        "ar": "شعير",
+        "darija": "Chair"
+      },
+      "besoin_eau_m3_ha": 3000,
+      "rendement_t_ha": 2.5,
+      "prix_typique": 0.8,
+      "couts_dt_ha": 1200,
+      "sols": [
+        "limoneux",
+        "calcaire",
+        "salin"
+      ],
+      "tolerance_sel": "moyenne",
+      "tolerance_chaleur": "elevee",
+      "delai": {
+        "fr": "5 à 6 mois",
+        "ar": "5 إلى 6 أشهر",
+        "darija": "5 a 6 chhou"
+      },
+      "delai_mois": 6,
+      "intercalaire": false
+    },
+    {
+      "id": "capres",
+      "nom": {
+        "fr": "Câpres",
+        "ar": "كبّار",
+        "darija": "Kebbar"
+      },
+      "besoin_eau_m3_ha": 2500,
+      "rendement_t_ha": 1.5,
+      "prix_typique": 10.0,
+      "couts_dt_ha": 1600,
+      "sols": [
+        "calcaire",
+        "sableux"
+      ],
+      "tolerance_sel": "elevee",
+      "tolerance_chaleur": "elevee",
+      "delai": {
+        "fr": "2 à 3 ans",
+        "ar": "2 إلى 3 سنوات",
+        "darija": "2 a 3 snin"
+      },
+      "delai_mois": 30,
+      "intercalaire": true
+    },
+    {
+      "id": "amandier",
+      "nom": {
+        "fr": "Amandier",
+        "ar": "لوز",
+        "darija": "Louz"
+      },
+      "besoin_eau_m3_ha": 5500,
+      "rendement_t_ha": 1.2,
+      "prix_typique": 8.0,
+      "couts_dt_ha": 2100,
+      "sols": [
+        "calcaire",
+        "limoneux",
+        "sableux"
+      ],
+      "tolerance_sel": "faible",
+      "tolerance_chaleur": "elevee",
+      "delai": {
+        "fr": "3 à 4 ans",
+        "ar": "3 إلى 4 سنوات",
+        "darija": "3 a 4 snin"
+      },
+      "delai_mois": 42,
+      "intercalaire": false
+    },
+    {
+      "id": "ble_dur",
+      "nom": {
+        "fr": "Blé dur",
+        "ar": "قمح صلب",
+        "darija": "Gem7"
+      },
+      "besoin_eau_m3_ha": 4000,
+      "rendement_t_ha": 2.2,
+      "prix_typique": 0.9,
+      "couts_dt_ha": 1400,
+      "sols": [
+        "limoneux",
+        "argileux",
+        "calcaire"
+      ],
+      "tolerance_sel": "faible",
+      "tolerance_chaleur": "moyenne",
+      "delai": {
+        "fr": "6 à 7 mois",
+        "ar": "6 إلى 7 أشهر",
+        "darija": "6 a 7 chhou"
+      },
+      "delai_mois": 7,
+      "intercalaire": false
+    },
+    {
+      "id": "piment",
+      "nom": {
+        "fr": "Piment",
+        "ar": "فلفل",
+        "darija": "Felfel"
+      },
+      "besoin_eau_m3_ha": 5500,
+      "rendement_t_ha": 20.0,
+      "prix_typique": 1.4,
+      "couts_dt_ha": 3800,
+      "sols": [
+        "limoneux",
+        "sableux"
+      ],
+      "tolerance_sel": "faible",
+      "tolerance_chaleur": "elevee",
+      "delai": {
+        "fr": "4 mois",
+        "ar": "4 أشهر",
+        "darija": "4 chhou"
+      },
+      "delai_mois": 4,
+      "intercalaire": false
+    },
+    {
+      "id": "ail",
+      "nom": {
+        "fr": "Ail",
+        "ar": "ثوم",
+        "darija": "Thoum"
+      },
+      "besoin_eau_m3_ha": 4000,
+      "rendement_t_ha": 8.0,
+      "prix_typique": 3.5,
+      "couts_dt_ha": 3000,
+      "sols": [
+        "limoneux",
+        "sableux"
+      ],
+      "tolerance_sel": "faible",
+      "tolerance_chaleur": "moyenne",
+      "delai": {
+        "fr": "6 à 7 mois",
+        "ar": "6 إلى 7 أشهر",
+        "darija": "6 a 7 chhou"
+      },
+      "delai_mois": 7,
+      "intercalaire": false
+    },
+    {
+      "id": "figuier",
+      "nom": {
+        "fr": "Figuier",
+        "ar": "تين",
+        "darija": "Kermous"
+      },
+      "besoin_eau_m3_ha": 4500,
+      "rendement_t_ha": 6.0,
+      "prix_typique": 2.5,
+      "couts_dt_ha": 1700,
+      "sols": [
+        "calcaire",
+        "limoneux",
+        "sableux"
+      ],
+      "tolerance_sel": "moyenne",
+      "tolerance_chaleur": "elevee",
+      "delai": {
+        "fr": "3 à 4 ans",
+        "ar": "3 إلى 4 سنوات",
+        "darija": "3 a 4 snin"
+      },
+      "delai_mois": 42,
+      "intercalaire": false
+    }
+  ]
+}
