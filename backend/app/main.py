@@ -1,7 +1,8 @@
 import json
+from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import Any
-from contextlib import asynccontextmanager
+from uuid import uuid4
 
 from fastapi import Depends, FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
@@ -9,29 +10,44 @@ from sqlalchemy.orm import Session
 
 from .database import Base, engine, get_db
 from . import models
-from .schemas import ParcelleCreate, ParcelleOut, UserCreate, UserOut
+from .schemas import (
+    OTPRequest,
+    OTPResponse,
+    OTPVerify,
+    ParcelleCreate,
+    ParcelleOut,
+    UserCreate,
+    UserOut,
+)
 
 
-FIXTURE = Path(__file__).resolve().parents[1] / "fixtures" / "sprint-01.json"
+FIXTURES_DIR = Path(__file__).resolve().parents[1] / "fixtures"
+DEMO_OTP_CODE = "123456"
+pending_otp_phones: set[str] = set()
+
 
 @asynccontextmanager
 async def lifespan(_: FastAPI):
     Base.metadata.create_all(bind=engine)
-    data = json.loads(FIXTURE.read_text(encoding="utf-8"))
     db = next(get_db())
     try:
-        for section, model in ENTITY_MODELS.items():
-            if section == "produits":
-                rows = data.get("products", [])
-            elif section == "commandes":
-                rows = data.get("orders", [])
-            elif section == "alertes":
-                rows = data.get("alerts", [])
-            else:
-                rows = data.get(section, [])
-            for row in rows:
-                if db.get(model, row["id"]) is None:
-                    db.add(model(**row))
+        for fixture_name in ("sprint-01.json", "sprint-02.json"):
+            fixture = FIXTURES_DIR / fixture_name
+            data = json.loads(fixture.read_text(encoding="utf-8"))
+            for section, model in ENTITY_MODELS.items():
+                if section == "users":
+                    rows = data.get("users", data.get("profiles", []))
+                elif section == "produits":
+                    rows = data.get("products", [])
+                elif section == "commandes":
+                    rows = data.get("orders", [])
+                elif section == "alertes":
+                    rows = data.get("alerts", [])
+                else:
+                    rows = data.get(section, [])
+                for row in rows:
+                    if db.get(model, row["id"]) is None:
+                        db.add(model(**row))
         db.commit()
     finally:
         db.close()
@@ -73,7 +89,46 @@ def health() -> dict[str, str]:
 
 @app.get("/fixture/sprint-01")
 def sprint_fixture() -> dict[str, Any]:
-    return json.loads(FIXTURE.read_text(encoding="utf-8"))
+    return json.loads((FIXTURES_DIR / "sprint-01.json").read_text(encoding="utf-8"))
+
+
+@app.get("/fixture/sprint-02")
+def sprint_02_fixture() -> dict[str, Any]:
+    return json.loads((FIXTURES_DIR / "sprint-02.json").read_text(encoding="utf-8"))
+
+
+@app.post("/auth/otp", response_model=OTPResponse)
+def request_otp(payload: OTPRequest) -> OTPResponse:
+    pending_otp_phones.add(payload.phone)
+    return OTPResponse(
+        phone=payload.phone,
+        message="Code SMS simule; utilisez le code fixe de demonstration.",
+        demo_code=DEMO_OTP_CODE,
+    )
+
+
+@app.post("/auth/verify", response_model=UserOut, status_code=201)
+def verify_otp(payload: OTPVerify, db: Session = Depends(get_db)):
+    if payload.phone not in pending_otp_phones:
+        raise HTTPException(400, "Request an OTP before verifying it")
+    if payload.code != DEMO_OTP_CODE:
+        raise HTTPException(400, "Invalid demo OTP code")
+    existing_user = db.query(models.User).filter(models.User.phone == payload.phone).first()
+    if existing_user:
+        raise HTTPException(409, "Phone number is already registered")
+
+    user = models.User(
+        id=str(uuid4()),
+        phone=payload.phone,
+        name=payload.name,
+        role=payload.role,
+        language=payload.language,
+    )
+    db.add(user)
+    db.commit()
+    db.refresh(user)
+    pending_otp_phones.discard(payload.phone)
+    return user
 
 
 @app.get("/users", response_model=list[UserOut])

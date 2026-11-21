@@ -1,0 +1,25 @@
+{
+  "profiles": [
+    {
+      "id": "user-demo-farmer",
+      "phone": "+21600000001",
+      "name": "Agriculteur demo",
+      "role": "farmer",
+      "language": "darija"
+    },
+    {
+      "id": "user-demo-buyer",
+      "phone": "+21600000002",
+      "name": "Acheteur demo",
+      "role": "buyer",
+      "language": "ar"
+    },
+    {
+      "id": "user-demo-professional",
+      "phone": "+21600000003",
+      "name": "Acheteur professionnel demo",
+      "role": "professional",
+      "language": "fr"
+    }
+  ]
+}
