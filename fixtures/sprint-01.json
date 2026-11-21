@@ -1,0 +1,138 @@
+{
+  "ferme": {
+    "id": "ferme-demo-sidi-bouzid",
+    "nom": "Ferme Ben Ali",
+    "region": "Sidi Bouzid",
+    "agriculteur": {
+      "id": "usr-demo",
+      "nom": "Hedi Ben Ali",
+      "telephone": "+21620000001",
+      "role": "agriculteur",
+      "langue": "darija"
+    }
+  },
+  "parcelle": {
+    "id": "parc-01",
+    "nom": "Parcelle du puits",
+    "geometrie": {
+      "type": "Polygon",
+      "coordinates": [
+        [
+          [9.4849, 35.0374],
+          [9.48666, 35.0374],
+          [9.48666, 35.03875],
+          [9.4849, 35.03875],
+          [9.4849, 35.0374]
+        ]
+      ]
+    },
+    "surface_ha": 2.4,
+    "source_eau": "puits",
+    "profondeur_puits_m": 60,
+    "debit_m3_h": 8,
+    "energie": "gasoil",
+    "culture_actuelle": {
+      "id": "tomate",
+      "nom": {
+        "fr": "Tomate",
+        "ar": "طماطم",
+        "darija": "Tmatem"
+      }
+    }
+  },
+  "produit": {
+    "id": "prod-01",
+    "nom": {
+      "fr": "Tomates de saison",
+      "ar": "طماطم الموسم",
+      "darija": "Tmatem mta3 el mousem"
+    },
+    "prix_dt": 1.8,
+    "unite": "kg",
+    "stock": 120,
+    "label": {
+      "id": "label-01",
+      "note": "E",
+      "statut": "exemple",
+      "qr": "ardi-demo-tomate-01",
+      "hypothese": {
+        "fr": "La lettre E est posée pour la ferme de démo. Le score A à E se calcule dans son sprint.",
+        "ar": "الحرف E موضوع لضيعة العرض. التقييم من A إلى E يُحسب في سبرنته.",
+        "darija": "El harf E m7out lel ferma demo. El score men A l E yet7seb f sprintou."
+      }
+    }
+  },
+  "hypotheses": [
+    {
+      "fr": "Chiffres d'exemple du cahier des charges, à remplacer par les données réelles. Puits de 60 m, parcelle de 2,4 ha, culture actuelle gourmande en eau.",
+      "ar": "أرقام مثال من دفتر التحملات، تُستبدل بالبيانات الحقيقية. بئر بعمق 60 م، قطعة 2,4 هكتار، وزراعة حالية كثيرة الاستهلاك للماء.",
+      "darija": "Ar9am exemple men el cahier, yetbeddlou b data 7a9i9iya. Bir 60 m, parcelle 2,4 ha, culture 7alya techrob barcha ma."
+    }
+  ],
+  "scenario": [
+    {
+      "etape": 1,
+      "texte": {
+        "fr": "Choisir la darija et le profil agriculteur.",
+        "ar": "اختر الدارجة وملف الفلاح.",
+        "darija": "Ekhtar ed-derja w profil el fellah."
+      }
+    },
+    {
+      "etape": 2,
+      "texte": {
+        "fr": "Ouvrir la parcelle : puits, débit, culture actuelle.",
+        "ar": "افتح القطعة: البئر، التدفق، الزراعة الحالية.",
+        "darija": "Hel el parcelle: el bir, el debit, el culture l-7alya."
+      }
+    },
+    {
+      "etape": 3,
+      "texte": {
+        "fr": "Lancer l'analyse : sol, climat, eau, kWh/m³.",
+        "ar": "ابدأ التحليل: التربة، المناخ، الماء، kWh/m³.",
+        "darija": "Ebda el tahlil: et-torba, el climat, el ma, kWh/m³."
+      }
+    },
+    {
+      "etape": 4,
+      "texte": {
+        "fr": "Montrer le classement et l'écart avec la culture actuelle.",
+        "ar": "أظهر الترتيب والفرق مع الزراعة الحالية.",
+        "darija": "Wari et-tartib w el far9 m3a el culture l-7alya."
+      }
+    },
+    {
+      "etape": 5,
+      "texte": {
+        "fr": "Bouger les curseurs, voir le dépassement, adopter un plan.",
+        "ar": "حرّك المؤشرات، شاهد التجاوز، واعتمد خطة.",
+        "darija": "7arrek el curseurs, chouf el depassement, etbanna plan."
+      }
+    },
+    {
+      "etape": 6,
+      "texte": {
+        "fr": "Montrer le label et le QR.",
+        "ar": "أظهر العلامة ورمز QR.",
+        "darija": "Wari el label w el QR."
+      }
+    },
+    {
+      "etape": 7,
+      "texte": {
+        "fr": "Poser une question à voix haute. La réponse cite les chiffres de la parcelle.",
+        "ar": "اسأل بصوت عال. الجواب يذكر أرقام القطعة.",
+        "darija": "Es2el b sout 3ali. El jawab yedhkor ar9am el parcelle."
+      }
+    },
+    {
+      "etape": 8,
+      "texte": {
+        "fr": "Scanner le QR en profil acheteur et payer en simulé.",
+        "ar": "امسح رمز QR بملف المشتري وادفع بشكل تجريبي.",
+        "darija": "Scanni el QR b profil chari w ekhalas b paiement simulé."
+      }
+    }
+  ]
+}
