@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { ScrollView, StyleSheet, Text, View } from "react-native";
+import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 
@@ -49,6 +49,11 @@ export function HomeScreen({ navigation }: Props) {
   return (
     <SafeAreaView style={[styles.safe, { direction }]}>
       <ScrollView contentContainerStyle={styles.content}>
+        {navigation.canGoBack() ? (
+          <Pressable accessibilityRole="button" onPress={() => navigation.goBack()} style={styles.back}>
+            <Text style={[styles.backText, { textAlign: align }]}>{t("back")}</Text>
+          </Pressable>
+        ) : null}
         <Text style={[styles.mark, { textAlign: align }]}>Ardi</Text>
         <Text style={[styles.tagline, { textAlign: align }]}>{t("tagline")}</Text>
         <Text style={[styles.section, { textAlign: align }]}>{t("chooseLanguage")}</Text>
@@ -99,6 +104,18 @@ const styles = StyleSheet.create({
   content: {
     padding: 20,
     gap: 12,
+  },
+  back: {
+    alignSelf: "flex-start",
+    minHeight: 44,
+    minWidth: 44,
+    justifyContent: "center",
+  },
+  backText: {
+    width: "100%",
+    color: colors.olive,
+    fontWeight: "700",
+    fontSize: 16,
   },
   mark: {
     width: "100%",

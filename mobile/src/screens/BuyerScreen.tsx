@@ -1,18 +1,29 @@
+import { useEffect, useState } from "react";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
 
 import { LanguageSwitch } from "../components/LanguageSwitch";
-import { fixture } from "../fixture";
+import { fixture, sprint02 } from "../fixture";
 import { useI18n } from "../i18n";
+import { lireCompte, type Compte } from "../session";
 import { colors } from "../theme";
 
 export function BuyerScreen() {
-  const { t, direction } = useI18n();
+  const { t, direction, lang } = useI18n();
   const align = direction === "rtl" ? "right" : "left";
+  const [compte, setCompte] = useState<Compte | null>(null);
+
+  useEffect(() => {
+    lireCompte().then(setCompte);
+  }, []);
+
+  const libelle = sprint02.profils.find((profil) => profil.id === compte?.id)?.libelle[lang];
 
   return (
     <ScrollView style={{ direction }} contentContainerStyle={styles.content}>
       <Text style={[styles.title, { textAlign: align }]}>{t("buyerPath")}</Text>
-      <Text style={[styles.farm, { textAlign: align }]}>{fixture.ferme.nom}</Text>
+      <Text style={[styles.farm, { textAlign: align }]}>
+        {compte ? `${compte.nom}${libelle ? ` · ${libelle}` : ""}` : fixture.ferme.nom}
+      </Text>
       <LanguageSwitch />
       <View style={styles.card}>
         <Text style={[styles.body, { textAlign: align }]}>{t("buyerBody")}</Text>

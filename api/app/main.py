@@ -4,6 +4,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import func, select
 
+from app.auth import router as auth_router
 from app.contrat import CONTRAT
 from app.database import SessionLocal, engine, init_db, load_fixture, postgis_version
 from app.models import Label, Parcelle, Produit, Utilisateur
@@ -19,6 +20,7 @@ async def lifespan(_app: FastAPI):
 
 
 app = FastAPI(title="Ardi", version="0.1.0", lifespan=lifespan)
+app.include_router(auth_router)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],

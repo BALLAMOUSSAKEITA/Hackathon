@@ -1,22 +1,17 @@
 import { I18nManager } from "react-native";
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 
+import { ECRAN0 } from "./i18n/ecran0";
+import { lireLangue, ecrireLangue } from "./session";
 import type { Lang, Localized } from "./types";
 
 const STRINGS = {
+  ...ECRAN0,
   tagline: {
     fr: "La bonne culture sur la bonne terre",
     ar: "الزراعة المناسبة للأرض المناسبة",
     darija: "El culture l-mnasba 3al ard l-mnasba",
   },
-  chooseLanguage: { fr: "Langue", ar: "اللغة", darija: "Lou3a" },
-  langFr: { fr: "Français", ar: "الفرنسية", darija: "Fransawi" },
-  langAr: { fr: "Arabe", ar: "العربية", darija: "3arbi" },
-  langDarija: { fr: "Darija", ar: "الدارجة", darija: "Derja" },
-  farmer: { fr: "Agriculteur", ar: "فلاح", darija: "Fellah" },
-  buyer: { fr: "Acheteur", ar: "مشتري", darija: "Chari" },
-  farmerPath: { fr: "Parcours agriculteur", ar: "مسار الفلاح", darija: "Masar el fellah" },
-  buyerPath: { fr: "Parcours acheteur", ar: "مسار المشتري", darija: "Masar el chari" },
   farm: { fr: "Ferme", ar: "الضيعة", darija: "El ferma" },
   region: { fr: "Région", ar: "الجهة", darija: "El jiha" },
   parcel: { fr: "Parcelle", ar: "القطعة", darija: "El parcelle" },
@@ -58,18 +53,6 @@ const STRINGS = {
   unitM: { fr: "m", ar: "م", darija: "m" },
   unitFlow: { fr: "m³/h", ar: "م³/س", darija: "m³/h" },
   unitDt: { fr: "DT", ar: "د.ت", darija: "DT" },
-  back: { fr: "Retour", ar: "رجوع", darija: "Rja3" },
-  screen1: { fr: "Accueil agriculteur", ar: "رئيسية الفلاح", darija: "Accueil el fellah" },
-  screen2: { fr: "Ma parcelle", ar: "قطعتي", darija: "Qit3ti" },
-  screen3: { fr: "Analyse de la terre", ar: "تحليل التربة", darija: "Tahlil et-torba" },
-  screen4: { fr: "Que planter ?", ar: "شنو نزرعو؟", darija: "Chnou nezra3ou?" },
-  screen5: { fr: "Simulateur", ar: "المحاكي", darija: "El simulateur" },
-  screen6: { fr: "Assistant vocal", ar: "المساعد الصوتي", darija: "El assistant b sout" },
-  screen7: { fr: "Label de la ferme", ar: "علامة الضيعة", darija: "Label el ferma" },
-  screen8: { fr: "Énergie et pompage solaire", ar: "الطاقة والضخ الشمسي", darija: "Energie w pompage solaire" },
-  screen9: { fr: "Suivi satellite et alertes", ar: "المتابعة والتنبيهات", darija: "Suivi satellite" },
-  screen10: { fr: "Mes ventes", ar: "مبيعاتي", darija: "Bi3ati" },
-  screen11: { fr: "Notifications", ar: "الإشعارات", darija: "Les notifications" },
 } satisfies Record<string, Localized>;
 
 export type CopyKey = keyof typeof STRINGS;
@@ -85,14 +68,29 @@ const I18nContext = createContext<I18nValue | null>(null);
 
 export function I18nProvider({ children }: { children: ReactNode }) {
   const [lang, setLang] = useState<Lang>("fr");
+  const [ready, setReady] = useState(false);
 
   useEffect(() => {
+    lireLangue()
+      .then((saved) => {
+        if (saved) {
+          setLang(saved);
+        }
+      })
+      .finally(() => setReady(true));
+  }, []);
+
+  useEffect(() => {
+    if (!ready) {
+      return;
+    }
+    ecrireLangue(lang);
     const rtl = lang === "ar";
     I18nManager.allowRTL(true);
     if (I18nManager.isRTL !== rtl) {
       I18nManager.forceRTL(rtl);
     }
-  }, [lang]);
+  }, [lang, ready]);
 
   const value = useMemo<I18nValue>(
     () => ({
@@ -103,6 +101,10 @@ export function I18nProvider({ children }: { children: ReactNode }) {
     }),
     [lang],
   );
+
+  if (!ready) {
+    return null;
+  }
 
   return <I18nContext.Provider value={value}>{children}</I18nContext.Provider>;
 }

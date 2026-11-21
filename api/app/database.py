@@ -7,7 +7,7 @@ from sqlalchemy.orm import DeclarativeBase, sessionmaker
 
 API_DIR = Path(__file__).resolve().parents[1]
 REPO_DIR = API_DIR.parent
-FIXTURE_PATH = REPO_DIR / "fixtures" / "sprint-01.json"
+FIXTURE_DIR = REPO_DIR / "fixtures"
 DB_PATH = API_DIR / "ardi.db"
 
 DATABASE_URL = os.getenv("DATABASE_URL", f"sqlite:///{DB_PATH.as_posix()}")
@@ -21,8 +21,9 @@ class Base(DeclarativeBase):
     pass
 
 
-def load_fixture() -> dict:
-    return json.loads(FIXTURE_PATH.read_text(encoding="utf-8"))
+def load_fixture(sprint: str = "01") -> dict:
+    path = FIXTURE_DIR / f"sprint-{sprint}.json"
+    return json.loads(path.read_text(encoding="utf-8"))
 
 
 def init_db() -> None:

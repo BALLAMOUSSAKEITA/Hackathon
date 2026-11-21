@@ -2,6 +2,7 @@ import { NavigationContainer, DefaultTheme } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 
 import { BuyerScreen } from "../screens/BuyerScreen";
+import { WelcomeScreen } from "../screens/WelcomeScreen";
 import { EmptyScreen } from "../screens/EmptyScreen";
 import { FarmerMenuScreen } from "../screens/FarmerMenuScreen";
 import { HomeScreen } from "../screens/HomeScreen";
@@ -38,7 +39,8 @@ export function RootNavigator() {
   const { t } = useI18n();
   return (
     <NavigationContainer theme={navTheme}>
-      <RootStack.Navigator screenOptions={screenOptions}>
+      <RootStack.Navigator initialRouteName="Welcome" screenOptions={screenOptions}>
+        <RootStack.Screen name="Welcome" component={WelcomeScreen} options={{ headerShown: false }} />
         <RootStack.Screen name="Home" component={HomeScreen} options={{ headerShown: false }} />
         <RootStack.Screen name="Farmer" component={FarmerNavigator} options={{ headerShown: false }} />
         <RootStack.Screen name="Buyer" component={BuyerScreen} options={{ title: t("buyerPath") }} />
