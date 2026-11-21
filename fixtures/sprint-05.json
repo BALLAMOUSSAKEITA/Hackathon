@@ -1,0 +1,91 @@
+{
+  "hypothese": {
+    "fr": "Puits de 60 m et η = 0,5 : environ 0,33 kWh/m³ avec E = 0,00272 × H / η. L'eau disponible est le débit × 6 h × 120 jours, une hypothèse de saison. Sol, climat et soleil viennent de SoilGrids, Open-Meteo et NASA POWER si le réseau répond, sinon de cet exemple figé. La série NDVI est figée.",
+    "ar": "بئر 60 م و η = 0,5 : حوالي 0,33 ك.واط/م³ بالصيغة 0,00272 × H / η. الماء المتاح هو التدفق × 6 س × 120 يوما، فرضية موسم. التربة والمناخ والشمس من المصادر الحية إن أجاب الشبكة، وإلا من هذا المثال المثبت. سلسلة NDVI مثبتة.",
+    "darija": "Bir 60 m w η = 0,5 : 7awali 0,33 kWh/m³ b E = 0,00272 × H / η. El ma el moujoued howa el debit × 6 h × 120 youm, hypothese mta3 saison. Torba, climat w chams men SoilGrids, Open-Meteo w NASA POWER ken el reseau yjaweb, sinon men had exemple mthabbet. NDVI mthabta."
+  },
+  "proprietaire": {
+    "id": "usr-demo",
+    "nom": "Hedi Ben Ali",
+    "telephone": "+21620000001",
+    "role": "agriculteur",
+    "langue": "darija"
+  },
+  "calcul": {
+    "eta": 0.5,
+    "heures_pompage_par_jour": 6,
+    "jours_saison": 120
+  },
+  "parcelle": {
+    "id": "parc-05",
+    "nom": "Parcelle du puits",
+    "geometrie": {
+      "type": "Polygon",
+      "coordinates": [
+        [
+          [9.4849, 35.0374],
+          [9.48666, 35.0374],
+          [9.48666, 35.03875],
+          [9.4849, 35.03875],
+          [9.4849, 35.0374]
+        ]
+      ]
+    },
+    "surface_ha": 2.41,
+    "source_eau": "puits",
+    "profondeur_puits_m": 60,
+    "debit_m3_h": 8,
+    "energie": "gasoil",
+    "culture_actuelle": {
+      "id": "tomate",
+      "nom": { "fr": "Tomate", "ar": "طماطم", "darija": "Tmatem" }
+    }
+  },
+  "analyse": {
+    "sol": {
+      "texture": { "fr": "sableux", "ar": "رملي", "darija": "ramli" },
+      "sable_pct": 52,
+      "limon_pct": 30,
+      "argile_pct": 18,
+      "ph": 7.8,
+      "matiere_organique_g_kg": 6.5,
+      "source": "SoilGrids",
+      "fige": true
+    },
+    "climat": {
+      "pluie_mm": 250,
+      "temperature_c": 19.4,
+      "et0_mm_jour": 4.5,
+      "source": "Open-Meteo",
+      "fige": true
+    },
+    "ensoleillement": {
+      "kwh_m2_jour": 5.2,
+      "source": "NASA POWER",
+      "fige": true
+    },
+    "eau_disponible_m3": 5760,
+    "kwh_m3": 0.33,
+    "eta": 0.5,
+    "profondeur_puits_m": 60,
+    "debit_m3_h": 8,
+    "heures_pompage_par_jour": 6,
+    "jours_saison": 120,
+    "ndvi": [
+      { "mois": { "fr": "janv.", "ar": "جانفي", "darija": "janv." }, "valeur": 0.18 },
+      { "mois": { "fr": "févr.", "ar": "فيفري", "darija": "fevr." }, "valeur": 0.22 },
+      { "mois": { "fr": "mars", "ar": "مارس", "darija": "mars" }, "valeur": 0.35 },
+      { "mois": { "fr": "avr.", "ar": "أفريل", "darija": "avril" }, "valeur": 0.48 },
+      { "mois": { "fr": "mai", "ar": "ماي", "darija": "mai" }, "valeur": 0.42 },
+      { "mois": { "fr": "juin", "ar": "جوان", "darija": "juin" }, "valeur": 0.28 },
+      { "mois": { "fr": "juil.", "ar": "جويلية", "darija": "juil." }, "valeur": 0.2 },
+      { "mois": { "fr": "août", "ar": "أوت", "darija": "out" }, "valeur": 0.18 },
+      { "mois": { "fr": "sept.", "ar": "سبتمبر", "darija": "sept." }, "valeur": 0.24 },
+      { "mois": { "fr": "oct.", "ar": "أكتوبر", "darija": "oct." }, "valeur": 0.31 },
+      { "mois": { "fr": "nov.", "ar": "نوفمبر", "darija": "nov." }, "valeur": 0.27 },
+      { "mois": { "fr": "déc.", "ar": "ديسمبر", "darija": "dec." }, "valeur": 0.2 }
+    ],
+    "source_ndvi": "série figée",
+    "cache": false
+  }
+}

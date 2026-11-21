@@ -2,6 +2,7 @@ import data from "../../fixtures/sprint-01.json";
 import profilsDemo from "../../fixtures/sprint-02.json";
 import culturesDemo from "../../fixtures/sprint-03.json";
 import parcelleDemo from "../../fixtures/sprint-04.json";
+import analyseDemo from "../../fixtures/sprint-05.json";
 
 import type { Role } from "./session";
 import type { Fixture, Localized } from "./types";
@@ -60,4 +61,35 @@ export const sprint04 = parcelleDemo as unknown as {
   hypothese: Localized;
   proprietaire: { id: string };
   parcelle: ParcelleDemo;
+};
+
+export type BlocSource = { source: string; fige: boolean };
+
+export type AnalyseDemo = {
+  sol: BlocSource & {
+    texture: Localized;
+    sable_pct: number;
+    limon_pct: number;
+    argile_pct: number;
+    ph: number;
+    matiere_organique_g_kg: number;
+  };
+  climat: BlocSource & { pluie_mm: number; temperature_c: number; et0_mm_jour: number; fenetre_jours?: number };
+  ensoleillement: BlocSource & { kwh_m2_jour: number };
+  eau_disponible_m3: number;
+  kwh_m3: number;
+  eta: number;
+  profondeur_puits_m: number;
+  debit_m3_h: number;
+  heures_pompage_par_jour: number;
+  jours_saison: number;
+  ndvi: { mois: Localized; valeur: number }[];
+  source_ndvi: string;
+  cache: boolean;
+};
+
+export const sprint05 = analyseDemo as unknown as {
+  hypothese: Localized;
+  parcelle: { id: string };
+  analyse: AnalyseDemo;
 };

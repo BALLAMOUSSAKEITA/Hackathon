@@ -4,6 +4,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import func, select
 
+from app.analyse import router as analyse_router
 from app.auth import router as auth_router
 from app.contrat import CONTRAT
 from app.cultures import router as cultures_router
@@ -26,6 +27,7 @@ app = FastAPI(title="Ardi", version="0.1.0", lifespan=lifespan)
 app.include_router(auth_router)
 app.include_router(cultures_router)
 app.include_router(parcelles_router)
+app.include_router(analyse_router)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],

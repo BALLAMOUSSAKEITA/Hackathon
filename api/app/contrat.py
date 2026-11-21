@@ -65,9 +65,9 @@ CONTRAT = {
             "methode": "POST",
             "chemin": "/parcelles/{id}/analyse",
             "sprint": 5,
-            "statut": "contrat",
-            "description": "Lancer l'analyse sol, climat, eau, énergie.",
-            "reponse": {"sol": {}, "climat": {}, "eau_disponible_m3": 0, "kwh_m3": 0},
+            "statut": "livre",
+            "description": "Analyse sol, climat, soleil, eau et kWh/m³. Les sources externes sont en cache, sinon l'exemple figé.",
+            "reponse": {"sol": {}, "climat": {}, "eau_disponible_m3": 5760, "kwh_m3": 0.33},
         },
         {
             "methode": "GET",

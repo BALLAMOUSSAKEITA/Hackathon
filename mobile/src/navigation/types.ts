@@ -6,6 +6,7 @@ export type RootStackParamList = {
   Cultures: undefined;
   Fiche: { cultureId: string };
   Parcelle: undefined;
+  Analyse: undefined;
 };
 
 export type FarmerStackParamList = {
