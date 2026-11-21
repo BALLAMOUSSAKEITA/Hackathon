@@ -5,6 +5,8 @@ import { BuyerScreen } from "../screens/BuyerScreen";
 import { WelcomeScreen } from "../screens/WelcomeScreen";
 import { EmptyScreen } from "../screens/EmptyScreen";
 import { FarmerMenuScreen } from "../screens/FarmerMenuScreen";
+import { CulturesScreen } from "../screens/CulturesScreen";
+import { FicheCultureScreen } from "../screens/FicheCultureScreen";
 import { HomeScreen } from "../screens/HomeScreen";
 import { useI18n } from "../i18n";
 import { colors } from "../theme";
@@ -44,6 +46,8 @@ export function RootNavigator() {
         <RootStack.Screen name="Home" component={HomeScreen} options={{ headerShown: false }} />
         <RootStack.Screen name="Farmer" component={FarmerNavigator} options={{ headerShown: false }} />
         <RootStack.Screen name="Buyer" component={BuyerScreen} options={{ title: t("buyerPath") }} />
+        <RootStack.Screen name="Cultures" component={CulturesScreen} options={{ title: t("culturesTitle") }} />
+        <RootStack.Screen name="Fiche" component={FicheCultureScreen} options={{ title: "Ardi" }} />
       </RootStack.Navigator>
     </NavigationContainer>
   );

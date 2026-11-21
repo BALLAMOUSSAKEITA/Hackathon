@@ -53,6 +53,7 @@ class Culture(Base):
     sols_compatibles: Mapped[list | None] = mapped_column(JSON, nullable=True)
     tolerances: Mapped[dict | None] = mapped_column(JSON, nullable=True)
     delai_production: Mapped[str | None] = mapped_column(String, nullable=True)
+    fiche: Mapped[dict | None] = mapped_column(JSON, nullable=True)
 
 
 class Plan(Base):

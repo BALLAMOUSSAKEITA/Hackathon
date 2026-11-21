@@ -148,6 +148,23 @@ CONTRAT = {
             "reponse": {"id": "cmd-01", "montant": 3.6, "statut": "en_attente"},
         },
         {
+            "methode": "GET",
+            "chemin": "/cultures",
+            "sprint": 3,
+            "statut": "livre",
+            "description": "Liste des cultures. Paramètre optionnel sol.",
+            "requete": {"sol": "calcaire"},
+            "reponse": {"cultures": []},
+        },
+        {
+            "methode": "GET",
+            "chemin": "/cultures/{id}",
+            "sprint": 3,
+            "statut": "livre",
+            "description": "Fiche d'une culture dans les trois langues.",
+            "reponse": {"id": "olivier", "nom": {"fr": "Olivier"}},
+        },
+        {
             "methode": "PATCH",
             "chemin": "/commandes/{id}",
             "sprint": 11,

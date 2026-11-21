@@ -2,7 +2,7 @@ from sqlalchemy import text
 from sqlalchemy.orm import Session
 
 from app.database import engine, load_fixture
-from app.models import Label, Parcelle, Produit, Utilisateur
+from app.models import Culture, Label, Parcelle, Produit, Utilisateur
 
 
 def seed_demo(session: Session) -> None:
@@ -69,3 +69,26 @@ def seed_demo(session: Session) -> None:
             {"id": parcelle["id"]},
         )
         session.commit()
+
+
+def seed_cultures(session: Session) -> None:
+    if session.get(Culture, "olivier") is not None:
+        return
+    for culture in load_fixture("03")["cultures"]:
+        session.add(
+            Culture(
+                id=culture["id"],
+                nom=culture["nom"],
+                kc_par_stade=culture["kc"],
+                rendement=culture["rendement_t_ha"],
+                prix=culture["prix"]["typique"],
+                sols_compatibles=culture["sols"],
+                tolerances={
+                    "sel": culture["tolerance_sel"],
+                    "chaleur": culture["tolerance_chaleur"],
+                },
+                delai_production=culture["delai"]["fr"],
+                fiche=culture,
+            )
+        )
+    session.commit()

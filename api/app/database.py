@@ -33,6 +33,7 @@ def init_db() -> None:
         with engine.begin() as connection:
             connection.execute(text("CREATE EXTENSION IF NOT EXISTS postgis"))
     Base.metadata.create_all(engine)
+    _assurer_colonne_fiche()
     if engine.dialect.name == "postgresql":
         with engine.begin() as connection:
             connection.execute(
@@ -41,6 +42,19 @@ def init_db() -> None:
                     "ADD COLUMN IF NOT EXISTS geometrie_postgis geometry(Polygon, 4326)"
                 )
             )
+
+
+def _assurer_colonne_fiche() -> None:
+    from sqlalchemy import inspect
+
+    insp = inspect(engine)
+    if "cultures" not in insp.get_table_names():
+        return
+    colonnes = {colonne["name"] for colonne in insp.get_columns("cultures")}
+    if "fiche" in colonnes:
+        return
+    with engine.begin() as connection:
+        connection.execute(text("ALTER TABLE cultures ADD COLUMN fiche JSON"))
 
 
 def postgis_version() -> str | None:

@@ -3,6 +3,8 @@ export type RootStackParamList = {
   Home: undefined;
   Farmer: undefined;
   Buyer: undefined;
+  Cultures: undefined;
+  Fiche: { cultureId: string };
 };
 
 export type FarmerStackParamList = {
