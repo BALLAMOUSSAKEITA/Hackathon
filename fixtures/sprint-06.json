@@ -1,0 +1,42 @@
+{
+  "sprint": 6,
+  "parcelle": {
+    "id": "parcelle-sprint-06",
+    "surface_hectares": 3.69,
+    "sol": "limoneux",
+    "salinite_ec": 1.2,
+    "temperature_moy_c": 24,
+    "eau_saison_m3": 3840
+  },
+  "culture_actuelle": {
+    "id": "tomate",
+    "name": "Tomate",
+    "dt_m3": 0.72,
+    "m3_ha": 6200,
+    "kwh_ha": 2023,
+    "duree_mois": 4,
+    "label": "E"
+  },
+  "cultures": [
+    {"id":"olivier","name":"Olivier","dt_m3":2.42,"m3_ha":1800,"kwh_ha":587,"duree_mois":36,"label":"A","compatible":true,"exclusion":null,"explication":"Prix typique 2,2 TND/kg; efficience 0,9; η 0,5"},
+    {"id":"dattier","name":"Palmier dattier","dt_m3":1.82,"m3_ha":2500,"kwh_ha":816,"duree_mois":48,"label":"B","compatible":true,"exclusion":null,"explication":"Prix typique 5 TND/kg; efficience 0,9; η 0,5"},
+    {"id":"grenadier","name":"Grenadier","dt_m3":1.68,"m3_ha":3800,"kwh_ha":1240,"duree_mois":24,"label":"B","compatible":true,"exclusion":null,"explication":"Prix typique 1,8 TND/kg; efficience 0,9; η 0,5"},
+    {"id":"cables","name":"Câpres","dt_m3":1.54,"m3_ha":2100,"kwh_ha":685,"duree_mois":12,"label":"C","compatible":true,"exclusion":null,"explication":"Prix typique 4 TND/kg; efficience 0,9; η 0,5"},
+    {"id":"figuier_barbarie","name":"Figuier de Barbarie","dt_m3":1.32,"m3_ha":1600,"kwh_ha":522,"duree_mois":18,"label":"C","compatible":true,"exclusion":null,"explication":"Prix typique 1,2 TND/kg; efficience 0,9; η 0,5"},
+    {"id":"orge","name":"Orge","dt_m3":1.15,"m3_ha":1400,"kwh_ha":457,"duree_mois":5,"label":"C","compatible":true,"exclusion":null,"explication":"Prix typique 0,45 TND/kg; efficience 0,6; η 0,5"},
+    {"id":"tomate","name":"Tomate","dt_m3":0.72,"m3_ha":6200,"kwh_ha":2023,"duree_mois":4,"label":"E","compatible":true,"exclusion":null,"explication":"Prix typique 0,9 TND/kg; efficience 0,6; η 0,5"},
+    {"id":"oignon","name":"Oignon","dt_m3":1.05,"m3_ha":4800,"kwh_ha":1567,"duree_mois":5,"label":"D","compatible":true,"exclusion":null,"explication":"Prix typique 0,7 TND/kg; efficience 0,6; η 0,5"},
+    {"id":"pasteque","name":"Pastèque","dt_m3":0.62,"m3_ha":5800,"kwh_ha":1892,"duree_mois":3,"label":"E","compatible":true,"exclusion":null,"explication":"Prix typique 0,55 TND/kg; efficience 0,6; η 0,5"},
+    {"id":"artichaut","name":"Artichaut","dt_m3":0.95,"m3_ha":5100,"kwh_ha":1664,"duree_mois":9,"label":"D","compatible":false,"exclusion":"Sol incompatible","explication":"La culture n'est pas compatible avec le sol limoneux en démonstration"}
+  ],
+  "cultures_intercalaires": [
+    {"id":"pois_chiche","name":"Pois chiche","dt_m3":1.22,"m3_ha":1900,"kwh_ha":620,"duree_mois":5,"label":"C","compatible":true,"exclusion":null,"explication":"Prix typique 2,2 TND/kg; efficience 0,6; η 0,5"}
+  ],
+  "hypotheses": {
+    "efficience_localisee": 0.9,
+    "efficience_gravitaire": 0.6,
+    "pompe_efficiency": 0.5,
+    "currency": "TND",
+    "tri_defaut": "revenu"
+  }
+}

@@ -14,6 +14,7 @@ Socle technique du parcours agriculteur/acheteur pour le hackathon.
 - `fixtures/sprint-03.json` : 15 cultures tunisiennes complètes du Sprint 3.
 - `fixtures/sprint-04.json` : parcelle prétracée, puits, culture et énergie du Sprint 4.
 - `fixtures/sprint-05.json` : sol, climat, eau, énergie et NDVI du Sprint 5.
+- `fixtures/sprint-06.json` : classement des cultures, écarts et exclusions du Sprint 6.
 
 ## Démarrage rapide
 

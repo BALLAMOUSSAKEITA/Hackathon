@@ -44,3 +44,9 @@ PostGIS conformément à `api/alembic/README.md`.
 - `GET /demo/sprint-05` sert l'analyse de démonstration.
 - `POST /parcelles/{id}/analyse` recalcul l'eau disponible et l'énergie
   de pompage. À 60 m avec η = 0,5, le résultat est environ 0,3264 kWh/m³.
+
+## Sprint 6
+
+- `GET /parcelles/{id}/recommandations?tri=revenu`
+- Tri disponible : `revenu`, `eau`, `rapidite`.
+- Les cultures incompatibles sont exclues du classement.

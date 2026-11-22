@@ -18,6 +18,7 @@ SPRINT_2_FIXTURE_PATH = Path(__file__).resolve().parents[2] / "fixtures" / "spri
 SPRINT_3_FIXTURE_PATH = Path(__file__).resolve().parents[2] / "fixtures" / "sprint-03.json"
 SPRINT_4_FIXTURE_PATH = Path(__file__).resolve().parents[2] / "fixtures" / "sprint-04.json"
 SPRINT_5_FIXTURE_PATH = Path(__file__).resolve().parents[2] / "fixtures" / "sprint-05.json"
+SPRINT_6_FIXTURE_PATH = Path(__file__).resolve().parents[2] / "fixtures" / "sprint-06.json"
 ALLOWED_ROLES = {"agriculteur", "acheteur_particulier", "acheteur_professionnel"}
 DEMO_OTP = "123456"
 pending_profiles: dict[str, dict[str, str]] = {}
@@ -148,6 +149,58 @@ def demo_sprint_4() -> dict[str, Any]:
 def demo_sprint_5() -> dict[str, Any]:
     with SPRINT_5_FIXTURE_PATH.open("r", encoding="utf-8") as fixture_file:
         return json.load(fixture_file)
+
+
+@app.get("/demo/sprint-06")
+def demo_sprint_6() -> dict[str, Any]:
+    with SPRINT_6_FIXTURE_PATH.open("r", encoding="utf-8") as fixture_file:
+        return json.load(fixture_file)
+
+
+@app.get("/parcelles/{parcelle_id}/recommandations")
+def recommendations(parcelle_id: str, tri: str = "revenu") -> dict[str, Any]:
+    with SPRINT_6_FIXTURE_PATH.open("r", encoding="utf-8") as fixture_file:
+        fixture = json.load(fixture_file)
+
+    if parcelle_id != fixture["parcelle"]["id"]:
+        raise HTTPException(status_code=404, detail="Parcelle introuvable.")
+
+    if tri not in {"revenu", "eau", "rapidite"}:
+        raise HTTPException(status_code=422, detail="Tri inconnu.")
+
+    compatible = [
+        culture
+        for culture in fixture["cultures"] + fixture["cultures_intercalaires"]
+        if culture["compatible"]
+    ]
+    if tri == "revenu":
+        compatible.sort(key=lambda culture: culture["dt_m3"], reverse=True)
+    elif tri == "eau":
+        compatible.sort(key=lambda culture: culture["m3_ha"])
+    else:
+        compatible.sort(key=lambda culture: culture["duree_mois"])
+
+    return {
+        "parcelle": fixture["parcelle"],
+        "culture_actuelle": fixture["culture_actuelle"],
+        "meilleure_option": compatible[0],
+        "ecart_dt_m3": round(
+            compatible[0]["dt_m3"] - fixture["culture_actuelle"]["dt_m3"],
+            2,
+        ),
+        "tri": tri,
+        "cultures": compatible,
+        "exclusions": [
+            {
+                "id": culture["id"],
+                "name": culture["name"],
+                "raison": culture["exclusion"],
+            }
+            for culture in fixture["cultures"]
+            if not culture["compatible"]
+        ],
+        "hypotheses": fixture["hypotheses"],
+    }
 
 
 @app.post("/parcelles/{parcelle_id}/analyse")

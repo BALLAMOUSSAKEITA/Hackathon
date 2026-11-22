@@ -142,3 +142,36 @@ def test_sprint_five_analysis_60m_pumping_energy() -> None:
 def test_sprint_five_analysis_unknown_parcel() -> None:
     response = client.post("/parcelles/inconnue/analyse")
     assert response.status_code == 404
+
+
+def test_sprint_six_default_ranking_excludes_incompatible_crops() -> None:
+    response = client.get(
+        "/parcelles/parcelle-sprint-06/recommandations",
+        params={"tri": "revenu"},
+    )
+    assert response.status_code == 200
+    payload = response.json()
+    ids = [culture["id"] for culture in payload["cultures"]]
+    assert "artichaut" not in ids
+    assert ids[0] == "olivier"
+    assert payload["ecart_dt_m3"] == 1.7
+
+
+def test_sprint_six_water_sort_changes_order_without_readding_excluded() -> None:
+    response = client.get(
+        "/parcelles/parcelle-sprint-06/recommandations",
+        params={"tri": "eau"},
+    )
+    assert response.status_code == 200
+    payload = response.json()
+    values = [culture["m3_ha"] for culture in payload["cultures"]]
+    assert values == sorted(values)
+    assert "artichaut" not in [culture["id"] for culture in payload["cultures"]]
+
+
+def test_sprint_six_unknown_sort_is_rejected() -> None:
+    response = client.get(
+        "/parcelles/parcelle-sprint-06/recommandations",
+        params={"tri": "inconnu"},
+    )
+    assert response.status_code == 422
