@@ -26,6 +26,7 @@ Socle technique du parcours agriculteur/acheteur pour le hackathon.
 - `fixtures/sprint-15.json` : impact acheteur, fermes, labels et commande gros du Sprint 15.
 - `fixtures/sprint-16.json` : cache hors ligne, file d'envoi et compression du Sprint 16.
 - `fixtures/sprint-17.json` : profil, deux parcelles, plan figé et prix du Sprint 17.
+- `fixtures/sprint-18.json` : labels, modération, pilote et contrôle terrain du Sprint 18.
 
 ## Démarrage rapide
 

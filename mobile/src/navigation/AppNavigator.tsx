@@ -24,6 +24,7 @@ import { SatelliteFollowupScreen } from "../screens/SatelliteFollowupScreen";
 import { BuyerImpactScreen } from "../screens/BuyerImpactScreen";
 import { OfflineScreen } from "../screens/OfflineScreen";
 import { SettingsParcelsScreen } from "../screens/SettingsParcelsScreen";
+import { TrustAndAdminScreen } from "../screens/TrustAndAdminScreen";
 
 export type RootStackParamList = {
   Welcome: undefined;
@@ -48,6 +49,7 @@ export type RootStackParamList = {
   BuyerImpact: undefined;
   Offline: undefined;
   SettingsParcels: undefined;
+  TrustAndAdmin: undefined;
   [key: string]: object | undefined;
 };
 
@@ -75,7 +77,7 @@ const emptyTitles: Record<number, string> = {
 export function AppNavigator() {
   return (
     <Stack.Navigator
-      initialRouteName="SettingsParcels"
+      initialRouteName="TrustAndAdmin"
       screenOptions={{
         headerShown: false,
         contentStyle: { backgroundColor: "#f4f7ef" },
@@ -103,6 +105,7 @@ export function AppNavigator() {
       <Stack.Screen name="BuyerImpact" component={BuyerImpactScreen} />
       <Stack.Screen name="Offline" component={OfflineScreen} />
       <Stack.Screen name="SettingsParcels" component={SettingsParcelsScreen} />
+      <Stack.Screen name="TrustAndAdmin" component={TrustAndAdminScreen} />
       <Stack.Screen
         name="SolarEnergy"
         children={() => <EmptyStateScreen title="Pompe solaire · 60 m" />}

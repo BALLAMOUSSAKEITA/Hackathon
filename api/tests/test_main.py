@@ -517,3 +517,41 @@ def test_sprint_seventeen_frozen_plan_keeps_saved_label() -> None:
     payload = ranking.json()
     assert payload["parcelle"]["plan_fige"] is True
     assert payload["label_plan_adopte"] == "A"
+
+
+def test_sprint_eighteen_two_confirmed_deviations_suspend_label() -> None:
+    suspended = client.post(
+        "/labels/ARDI-LABEL-ACTIF/verify",
+        json={"confirmed_deviations": 2},
+    )
+    assert suspended.status_code == 200
+    assert suspended.json()["status"] == "suspendu"
+    assert suspended.json()["note_public"] is None
+
+    public = client.get("/labels/ARDI-LABEL-SUSP")
+    assert public.status_code == 200
+    assert public.json()["status"] == "suspendu"
+    assert public.json()["note"] is None
+
+
+def test_sprint_eighteen_admin_queue_and_moderation() -> None:
+    queue = client.get("/admin/queue")
+    assert queue.status_code == 200
+    assert queue.json()["count"] == 3
+    assert len(queue.json()["terrain"]) == 4
+
+    removed = client.patch(
+        "/admin/moderation",
+        json={"target": "produit-signale-18", "action": "remove_product"},
+    )
+    assert removed.status_code == 200
+    assert removed.json()["status"] == "applique"
+
+
+def test_sprint_eighteen_pilot_impact_uses_fixture_totals() -> None:
+    response = client.get("/impact/pilote")
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["pilot"]["agriculteurs_min"] == 20
+    assert payload["pilot"]["agriculteurs_max"] == 50
+    assert payload["impact"]["labels_actifs"] == 24

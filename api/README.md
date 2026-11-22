@@ -119,3 +119,10 @@ PostGIS conformément à `api/alembic/README.md`.
 - `PATCH /prix/{culture}` met à jour une fourchette sans redéploiement.
 - `GET /parcelles/{id}/classement-prix` recalcule le classement; un plan figé
   conserve sa lettre enregistrée.
+
+## Sprint 18
+
+- `POST /labels/{qr}/verify` suspend un label après deux écarts confirmés.
+- `GET /labels/{qr}` masque la note publique d'un label suspendu.
+- `GET /admin/queue`, `PATCH /admin/moderation` et `GET /impact/pilote`
+  servent la modération minimale et le tableau du pilote.

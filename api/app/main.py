@@ -38,6 +38,7 @@ SPRINT_14_FIXTURE_PATH = Path(__file__).resolve().parents[2] / "fixtures" / "spr
 SPRINT_15_FIXTURE_PATH = Path(__file__).resolve().parents[2] / "fixtures" / "sprint-15.json"
 SPRINT_16_FIXTURE_PATH = Path(__file__).resolve().parents[2] / "fixtures" / "sprint-16.json"
 SPRINT_17_FIXTURE_PATH = Path(__file__).resolve().parents[2] / "fixtures" / "sprint-17.json"
+SPRINT_18_FIXTURE_PATH = Path(__file__).resolve().parents[2] / "fixtures" / "sprint-18.json"
 ALLOWED_ROLES = {"agriculteur", "acheteur_particulier", "acheteur_professionnel"}
 DEMO_OTP = "123456"
 pending_profiles: dict[str, dict[str, str]] = {}
@@ -396,26 +397,38 @@ def public_label(qr: str) -> dict[str, Any]:
         fixture = json.load(fixture_file)
 
     known_qr = {fixture["ferme"]["qr"], fixture["produit"]["qr"]}
-    if qr not in known_qr:
-        raise HTTPException(status_code=404, detail="QR introuvable.")
+    if qr in known_qr:
+        plan = fixture["plan"]
+        letter = calculate_label(
+            plan["dt_m3"],
+            plan["compatible"],
+            plan["irrigation"] == "localisee",
+            plan["conforme"],
+        )
+        return {
+            "qr": qr,
+            "note": letter,
+            "ferme": fixture["ferme"]["name"],
+            "produit": fixture["produit"]["name"] if qr == fixture["produit"]["qr"] else None,
+            "status": "actif" if fixture["ferme"]["status"] == "actif" else "suspendu",
+            "economie_eau_m3": plan["eau_economisee_m3"],
+            "economie_energie_kwh": plan["energie_economisee_kwh"],
+            "verifications": fixture["verifications"],
+        }
 
-    plan = fixture["plan"]
-    letter = calculate_label(
-        plan["dt_m3"],
-        plan["compatible"],
-        plan["irrigation"] == "localisee",
-        plan["conforme"],
+    with SPRINT_18_FIXTURE_PATH.open("r", encoding="utf-8") as fixture_file:
+        trust_fixture = json.load(fixture_file)
+    label = next(
+        (item for item in trust_fixture["labels"] if item["qr"] == qr),
+        None,
     )
-    return {
-        "qr": qr,
-        "note": letter,
-        "ferme": fixture["ferme"]["name"],
-        "produit": fixture["produit"]["name"] if qr == fixture["produit"]["qr"] else None,
-        "status": "actif" if fixture["ferme"]["status"] == "actif" else "suspendu",
-        "economie_eau_m3": plan["eau_economisee_m3"],
-        "economie_energie_kwh": plan["energie_economisee_kwh"],
-        "verifications": fixture["verifications"],
-    }
+    if label is None:
+        raise HTTPException(status_code=404, detail="QR introuvable.")
+    public = dict(label)
+    if public["status"] == "suspendu":
+        public["note"] = None
+        public["note_public"] = "Label suspendu"
+    return public
 
 
 @app.get("/demo/sprint-09")
@@ -970,6 +983,92 @@ def parcel_price_ranking(parcelle_id: str) -> dict[str, Any]:
         "parcelle": parcel,
         "classement": ranked,
         "label_plan_adopte": frozen_label,
+    }
+
+
+@app.get("/demo/sprint-18")
+def demo_sprint_18() -> dict[str, Any]:
+    with SPRINT_18_FIXTURE_PATH.open("r", encoding="utf-8") as fixture_file:
+        return json.load(fixture_file)
+
+
+@app.get("/labels-trust")
+def label_states() -> dict[str, Any]:
+    with SPRINT_18_FIXTURE_PATH.open("r", encoding="utf-8") as fixture_file:
+        fixture = json.load(fixture_file)
+    return {"labels": fixture["labels"]}
+
+
+@app.post("/labels/{qr}/verify")
+def verify_label(qr: str, payload: dict[str, Any]) -> dict[str, Any]:
+    with SPRINT_18_FIXTURE_PATH.open("r", encoding="utf-8") as fixture_file:
+        fixture = json.load(fixture_file)
+
+    label = next(
+        (item for item in fixture["labels"] if item["qr"] == qr),
+        None,
+    )
+    if label is None:
+        raise HTTPException(status_code=404, detail="QR label introuvable.")
+
+    confirmed_deviations = int(payload.get("confirmed_deviations", 0))
+    if confirmed_deviations >= fixture["hypotheses"]["suspension_after_confirmed_deviations"]:
+        label = dict(label)
+        label["status"] = "suspendu"
+        label["note_public"] = None
+    else:
+        label = dict(label)
+    return label
+
+
+@app.get("/admin/queue")
+def admin_queue() -> dict[str, Any]:
+    with SPRINT_18_FIXTURE_PATH.open("r", encoding="utf-8") as fixture_file:
+        fixture = json.load(fixture_file)
+    return {
+        "count": len(fixture["admin_queue"]),
+        "queue": fixture["admin_queue"],
+        "terrain": fixture["terrain"],
+    }
+
+
+@app.patch("/admin/moderation")
+def moderate(payload: dict[str, Any]) -> dict[str, Any]:
+    target = str(payload.get("target", "")).strip()
+    action = str(payload.get("action", "")).strip()
+    if not target or action not in {"remove_product", "disable_account"}:
+        raise HTTPException(status_code=422, detail="Cible ou action de modération invalide.")
+    return {
+        "target": target,
+        "action": action,
+        "status": "applique",
+    }
+
+
+@app.post("/labels/{qr}/contest")
+def contest_label(qr: str, payload: dict[str, Any]) -> dict[str, Any]:
+    photo = str(payload.get("photo", "")).strip()
+    latitude = payload.get("latitude")
+    longitude = payload.get("longitude")
+    if not photo or latitude is None or longitude is None:
+        raise HTTPException(status_code=422, detail="Photo et géolocalisation requises.")
+    return {
+        "qr": qr,
+        "status": "contestee",
+        "photo": photo,
+        "latitude": latitude,
+        "longitude": longitude,
+    }
+
+
+@app.get("/impact/pilote")
+def pilot_impact() -> dict[str, Any]:
+    with SPRINT_18_FIXTURE_PATH.open("r", encoding="utf-8") as fixture_file:
+        fixture = json.load(fixture_file)
+    return {
+        "pilot": fixture["pilot"],
+        "impact": fixture["impact_pilote"],
+        "terrain": fixture["terrain"],
     }
 
 

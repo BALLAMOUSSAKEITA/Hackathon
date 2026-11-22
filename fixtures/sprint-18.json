@@ -1,0 +1,51 @@
+{
+  "sprint": 18,
+  "labels": [
+    {"qr":"ARDI-LABEL-ACTIF","ferme":"Ferme pilote Ardi","produit":"Huile d'olive","note":"A","status":"actif","color":"green"},
+    {"qr":"ARDI-LABEL-CHECK","ferme":"Ferme El Amen","produit":"Tomates","note":"C","status":"en_verification","color":"orange"},
+    {"qr":"ARDI-LABEL-SUSP","ferme":"Ferme Oasis","produit":"Grenades","note":"A","status":"suspendu","color":"red"},
+    {"qr":"ARDI-LABEL-CONTEST","ferme":"Ferme Sud","produit":"Figuier de Barbarie","note":"B","status":"conteste","color":"purple"}
+  ],
+  "images": [
+    {"id":"image-a","ecart_confirmed":true,"culture":"olivier","irrigation":"conforme"},
+    {"id":"image-b","ecart_confirmed":true,"culture":"olivier","irrigation":"conforme"}
+  ],
+  "admin_queue": [
+    {"id":"review-1","type":"label","target":"ARDI-LABEL-CHECK","message":"Vérification culture à confirmer","status":"a_verifier"},
+    {"id":"review-2","type":"produit","target":"produit-signale-18","message":"Produit signalé par un acheteur","status":"a_verifier"},
+    {"id":"review-3","type":"compte","target":"usr-compromis-18","message":"Compte à modérer","status":"a_verifier"}
+  ],
+  "impact_pilote": {
+    "agriculteurs": 35,
+    "eau_m3": 128000,
+    "energie_kwh": 41800,
+    "revenus_tnd": 215000,
+    "labels_actifs": 24,
+    "labels_suspendus": 6,
+    "labels_contestes": 5
+  },
+  "pilot": {
+    "region": "Sidi Bouzid",
+    "agriculteurs_min": 20,
+    "agriculteurs_max": 50,
+    "seuils": {
+      "A":2.2,
+      "B":1.5,
+      "C":1.1,
+      "D":0.8,
+      "efficience":0.9,
+      "eta":0.5
+    },
+    "note":"Seuils pilotes à calibrer; certification d'État hors périmètre."
+  },
+  "terrain": [
+    "Vérifier la culture déclarée sur place.",
+    "Comparer le système d'arrosage au plan.",
+    "Relever le compteur du puits.",
+    "Photographier avec localisation."
+  ],
+  "hypotheses": {
+    "suspension_after_confirmed_deviations": 2,
+    "public_status_mask": true
+  }
+}
