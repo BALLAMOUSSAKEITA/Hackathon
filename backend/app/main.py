@@ -1,5 +1,7 @@
 import json
 import math
+import re
+import unicodedata
 from concurrent.futures import ThreadPoolExecutor, TimeoutError as FuturesTimeoutError
 from contextlib import asynccontextmanager
 from datetime import datetime, timedelta, timezone
@@ -23,6 +25,7 @@ from .database import Base, engine, get_db
 from . import models
 from .schemas import (
     AnalyseRequest,
+    AssistantRequest,
     OTPRequest,
     OTPResponse,
     OTPVerify,
@@ -291,6 +294,7 @@ async def lifespan(_: FastAPI):
             "sprint-06.json",
             "sprint-07.json",
             "sprint-08.json",
+            "sprint-09.json",
         ):
             fixture = FIXTURES_DIR / fixture_name
             data = json.loads(fixture.read_text(encoding="utf-8"))
@@ -339,7 +343,7 @@ async def lifespan(_: FastAPI):
 app = FastAPI(
     title="Ardi API",
     version="1.0.0",
-    description="API FastAPI Ardi, sprints de demonstration 1 a 8.",
+    description="API FastAPI Ardi, sprints de demonstration 1 a 9.",
     lifespan=lifespan,
 )
 app.add_middleware(
@@ -415,6 +419,88 @@ def sprint_08_fixture() -> dict[str, Any]:
     data["home"]["potential_label_grade"] = data["calculated_labels"]["potential"]
     data["labels"][0]["grade"] = data["calculated_labels"]["current"]
     return data
+
+
+@app.get("/fixture/sprint-09")
+def sprint_09_fixture() -> dict[str, Any]:
+    return json.loads((FIXTURES_DIR / "sprint-09.json").read_text(encoding="utf-8"))
+
+
+def normalize_assistant_question(question: str) -> str:
+    normalized = unicodedata.normalize("NFKD", question.casefold())
+    normalized = "".join(
+        character
+        for character in normalized
+        if not unicodedata.combining(character)
+    )
+    normalized = normalized.translate(
+        str.maketrans({"ى": "ي", "ة": "ه", "ؤ": "و", "ئ": "ي"})
+    )
+    normalized = re.sub(r"[^\w\s]", " ", normalized, flags=re.UNICODE)
+    return " ".join(normalized.split())
+
+
+def match_assistant_question(
+    question: str, fixture: dict[str, Any]
+) -> dict[str, Any] | None:
+    query_tokens = set(normalize_assistant_question(question).split())
+    matches = []
+    for item in fixture["questions"]:
+        longest_match = 0
+        for phrase in item["phrases"]:
+            phrase_tokens = set(normalize_assistant_question(phrase).split())
+            if phrase_tokens and phrase_tokens <= query_tokens:
+                longest_match = max(longest_match, len(phrase_tokens))
+        if longest_match:
+            matches.append((longest_match, item))
+    if not matches:
+        return None
+
+    best_length = max(length for length, _ in matches)
+    best_matches = [item for length, item in matches if length == best_length]
+    return best_matches[0] if len(best_matches) == 1 else None
+
+
+@app.post("/assistant")
+def answer_assistant(payload: AssistantRequest) -> dict[str, Any]:
+    fixture = json.loads((FIXTURES_DIR / "sprint-09.json").read_text(encoding="utf-8"))
+    question = payload.question_text or payload.audio_transcript or ""
+    matched = match_assistant_question(question, fixture)
+    if matched is None:
+        answers = fixture["out_of_scope"]["answer"]
+        answer_text = answers[payload.language]
+        suggested_question = fixture["out_of_scope"]["suggested_question"][
+            payload.language
+        ]
+        question_id = None
+        found = False
+    else:
+        answers = matched["answers"]
+        answer_text = answers[payload.language]
+        suggested_question = None
+        question_id = matched["id"]
+        found = True
+
+    locale = {
+        "darija": "ar-TN",
+        "ar": "ar-TN",
+        "fr": "fr-TN",
+    }[payload.language]
+    return {
+        "found_in_fixture": found,
+        "question_id": question_id,
+        "input_type": "audio_transcript" if payload.audio_transcript else "text",
+        "answer_text": answer_text,
+        "translation_fr": answers["fr"],
+        "suggested_question": suggested_question,
+        "audio": {
+            "status": "client_tts",
+            "locale": locale,
+            "text": answer_text,
+        },
+        "actions": list(fixture["actions"].values()),
+        "source": "sprint-09.json",
+    }
 
 
 @app.post("/auth/otp", response_model=OTPResponse)

@@ -1,4 +1,4 @@
-# Ardi API - Sprints 1 a 8
+# Ardi API - Sprints 1 a 9
 
 API FastAPI pour le socle technique Ardi.
 
@@ -25,6 +25,7 @@ Documentation interactive : `http://127.0.0.1:8000/docs`
 - Fixture sprint 6 : `GET /fixture/sprint-06`
 - Fixture sprint 7 : `GET /fixture/sprint-07`
 - Fixture sprint 8 : `GET /fixture/sprint-08`
+- Fixture sprint 9 : `GET /fixture/sprint-09`
 - Demander un code OTP simulé : `POST /auth/otp`
 - Vérifier le code et créer un utilisateur : `POST /auth/verify`
 - Utilisateurs : `GET /users`, `POST /users`
@@ -33,6 +34,7 @@ Documentation interactive : `http://127.0.0.1:8000/docs`
 - Recommandations de cultures : `GET /parcelles/{parcel_id}/recommandations`
 - Simuler un plan : `POST /parcelles/{parcel_id}/simulation`
 - Adopter un plan : `POST /parcelles/{parcel_id}/plan`
+- Assistant vocal : `POST /assistant`
 - Cultures : `GET /cultures`, `GET /cultures/{culture_id}`
 - Filtrer les cultures par sol : `GET /cultures?soil=sandy`
 - Analyses : `GET /analyses`
@@ -44,7 +46,7 @@ Documentation interactive : `http://127.0.0.1:8000/docs`
 - Alertes : `GET /alertes`
 
 Les données de démonstration sont chargées depuis les fixtures `sprint-01`
-à `sprint-08`. Le sprint 2 fournit les profils agriculteur,
+à `sprint-09`. Le sprint 2 fournit les profils agriculteur,
 acheteur particulier et acheteur professionnel. Le sprint 3 fournit 15 cultures
 avec Kc par stade, rendements, fourchettes de prix, coûts et compatibilité de sol.
 Les valeurs agronomiques et économiques sont indicatives; les sources de prix
@@ -97,6 +99,16 @@ vérifications. Un label suspendu retourne son statut sans exposer de grade.
 Le grade A exige au moins 2,2 DT/m³, une culture compatible, l'irrigation
 localisée et une consommation conforme au plan. Les seuils B à E sont 1,5,
 1,1 et 0,8 DT/m³; un dépassement répété du puits donne E.
+
+Le sprint 9 expose la parcelle, l'analyse, le classement, le plan, les cartes
+d'action et 20 questions/réponses chiffrées dans `GET /fixture/sprint-09`.
+`POST /assistant` reçoit exactement un `question_text` ou un
+`audio_transcript` (transcription fournie par la reconnaissance vocale du
+client), et peut répondre en `darija`, `ar` ou `fr`. Les réponses sont
+déterministes et limitées aux entrées du fichier; hors fichier, l'assistant
+refuse de répondre et propose une question utile. Le champ `audio` contient
+le texte et la locale prêts pour la synthèse vocale de l'appareil; la fixture
+ne prétend pas générer un fichier audio.
 
 Pour la démonstration, `POST /auth/otp` retourne le code fixe `123456`.
 `POST /auth/verify` reçoit `phone`, `code`, `name`, `role` (`farmer`, `buyer`

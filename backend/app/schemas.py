@@ -1,5 +1,5 @@
 from typing import Literal
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 
 class ORMModel(BaseModel):
@@ -49,6 +49,22 @@ class SimulationAllocation(BaseModel):
 
 class SimulationRequest(BaseModel):
     allocations: list[SimulationAllocation] = Field(min_length=1)
+
+
+class AssistantRequest(BaseModel):
+    question_text: str | None = Field(default=None, min_length=1, max_length=500)
+    audio_transcript: str | None = Field(default=None, min_length=1, max_length=500)
+    language: Literal["darija", "ar", "fr"] = "darija"
+
+    @model_validator(mode="after")
+    def require_one_question_source(self):
+        has_text = bool(self.question_text and self.question_text.strip())
+        has_audio_transcript = bool(
+            self.audio_transcript and self.audio_transcript.strip()
+        )
+        if has_text == has_audio_transcript:
+            raise ValueError("Provide either question_text or audio_transcript")
+        return self
 
 
 class ParcelleCreate(ORMModel):

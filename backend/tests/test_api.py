@@ -1,4 +1,5 @@
 import os
+import re
 from uuid import uuid4
 
 os.environ["DATABASE_URL"] = "sqlite:///./test-ardi.db"
@@ -113,6 +114,72 @@ def test_unknown_public_qr_is_not_found():
     with TestClient(app) as client:
         response = client.get("/labels/UNKNOWN-QR")
     assert response.status_code == 404
+
+
+def test_sprint_09_assistant_answers_only_fixture_questions_and_numbers():
+    number_pattern = r"(?<![A-Za-z\u0600-\u06FF])\d+(?:\.\d+)?(?![A-Za-z\u0600-\u06FF])"
+    with TestClient(app) as client:
+        fixture_response = client.get("/fixture/sprint-09")
+        assert fixture_response.status_code == 200
+        fixture = fixture_response.json()
+        source_data = {
+            key: value
+            for key, value in fixture.items()
+            if key not in {"questions", "out_of_scope"}
+        }
+        source_numbers = set(
+            re.findall(number_pattern, str(source_data))
+        )
+
+        assert len(fixture["questions"]) == 20
+        for item in fixture["questions"]:
+            response = client.post(
+                "/assistant",
+                json={"question_text": item["phrases"][0]},
+            )
+            assert response.status_code == 200
+            answer = response.json()
+            assert answer["found_in_fixture"] is True
+            assert answer["question_id"] == item["id"]
+            assert answer["answer_text"] == item["answers"]["darija"]
+            assert answer["translation_fr"] == item["answers"]["fr"]
+            assert answer["audio"]["text"] == answer["answer_text"]
+            answer_numbers = set(
+                re.findall(
+                    number_pattern,
+                    " ".join(item["answers"].values()),
+                )
+            )
+            assert answer_numbers <= source_numbers
+
+
+def test_sprint_09_assistant_supports_audio_transcripts_and_refuses_unknown_data():
+    with TestClient(app) as client:
+        audio_response = client.post(
+            "/assistant",
+            json={
+                "audio_transcript": "qadech revenu olivier m3a orge fel interculture",
+                "language": "fr",
+            },
+        )
+        unknown_response = client.post(
+            "/assistant",
+            json={"question_text": "Donne-moi la meteo de demain"},
+        )
+        invalid_response = client.post("/assistant", json={})
+
+    assert audio_response.status_code == 200
+    assert audio_response.json()["input_type"] == "audio_transcript"
+    assert audio_response.json()["answer_text"].endswith("2.1 DT/m3.")
+    assert audio_response.json()["audio"]["status"] == "client_tts"
+    assert unknown_response.status_code == 200
+    assert unknown_response.json()["found_in_fixture"] is False
+    assert unknown_response.json()["suggested_question"]
+    assert not re.search(
+        r"(?<![A-Za-z\u0600-\u06FF])\d+(?:\.\d+)?(?![A-Za-z\u0600-\u06FF])",
+        unknown_response.json()["answer_text"],
+    )
+    assert invalid_response.status_code == 422
 
 
 def test_sprint_02_fixture_has_all_demo_roles():
