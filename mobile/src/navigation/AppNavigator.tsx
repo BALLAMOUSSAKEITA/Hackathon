@@ -11,6 +11,7 @@ import { RecommendationsScreen } from "../screens/RecommendationsScreen";
 import { SimulatorScreen } from "../screens/SimulatorScreen";
 import { FarmerHomeV2Screen } from "../screens/FarmerHomeV2Screen";
 import { FarmLabelScreen } from "../screens/FarmLabelScreen";
+import { AssistantScreen } from "../screens/AssistantScreen";
 
 export type RootStackParamList = {
   Welcome: undefined;
@@ -23,6 +24,7 @@ export type RootStackParamList = {
   Simulator: undefined;
   FarmerHomeV2: undefined;
   FarmLabel: undefined;
+  Assistant: undefined;
   [key: string]: undefined;
 };
 
@@ -50,7 +52,7 @@ const emptyTitles: Record<number, string> = {
 export function AppNavigator() {
   return (
     <Stack.Navigator
-      initialRouteName="FarmerHomeV2"
+      initialRouteName="Assistant"
       screenOptions={{
         headerShown: false,
         contentStyle: { backgroundColor: "#f4f7ef" },
@@ -65,6 +67,11 @@ export function AppNavigator() {
       <Stack.Screen name="Simulator" component={SimulatorScreen} />
       <Stack.Screen name="FarmerHomeV2" component={FarmerHomeV2Screen} />
       <Stack.Screen name="FarmLabel" component={FarmLabelScreen} />
+      <Stack.Screen name="Assistant" component={AssistantScreen} />
+      <Stack.Screen
+        name="SolarEnergy"
+        children={() => <EmptyStateScreen title="Pompe solaire · 60 m" />}
+      />
       {Object.entries(emptyTitles).map(([number, title]) => (
         <Stack.Screen
           key={number}

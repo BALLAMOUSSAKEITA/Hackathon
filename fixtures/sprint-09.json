@@ -1,0 +1,65 @@
+{
+  "sprint": 9,
+  "parcelle": {
+    "id": "parcelle-sprint-09",
+    "name": "Bloc nord",
+    "surface_hectares": 3.69,
+    "puits_profondeur_m": 60,
+    "debit_m3_h": 12,
+    "culture_actuelle": "Tomate",
+    "meilleure_option": "Olivier",
+    "ecart_dt_m3": 1.70
+  },
+  "analyse": {
+    "eau_disponible_m3": 3840,
+    "kwh_m3": 0.3264,
+    "rain_mm": 180
+  },
+  "classement": [
+    {"name":"Olivier","dt_m3":2.42,"m3_ha":1800,"duree_mois":36},
+    {"name":"Palmier dattier","dt_m3":1.82,"m3_ha":2500,"duree_mois":48},
+    {"name":"Pois chiche","dt_m3":1.22,"m3_ha":1900,"duree_mois":5}
+  ],
+  "plan": {
+    "label": "A",
+    "eau_m3": 6642,
+    "eau_economisee_m3": 16236,
+    "energie_kwh": 2168,
+    "energie_economisee_kwh": 5294
+  },
+  "questions": [
+    {"id":"q01","darija":"Chhal surface mte3i?","fr":"Quelle est la surface de ma parcelle ?","answer":"Surface mte3ek 3.69 ha.","fr_answer":"La surface de votre parcelle est de 3.69 ha.","keywords":["surface","chhal","parcelle"]},
+    {"id":"q02","darija":"Chhal depth el bir?","fr":"Quelle est la profondeur du puits ?","answer":"El bir fiha 60 m.","fr_answer":"Le puits a une profondeur de 60 m.","keywords":["bir","profondeur","depth"]},
+    {"id":"q03","darija":"Chnoua el debit?","fr":"Quel est le débit de la pompe ?","answer":"Debit el pompe 12 m3/h.","fr_answer":"Le débit de la pompe est de 12 m³/h.","keywords":["debit","pompe"]},
+    {"id":"q04","darija":"Chnoua zra3a hedhi?","fr":"Quelle est la culture actuelle ?","answer":"Zra3a hedhi Tomate.","fr_answer":"La culture actuelle est la tomate.","keywords":["zra3a","culture","hedhi"]},
+    {"id":"q05","darija":"Achnoua ahsan choix?","fr":"Quelle est la meilleure culture ?","answer":"Ahsan choix Olivier.","fr_answer":"La meilleure option est l'olivier.","keywords":["ahsan","meilleure","choix","option"]},
+    {"id":"q06","darija":"Chhal el far9?","fr":"Quel est l'écart avec la tomate ?","answer":"El far9 +1.70 DT/m3.","fr_answer":"L'écart est de +1.70 DT/m³.","keywords":["far9","ecart","différence"]},
+    {"id":"q07","darija":"Chhal el ma disponible?","fr":"Quelle quantité d'eau est disponible ?","answer":"Ma disponible 3840 m3.","fr_answer":"La quantité d'eau disponible est de 3840 m³.","keywords":["ma","eau","disponible"]},
+    {"id":"q08","darija":"Chhal kwh l m3?","fr":"Quelle énergie utilise la pompe par m³ ?","answer":"El pompe taklou 0.3264 kWh/m3.","fr_answer":"La pompe utilise 0.3264 kWh/m³.","keywords":["kwh","energie","pompe","m3"]},
+    {"id":"q09","darija":"Chhal el pluie?","fr":"Quelle est la pluie de saison ?","answer":"El pluie 180 mm.","fr_answer":"La pluie de saison est de 180 mm.","keywords":["pluie","rain"]},
+    {"id":"q10","darija":"Chnoua label el plan?","fr":"Quel est le label du plan ?","answer":"El plan label A.","fr_answer":"Le plan porte le label A.","keywords":["label","plan"]},
+    {"id":"q11","darija":"Chhal ma economie?","fr":"Combien d'eau économise le plan ?","answer":"Kammel 16236 m3 d'eau.","fr_answer":"Le plan économise 16236 m³ d'eau.","keywords":["economie","economise","eau"]},
+    {"id":"q12","darija":"Chhal kwh economie?","fr":"Combien d'énergie économise le plan ?","answer":"Economise 5294 kWh.","fr_answer":"Le plan économise 5294 kWh.","keywords":["kwh","energie","econom"]},
+    {"id":"q13","darija":"Chhal DT/m3 l olivier?","fr":"Quel revenu par m³ pour l'olivier ?","answer":"Olivier 2.42 DT/m3.","fr_answer":"L'olivier rapporte 2.42 DT/m³.","keywords":["olivier","dt/m3","revenu"]},
+    {"id":"q14","darija":"Chhal m3 l olivier?","fr":"Combien d'eau par hectare pour l'olivier ?","answer":"Olivier 1800 m3/ha.","fr_answer":"L'olivier nécessite 1800 m³/ha.","keywords":["olivier","m3/ha","eau"]},
+    {"id":"q15","darija":"Chhal yom l olivier?","fr":"Quand l'olivier produit-il ?","answer":"Olivier 36 mois.","fr_answer":"L'olivier produit après 36 mois.","keywords":["olivier","mois","temps"]},
+    {"id":"q16","darija":"Chnoua thani tri?","fr":"Quelle est la deuxième culture ?","answer":"Thani Palmier dattier.","fr_answer":"La deuxième culture est le palmier dattier.","keywords":["thani","deuxieme","dattier"]},
+    {"id":"q17","darija":"Chhal DT/m3 dattier?","fr":"Quel revenu par m³ pour le dattier ?","answer":"Dattier 1.82 DT/m3.","fr_answer":"Le palmier dattier rapporte 1.82 DT/m³.","keywords":["dattier","dt/m3","revenu"]},
+    {"id":"q18","darija":"Chnoua culture intercalaires?","fr":"Quelle culture intercalaire est proposée ?","answer":"Culture intercalaire Pois chiche b 1.22 DT/m3.","fr_answer":"La culture intercalaire proposée est le pois chiche à 1.22 DT/m³.","keywords":["intercalaires","intercalaire","pois"]},
+    {"id":"q19","darija":"Chhal pois chiche m3?","fr":"Combien d'eau pour le pois chiche ?","answer":"Pois chiche 1900 m3/ha.","fr_answer":"Le pois chiche nécessite 1900 m³/ha.","keywords":["pois","m3/ha","eau"]},
+    {"id":"q20","darija":"Chhal label el ferme?","fr":"Quel est le label actuel de la ferme ?","answer":"El ferme labetha A.","fr_answer":"Le label actuel de la ferme est A.","keywords":["ferme","label","aktuel"]}
+  ],
+  "out_of_scope": {
+    "answer": "Ma3andich hadha el ma3louma. Nejmou nswerouk 3la surface, el bir, el ma, el label, aw el classement.",
+    "fr_answer": "Je ne dispose pas de cette information. Je peux répondre sur la surface, le puits, l'eau, le label ou le classement."
+  },
+  "actions": [
+    {"id":"simulateur","title":"Simulateur","subtitle":"Plan · 3.69 ha · puits 3840 m3","route":"Simulator"},
+    {"id":"solaire","title":"Pompe solaire","subtitle":"60 m · 0.3264 kWh/m3","route":"SolarEnergy"}
+  ],
+  "hypotheses": {
+    "currency": "TND",
+    "well_efficiency": 0.5,
+    "source": "fixture sprint-09"
+  }
+}

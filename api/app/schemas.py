@@ -46,3 +46,8 @@ class OTPVerify(BaseModel):
 
 class SimulationRequest(BaseModel):
     allocations: dict[str, float]
+
+
+class AssistantRequest(BaseModel):
+    question: str = Field(min_length=1)
+    audio: bool = False

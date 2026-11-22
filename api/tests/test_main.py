@@ -244,3 +244,26 @@ def test_sprint_eight_public_farm_and_product_qr() -> None:
     product = client.get("/labels/ARDI-PRODUCT-001")
     assert product.status_code == 200
     assert product.json()["produit"] == "Huile d'olive Ardi"
+
+
+def test_sprint_nine_all_demo_questions_match_fixture_answers() -> None:
+    fixture = client.get("/demo/sprint-09")
+    assert fixture.status_code == 200
+    questions = fixture.json()["questions"]
+    for question in questions:
+        response = client.post("/assistant", json={"question": question["darija"], "audio": True})
+        assert response.status_code == 200
+        payload = response.json()
+        assert payload["in_scope"] is True
+        assert payload["text"] == question["answer"]
+
+
+def test_sprint_nine_out_of_scope_question_is_refused() -> None:
+    response = client.post(
+        "/assistant",
+        json={"question": "Quelle est la météo sur Mars ?", "audio": False},
+    )
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["in_scope"] is False
+    assert payload["actions"] == []

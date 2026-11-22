@@ -10,7 +10,14 @@ from sqlalchemy.orm import Session
 
 from .database import Base, SessionLocal, engine, get_db
 from .models import Parcelle, Utilisateur
-from .schemas import OTPRequest, OTPVerify, ParcelleCreate, ParcelleResponse, SimulationRequest
+from .schemas import (
+    AssistantRequest,
+    OTPRequest,
+    OTPVerify,
+    ParcelleCreate,
+    ParcelleResponse,
+    SimulationRequest,
+)
 
 
 FIXTURE_PATH = Path(__file__).resolve().parents[2] / "fixtures" / "sprint-01.json"
@@ -21,6 +28,7 @@ SPRINT_5_FIXTURE_PATH = Path(__file__).resolve().parents[2] / "fixtures" / "spri
 SPRINT_6_FIXTURE_PATH = Path(__file__).resolve().parents[2] / "fixtures" / "sprint-06.json"
 SPRINT_7_FIXTURE_PATH = Path(__file__).resolve().parents[2] / "fixtures" / "sprint-07.json"
 SPRINT_8_FIXTURE_PATH = Path(__file__).resolve().parents[2] / "fixtures" / "sprint-08.json"
+SPRINT_9_FIXTURE_PATH = Path(__file__).resolve().parents[2] / "fixtures" / "sprint-09.json"
 ALLOWED_ROLES = {"agriculteur", "acheteur_particulier", "acheteur_professionnel"}
 DEMO_OTP = "123456"
 pending_profiles: dict[str, dict[str, str]] = {}
@@ -396,6 +404,74 @@ def public_label(qr: str) -> dict[str, Any]:
         "economie_eau_m3": plan["eau_economisee_m3"],
         "economie_energie_kwh": plan["energie_economisee_kwh"],
         "verifications": fixture["verifications"],
+    }
+
+
+@app.get("/demo/sprint-09")
+def demo_sprint_9() -> dict[str, Any]:
+    with SPRINT_9_FIXTURE_PATH.open("r", encoding="utf-8") as fixture_file:
+        return json.load(fixture_file)
+
+
+def normalize_question(value: str) -> str:
+    return " ".join(value.lower().replace("?", "").replace("/", " ").split())
+
+
+@app.post("/assistant")
+def assistant(payload: AssistantRequest) -> dict[str, Any]:
+    with SPRINT_9_FIXTURE_PATH.open("r", encoding="utf-8") as fixture_file:
+        fixture = json.load(fixture_file)
+
+    question = normalize_question(payload.question)
+    matched = None
+    scope_terms = (
+        "surface", "parcelle", "puits", "bir", "debit", "pompe",
+        "zra3a", "culture", "choix", "option", "ecart", "far9",
+        " eau", "eau ", "ma disponible", "kwh", "energie", "pluie", "rain", "label",
+        "economie", "olivier", "dattier", "intercalaire", "pois",
+        "ferme", "m3", "dt", "thani", "deuxieme",
+    )
+    question_in_scope = any(term in f" {question} " for term in scope_terms)
+    if question_in_scope:
+        exact_matches = [
+            item
+            for item in fixture["questions"]
+            if normalize_question(item["darija"]) == question
+            or normalize_question(item["fr"]) == question
+        ]
+        if exact_matches:
+            matched = exact_matches[0]
+        else:
+            ranked: list[tuple[int, dict[str, Any]]] = []
+            for item in fixture["questions"]:
+                keyword_count = sum(
+                    1
+                    for keyword in item["keywords"]
+                    if keyword.lower() in question
+                )
+                if keyword_count:
+                    ranked.append((keyword_count, item))
+            if ranked:
+                ranked.sort(key=lambda pair: pair[0], reverse=True)
+                matched = ranked[0][1]
+
+    if matched is None:
+        return {
+            "text": fixture["out_of_scope"]["answer"],
+            "translation_fr": fixture["out_of_scope"]["fr_answer"],
+            "audio": matched is not None and payload.audio,
+            "actions": [],
+            "in_scope": False,
+        }
+
+    actions = fixture["actions"]
+    return {
+        "text": matched["answer"],
+        "translation_fr": matched["fr_answer"],
+        "audio": payload.audio,
+        "actions": actions,
+        "in_scope": True,
+        "question_id": matched["id"],
     }
 
 

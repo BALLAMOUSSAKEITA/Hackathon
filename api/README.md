@@ -63,3 +63,9 @@ PostGIS conformément à `api/alembic/README.md`.
 - `POST /labels/calculate` calcule la lettre A–E selon le DT/m³, la compatibilité,
   l'irrigation localisée et la conformité.
 - `GET /labels/{qr}` expose la fiche publique d'une ferme ou d'un produit.
+
+## Sprint 9
+
+- `POST /assistant` répond depuis les 20 questions du Sprint 9.
+- Les questions hors périmètre sont refusées avec une proposition utile.
+- `GET /demo/sprint-09` sert les questions, actions et chiffres visibles.
