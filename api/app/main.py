@@ -16,6 +16,7 @@ from .schemas import OTPRequest, OTPVerify, ParcelleCreate, ParcelleResponse
 FIXTURE_PATH = Path(__file__).resolve().parents[2] / "fixtures" / "sprint-01.json"
 SPRINT_2_FIXTURE_PATH = Path(__file__).resolve().parents[2] / "fixtures" / "sprint-02.json"
 SPRINT_3_FIXTURE_PATH = Path(__file__).resolve().parents[2] / "fixtures" / "sprint-03.json"
+SPRINT_4_FIXTURE_PATH = Path(__file__).resolve().parents[2] / "fixtures" / "sprint-04.json"
 ALLOWED_ROLES = {"agriculteur", "acheteur_particulier", "acheteur_professionnel"}
 DEMO_OTP = "123456"
 pending_profiles: dict[str, dict[str, str]] = {}
@@ -134,6 +135,12 @@ def list_cultures(sol: str | None = None) -> dict[str, Any]:
         "cultures": cultures,
         "count": len(cultures),
     }
+
+
+@app.get("/demo/sprint-04")
+def demo_sprint_4() -> dict[str, Any]:
+    with SPRINT_4_FIXTURE_PATH.open("r", encoding="utf-8") as fixture_file:
+        return json.load(fixture_file)
 
 
 @app.post("/auth/otp", status_code=200)

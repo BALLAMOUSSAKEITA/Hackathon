@@ -5,12 +5,14 @@ import { WelcomeScreen } from "../screens/WelcomeScreen";
 import { EmptyStateScreen } from "../screens/EmptyStateScreen";
 import { FarmerHomeScreen } from "../screens/FarmerHomeScreen";
 import { CulturesScreen } from "../screens/CulturesScreen";
+import { ParcelScreen } from "../screens/ParcelScreen";
 
 export type RootStackParamList = {
   Welcome: undefined;
   FarmerHome: undefined;
   BuyerMarket: undefined;
   Cultures: undefined;
+  Parcel: undefined;
   [key: string]: undefined;
 };
 
@@ -38,7 +40,7 @@ const emptyTitles: Record<number, string> = {
 export function AppNavigator() {
   return (
     <Stack.Navigator
-      initialRouteName="Cultures"
+      initialRouteName="Parcel"
       screenOptions={{
         headerShown: false,
         contentStyle: { backgroundColor: "#f4f7ef" },
@@ -47,6 +49,7 @@ export function AppNavigator() {
       <Stack.Screen name="Welcome" component={WelcomeScreen} />
       <Stack.Screen name="FarmerHome" component={FarmerHomeScreen} />
       <Stack.Screen name="Cultures" component={CulturesScreen} />
+      <Stack.Screen name="Parcel" component={ParcelScreen} />
       {Object.entries(emptyTitles).map(([number, title]) => (
         <Stack.Screen
           key={number}

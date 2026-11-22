@@ -12,6 +12,7 @@ Socle technique du parcours agriculteur/acheteur pour le hackathon.
 - `docs/scenario-demo.md` : scénario de pitch en huit étapes.
 - `fixtures/sprint-02.json` : profils, OTP démo et traductions du Sprint 2.
 - `fixtures/sprint-03.json` : 15 cultures tunisiennes complètes du Sprint 3.
+- `fixtures/sprint-04.json` : parcelle prétracée, puits, culture et énergie du Sprint 4.
 
 ## Démarrage rapide
 

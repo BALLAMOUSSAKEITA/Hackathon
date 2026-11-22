@@ -17,3 +17,9 @@ Le bouton ouvre la ferme de démonstration chargée depuis
 L'écran de bienvenue propose le français, l'arabe RTL, la darija et les trois
 profils du fichier `../fixtures/sprint-02.json`. La langue et le profil sont
 sauvegardés avec AsyncStorage.
+
+## Sprint 4
+
+L'écran Ouvre directement la parcelle prétracée du Sprint 4 sur une carte
+`react-native-maps`. Le bouton du jeu préchargé restaure le polygone, puis
+les champs eau, puits, culture et énergie peuvent être enregistrés hors ligne.

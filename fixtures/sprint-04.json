@@ -1,0 +1,71 @@
+{
+  "sprint": 4,
+  "parcelle": {
+    "id": "parcelle-sprint-04",
+    "owner_id": "usr-demo",
+    "name": "Bloc nord — jeu de démo",
+    "geometry": {
+      "type": "Polygon",
+      "coordinates": [
+        [
+          [10.165, 36.806],
+          [10.166, 36.806],
+          [10.166, 36.802277],
+          [10.165, 36.802277],
+          [10.165, 36.806]
+        ]
+      ]
+    },
+    "surface_hectares": 3.69,
+    "water_source": "puits",
+    "well_depth_m": 60,
+    "pump_flow_m3_h": 12,
+    "current_crop": "tomate",
+    "energy": "solaire"
+  },
+  "well": {
+    "id": "puits-sprint-04",
+    "depth_m": 60,
+    "flow_m3_h": 12,
+    "pump_efficiency": 0.5
+  },
+  "translations": {
+    "fr": {
+      "title": "Ma parcelle",
+      "surface": "Surface",
+      "water": "Source d'eau",
+      "depth": "Profondeur du puits",
+      "flow": "Débit de la pompe",
+      "crop": "Culture actuelle",
+      "energy": "Énergie",
+      "save": "Enregistrer la parcelle"
+    },
+    "ar": {
+      "title": "قطعة أرضي",
+      "surface": "المساحة",
+      "water": "مصدر الماء",
+      "depth": "عمق البئر",
+      "flow": "تصريف المضخة",
+      "crop": "المحصول الحالي",
+      "energy": "الطاقة",
+      "save": "تسجيل القطعة"
+    },
+    "darija": {
+      "title": "Parcelle mte3i",
+      "surface": "Surface",
+      "water": "Masdar el ma",
+      "depth": "Loum9 el bir",
+      "flow": "Debit el pompe",
+      "crop": "Zra3a hedhi",
+      "energy": "Taqa",
+      "save": "Sajjel el parcelle"
+    }
+  },
+  "hypotheses": {
+    "currency": "TND",
+    "area_unit": "ha",
+    "depth_unit": "m",
+    "flow_unit": "m3/h",
+    "photo_optional": true
+  }
+}

@@ -107,3 +107,25 @@ def test_sprint_three_filters_by_compatible_soil() -> None:
     payload = response.json()
     assert payload["count"] > 0
     assert all("argileux" in culture["soils"] for culture in payload["cultures"])
+
+
+def test_sprint_four_fixture_and_api_surface_are_consistent() -> None:
+    fixture = client.get("/demo/sprint-04")
+    assert fixture.status_code == 200
+    parcel = fixture.json()["parcelle"]
+
+    response = client.post(
+        "/parcelles",
+        json={
+            "owner_id": parcel["owner_id"],
+            "name": parcel["name"],
+            "geometry": parcel["geometry"],
+            "water_source": parcel["water_source"],
+            "well_depth_m": parcel["well_depth_m"],
+            "pump_flow_m3_h": parcel["pump_flow_m3_h"],
+            "current_crop": parcel["current_crop"],
+            "energy": parcel["energy"],
+        },
+    )
+    assert response.status_code == 201
+    assert response.json()["surface_hectares"] == parcel["surface_hectares"]

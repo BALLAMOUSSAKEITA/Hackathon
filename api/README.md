@@ -32,3 +32,9 @@ PostGIS conformément à `api/alembic/README.md`.
 - `GET /cultures` retourne les 15 cultures avec noms, Kc, rendement, prix,
   coûts, sols, tolérances et durée.
 - `GET /cultures?sol=argileux` filtre les cultures compatibles avec le sol.
+
+## Sprint 4
+
+- `GET /demo/sprint-04` sert la parcelle prétracée.
+- `POST /parcelles` calcule la surface côté serveur et rejette les polygones
+  ouverts ou d'aire nulle.
