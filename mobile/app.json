@@ -1,0 +1,41 @@
+{
+  "expo": {
+    "name": "Ardi",
+    "slug": "ardi",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#f5f4ef",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "predictiveBackGestureEnabled": false
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "expo-font",
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Ardi utilise la caméra pour scanner le QR code des produits labellisés."
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Ardi utilise tes photos pour affiner l'analyse du sol.",
+          "cameraPermission": "Ardi utilise la caméra pour photographier ton sol ou ta parcelle."
+        }
+      ]
+    ]
+  }
+}

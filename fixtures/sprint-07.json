@@ -1,0 +1,65 @@
+{
+  "hypothese": {
+    "fr": "Exemple : parcelle 2,4 ha, puits limité à 10 000 m³. Les revenus par hectare sont ceux du classement, avant un nouveau prix.",
+    "ar": "مثال : قطعة 2,4 هك، بئر محدود بـ 10 000 م³.",
+    "darija": "Exemple : parcelle 2,4 ha, bir 7addou 10000 m³."
+  },
+  "parcelle_id": "parc-07",
+  "surface_ha": 2.4,
+  "capacite_puits_m3": 10000,
+  "kwh_m3": 0.33,
+  "actuel": {
+    "revenu_dt": 4000,
+    "eau_m3": 14400,
+    "energie_kwh": 4752,
+    "dt_m3": 0.28,
+    "label": "E",
+    "nom": {
+      "fr": "Tomate",
+      "ar": "طماطم",
+      "darija": "Tmatem"
+    }
+  },
+  "cultures": [
+    {
+      "id": "capres",
+      "nom": {
+        "fr": "Câpres",
+        "ar": "كبّار",
+        "darija": "Kebbar"
+      },
+      "eau_m3_ha": 2500,
+      "revenu_dt_ha": 13070
+    },
+    {
+      "id": "figuier_barbarie",
+      "nom": {
+        "fr": "Figuier de Barbarie",
+        "ar": "هندي",
+        "darija": "Hindi"
+      },
+      "eau_m3_ha": 1500,
+      "revenu_dt_ha": 6902
+    },
+    {
+      "id": "olivier",
+      "nom": {
+        "fr": "Olivier",
+        "ar": "زيتون",
+        "darija": "Zitoun"
+      },
+      "eau_m3_ha": 3500,
+      "revenu_dt_ha": 7738
+    },
+    {
+      "id": "palmier_dattier",
+      "nom": {
+        "fr": "Palmier dattier",
+        "ar": "نخيل",
+        "darija": "Nkhel"
+      },
+      "eau_m3_ha": 12000,
+      "revenu_dt_ha": 14800
+    }
+  ]
+}

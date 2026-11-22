@@ -1,0 +1,54 @@
+{
+  "hypothese": {
+    "fr": "Paiement simulé. Aucun numéro de carte n'est gardé. Le QR de démo ouvre les câpres.",
+    "ar": "دفع تجريبي. لا يُحفظ رقم البطاقة. رمز العرض يفتح الكبّار.",
+    "darija": "Khlass simulé. Ma n7abbsouch numero carte. QR demo yot7el Kebbar."
+  },
+  "qr_demo": "ardi-kebbar-01",
+  "produits": [
+    {
+      "id": "kebbar-01",
+      "qr": "ardi-kebbar-01",
+      "nom": {
+        "fr": "Câpres",
+        "ar": "كبّار",
+        "darija": "Kebbar"
+      },
+      "prix": 12.0,
+      "unite": "kg",
+      "label": "A",
+      "categorie": "condiment",
+      "region": "Sidi Bouzid",
+      "ferme": "Ferme Ben Ali",
+      "eau_m3_kg": 0.25,
+      "kwh_kg": 0.08,
+      "histoire": {
+        "fr": "Câpres cultivées sur un puits de 60 m, label A.",
+        "ar": "كبّار مزروع على بئر 60 م، علامة A.",
+        "darija": "Kebbar mazrou3 3al bir 60 m, label A."
+      }
+    },
+    {
+      "id": "zitoun-01",
+      "qr": "ardi-zitoun-01",
+      "nom": {
+        "fr": "Olivier",
+        "ar": "زيتون",
+        "darija": "Zitoun"
+      },
+      "prix": 4.0,
+      "unite": "kg",
+      "label": "B",
+      "categorie": "huile",
+      "region": "Sfax",
+      "ferme": "Ferme Trabelsi",
+      "eau_m3_kg": 1.4,
+      "kwh_kg": 0.46,
+      "histoire": {
+        "fr": "Olives d'une parcelle en irrigation localisée.",
+        "ar": "زيتون قطعة بري موضعي.",
+        "darija": "Zitoun parcelle b ray mawdo3i."
+      }
+    }
+  ]
+}

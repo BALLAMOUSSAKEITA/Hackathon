@@ -1,0 +1,49 @@
+{
+  "hypothese": {
+    "fr": "Une fois ce fichier lu, l'écran reste affiché sans réseau. La localisation demande un accord.",
+    "ar": "بعد قراءة هذا الملف تبقى الشاشة دون شبكة. الموقع يطلب موافقة.",
+    "darija": "Ki yet9ra el fichier, el ecran yeb9a bla reseau. El position testa7e9 accord."
+  },
+  "analyse": {
+    "texture": {
+      "fr": "sableux",
+      "ar": "رملي",
+      "darija": "ramli"
+    },
+    "kwh_m3": 0.33,
+    "source": "formule 0,00272 × H / η"
+  },
+  "classement": [
+    {
+      "nom": {
+        "fr": "Câpres",
+        "ar": "كبّار",
+        "darija": "Kebbar"
+      },
+      "dt_m3": 4.71
+    },
+    {
+      "nom": {
+        "fr": "Figuier de Barbarie",
+        "ar": "هندي",
+        "darija": "Hindi"
+      },
+      "dt_m3": 4.14
+    }
+  ],
+  "parcelle_a_envoyer": {
+    "id": "parc-16",
+    "nom": "Parcelle du puits",
+    "surface_ha": 2.4
+  },
+  "photo": {
+    "nom": "sol-demo.jpg",
+    "octets": 1200,
+    "octets_compresses": 400
+  },
+  "consentement": {
+    "fr": "J'accepte d'enregistrer la position de la parcelle.",
+    "ar": "أوافق على تسجيل موقع القطعة.",
+    "darija": "N9bel nsejjlou el position mta3 el parcelle."
+  }
+}

@@ -1,0 +1,12 @@
+# Base prévue pour Ardi. Lancement local :
+#   docker compose up -d
+#   set DATABASE_URL=postgresql+psycopg://ardi:ardi@localhost:5432/ardi
+services:
+  db:
+    image: postgis/postgis:16-3.4
+    environment:
+      POSTGRES_USER: ardi
+      POSTGRES_PASSWORD: ardi
+      POSTGRES_DB: ardi
+    ports:
+      - "5432:5432"

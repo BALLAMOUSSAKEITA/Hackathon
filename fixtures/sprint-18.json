@@ -1,0 +1,102 @@
+{
+  "hypothese": {
+    "fr": "Un écart confirmé deux fois suspend le label. La fiche publique ne montre plus un A suspendu. Les seuils du pilote restent à calibrer.",
+    "ar": "فرق مؤكد مرتين يعلق العلامة. البطاقة العامة لا تعرض A معلقا. عتبات التجربة ما زالت للضبط.",
+    "darija": "Far9 mwakked zouz marret ywaqef el label. El fiche publique ma twarich A mwaqqef. El seuils teb9a lel calibrage."
+  },
+  "pilote": {
+    "lieu": "Sidi Bouzid",
+    "agriculteurs": "20 à 50"
+  },
+  "seuils_a_calibrer": [
+    "A 2,2 DT/m³",
+    "B 1,5",
+    "C 1,1",
+    "D 0,8",
+    "efficience 0,9",
+    "η 0,5"
+  ],
+  "labels": [
+    {
+      "qr": "ardi-actif",
+      "note": "A",
+      "statut": "actif",
+      "ferme": "Ferme Ben Ali",
+      "produit": {
+        "fr": "Câpres",
+        "ar": "كبّار",
+        "darija": "Kebbar"
+      }
+    },
+    {
+      "qr": "ardi-verification",
+      "note": "B",
+      "statut": "en_verification",
+      "ferme": "Ferme Ben Ali",
+      "produit": {
+        "fr": "Olivier",
+        "ar": "زيتون",
+        "darija": "Zitoun"
+      }
+    },
+    {
+      "qr": "ardi-suspendu",
+      "note": "A",
+      "statut": "suspendu",
+      "ferme": "Ferme Ouled",
+      "produit": {
+        "fr": "Tomate",
+        "ar": "طماطم",
+        "darija": "Tmatem"
+      }
+    },
+    {
+      "qr": "ardi-conteste",
+      "note": "C",
+      "statut": "conteste",
+      "ferme": "Ferme Said",
+      "produit": {
+        "fr": "Figuier de Barbarie",
+        "ar": "هندي",
+        "darija": "Hindi"
+      }
+    }
+  ],
+  "images": [
+    {
+      "ndvi_declare": "tomate",
+      "ndvi_observe": "olivier"
+    },
+    {
+      "humidite": "basse",
+      "plan": "sobre"
+    }
+  ],
+  "file": [
+    {
+      "type": "label",
+      "id": "ardi-suspendu"
+    },
+    {
+      "type": "produit",
+      "id": "prod-signale"
+    },
+    {
+      "type": "compte",
+      "id": "usr-a-moderer"
+    }
+  ],
+  "terrain": {
+    "fr": "L'équipe vérifie à la main la culture et l'irrigation tant que la visite n'est pas dans l'application.",
+    "ar": "الفريق يتحقق يدويا من الزراعة والري ما دامت الزيارة غير موجودة في التطبيق.",
+    "darija": "El equipe tchouf b yedha el culture w el ray ma dam el visite machi fel app."
+  },
+  "impact": {
+    "eau_m3": 12000,
+    "energie_kwh": 4000,
+    "revenu_dt": 18000,
+    "actifs": 1,
+    "suspendus": 1,
+    "contestes": 1
+  }
+}

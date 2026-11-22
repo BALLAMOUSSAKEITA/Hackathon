@@ -1,0 +1,38 @@
+{
+  "code_sms": "0000",
+  "profils": [
+    {
+      "id": "usr-demo",
+      "nom": "Hedi Ben Ali",
+      "telephone": "+21620000001",
+      "role": "agriculteur",
+      "libelle": {
+        "fr": "Agriculteur",
+        "ar": "فلاح",
+        "darija": "Fellah"
+      }
+    },
+    {
+      "id": "usr-acheteur",
+      "nom": "Amira Trabelsi",
+      "telephone": "+21620000002",
+      "role": "acheteur",
+      "libelle": {
+        "fr": "Acheteur particulier",
+        "ar": "مشترية",
+        "darija": "Charia"
+      }
+    },
+    {
+      "id": "usr-pro",
+      "nom": "Épicerie El Baraka",
+      "telephone": "+21620000003",
+      "role": "professionnel",
+      "libelle": {
+        "fr": "Acheteur professionnel",
+        "ar": "مشتري مهني",
+        "darija": "Chari pro"
+      }
+    }
+  ]
+}

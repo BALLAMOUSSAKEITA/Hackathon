@@ -1,0 +1,81 @@
+import os
+import pathlib
+from contextlib import asynccontextmanager
+
+from fastapi import FastAPI
+
+# Charge api/.env sans dépendance externe.
+_env = pathlib.Path(__file__).parent.parent / ".env"
+if _env.exists():
+    for _line in _env.read_text(encoding="utf-8").splitlines():
+        _line = _line.strip()
+        if _line and not _line.startswith("#") and "=" in _line:
+            _k, _v = _line.split("=", 1)
+            os.environ.setdefault(_k.strip(), _v.strip())
+from fastapi.middleware.cors import CORSMiddleware
+from sqlalchemy import func, select
+
+from app.analyse import router as analyse_router
+from app.auth import router as auth_router
+from app.contrat import CONTRAT
+from app.cultures import router as cultures_router
+from app.database import SessionLocal, engine, init_db, load_fixture, postgis_version
+from app.parcelles import router as parcelles_router
+from app.recommandations import router as recommandations_router
+from app.models import Label, Parcelle, Produit, Utilisateur
+from app.seed import seed_cultures, seed_demo
+from app.suite import router as suite_router
+
+
+@asynccontextmanager
+async def lifespan(_app: FastAPI):
+    init_db()
+    with SessionLocal() as session:
+        seed_demo(session)
+        seed_cultures(session)
+    yield
+
+
+app = FastAPI(title="Ardi", version="0.1.0", lifespan=lifespan)
+app.include_router(auth_router)
+app.include_router(cultures_router)
+app.include_router(parcelles_router)
+app.include_router(analyse_router)
+app.include_router(recommandations_router)
+app.include_router(suite_router)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+
+@app.get("/health")
+def health() -> dict:
+    fixture = load_fixture()
+    with SessionLocal() as session:
+        counts = {
+            "utilisateurs": session.scalar(select(func.count()).select_from(Utilisateur)) or 0,
+            "parcelles": session.scalar(select(func.count()).select_from(Parcelle)) or 0,
+            "labels": session.scalar(select(func.count()).select_from(Label)) or 0,
+            "produits": session.scalar(select(func.count()).select_from(Produit)) or 0,
+        }
+    return {
+        "statut": "ok",
+        "base": engine.dialect.name,
+        "postgis": postgis_version(),
+        "ferme": fixture["ferme"]["nom"],
+        "fixture": "fixtures/sprint-01.json",
+        "enregistrements": counts,
+    }
+
+
+@app.get("/demo")
+def demo() -> dict:
+    return load_fixture()
+
+
+@app.get("/contrat")
+def contrat() -> dict:
+    return CONTRAT
