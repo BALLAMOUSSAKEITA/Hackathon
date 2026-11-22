@@ -37,6 +37,7 @@ SPRINT_13_FIXTURE_PATH = Path(__file__).resolve().parents[2] / "fixtures" / "spr
 SPRINT_14_FIXTURE_PATH = Path(__file__).resolve().parents[2] / "fixtures" / "sprint-14.json"
 SPRINT_15_FIXTURE_PATH = Path(__file__).resolve().parents[2] / "fixtures" / "sprint-15.json"
 SPRINT_16_FIXTURE_PATH = Path(__file__).resolve().parents[2] / "fixtures" / "sprint-16.json"
+SPRINT_17_FIXTURE_PATH = Path(__file__).resolve().parents[2] / "fixtures" / "sprint-17.json"
 ALLOWED_ROLES = {"agriculteur", "acheteur_particulier", "acheteur_professionnel"}
 DEMO_OTP = "123456"
 pending_profiles: dict[str, dict[str, str]] = {}
@@ -872,6 +873,104 @@ def send_queued_parcel(parcel_id: str) -> dict[str, Any]:
         raise HTTPException(status_code=404, detail="Parcelle absente de la file.")
     parcel["status"] = "envoyee"
     return parcel
+
+
+@app.get("/demo/sprint-17")
+def demo_sprint_17() -> dict[str, Any]:
+    with SPRINT_17_FIXTURE_PATH.open("r", encoding="utf-8") as fixture_file:
+        return json.load(fixture_file)
+
+
+@app.get("/agriculteurs/{owner_id}/parcelles")
+def owner_parcels(owner_id: str) -> dict[str, Any]:
+    with SPRINT_17_FIXTURE_PATH.open("r", encoding="utf-8") as fixture_file:
+        fixture = json.load(fixture_file)
+
+    if owner_id != fixture["profil"]["id"]:
+        raise HTTPException(status_code=404, detail="Agriculteur introuvable.")
+    parcels = [
+        parcel
+        for parcel in fixture["parcelles"]
+        if parcel["owner_id"] == owner_id
+    ]
+    return {"owner_id": owner_id, "count": len(parcels), "parcelles": parcels}
+
+
+current_prices: dict[str, dict[str, Any]] = {}
+
+
+@app.get("/prix")
+def list_prices() -> dict[str, Any]:
+    with SPRINT_17_FIXTURE_PATH.open("r", encoding="utf-8") as fixture_file:
+        fixture = json.load(fixture_file)
+    prices = [dict(current_prices.get(item["culture"], item)) for item in fixture["prix"]]
+    return {"count": len(prices), "prix": prices}
+
+
+@app.patch("/prix/{culture}")
+def update_price(culture: str, payload: dict[str, Any]) -> dict[str, Any]:
+    with SPRINT_17_FIXTURE_PATH.open("r", encoding="utf-8") as fixture_file:
+        fixture = json.load(fixture_file)
+
+    known = next((item for item in fixture["prix"] if item["culture"] == culture), None)
+    if known is None:
+        raise HTTPException(status_code=404, detail="Culture introuvable.")
+
+    minimum = float(payload.get("min", known["min"]))
+    typical = float(payload.get("typical", known["typical"]))
+    maximum = float(payload.get("max", known["max"]))
+    if not minimum <= typical <= maximum:
+        raise HTTPException(status_code=422, detail="Fourchette de prix invalide.")
+
+    updated = dict(known)
+    updated.update({
+        "min": minimum,
+        "typical": typical,
+        "max": maximum,
+        "date": str(payload.get("date", known["date"])),
+        "source": str(payload.get("source", known["source"])),
+    })
+    current_prices[culture] = updated
+    return updated
+
+
+@app.get("/parcelles/{parcelle_id}/classement-prix")
+def parcel_price_ranking(parcelle_id: str) -> dict[str, Any]:
+    with SPRINT_17_FIXTURE_PATH.open("r", encoding="utf-8") as fixture_file:
+        fixture = json.load(fixture_file)
+
+    parcel = next(
+        (item for item in fixture["parcelles"] if item["id"] == parcelle_id),
+        None,
+    )
+    if parcel is None:
+        raise HTTPException(status_code=404, detail="Parcelle introuvable.")
+
+    ranked = []
+    for price in fixture["prix"]:
+        current = current_prices.get(price["culture"], price)
+        revenue_per_m3 = (
+            price["rendement_t_ha"]
+            * current["typical"]
+            * 1000
+            - price["couts_tnd_ha"]
+        ) / 3840
+        ranked.append({
+            "culture": price["culture"],
+            "dt_m3": round(revenue_per_m3, 2),
+            "prix_typique_tnd": current["typical"],
+            "plan_fige": parcel["plan_fige"],
+        })
+    ranked.sort(key=lambda item: item["dt_m3"], reverse=True)
+
+    frozen_label = None
+    if parcel["plan_fige"]:
+        frozen_label = parcel["plan"]["label"]
+    return {
+        "parcelle": parcel,
+        "classement": ranked,
+        "label_plan_adopte": frozen_label,
+    }
 
 
 @app.post("/produits/publish")

@@ -112,3 +112,10 @@ PostGIS conformément à `api/alembic/README.md`.
 - `GET /cache/analyse` sert l'analyse et le classement depuis le cache.
 - `POST /file/parcelles` exige un consentement explicite avant mise en file.
 - `POST /file/parcelles/{id}/envoyer` synchronise la parcelle mise en attente.
+
+## Sprint 17
+
+- `GET /agriculteurs/{owner_id}/parcelles` filtre les parcelles par propriétaire.
+- `PATCH /prix/{culture}` met à jour une fourchette sans redéploiement.
+- `GET /parcelles/{id}/classement-prix` recalcule le classement; un plan figé
+  conserve sa lettre enregistrée.

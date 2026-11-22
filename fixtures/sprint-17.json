@@ -1,0 +1,45 @@
+{
+  "sprint": 17,
+  "profil": {
+    "id": "usr-demo",
+    "name": "Fermer Christian",
+    "language": "darija",
+    "notification_preferences": ["irrigation", "commande", "label"]
+  },
+  "parcelles": [
+    {
+      "id": "parcelle-nord-17",
+      "owner_id": "usr-demo",
+      "name": "Bloc nord",
+      "surface_hectares": 3.69,
+      "sol": "limoneux",
+      "plan_fige": false
+    },
+    {
+      "id": "parcelle-sud-17",
+      "owner_id": "usr-demo",
+      "name": "Bloc sud",
+      "surface_hectares": 2.5,
+      "sol": "sableux",
+      "plan_fige": true,
+      "plan": {
+        "culture": "olivier",
+        "dt_m3": 2.42,
+        "label": "A",
+        "prix_enregistre_tnd_kg": 2.2
+      }
+    }
+  ],
+  "prix": [
+    {"culture":"olivier","min":1.8,"typical":2.2,"max":2.8,"date":"2026-11-22","source":"ONAGRI","rendement_t_ha":3.5,"couts_tnd_ha":1800},
+    {"culture":"tomate","min":0.5,"typical":0.9,"max":1.6,"date":"2026-11-22","source":"ONAGRI","rendement_t_ha":55,"couts_tnd_ha":9500},
+    {"culture":"orge","min":0.35,"typical":0.45,"max":0.6,"date":"2026-11-22","source":"Marché de gros","rendement_t_ha":3,"couts_tnd_ha":1400},
+    {"culture":"dattier","min":3.5,"typical":5.0,"max":7.0,"date":"2026-11-22","source":"ONAGRI","rendement_t_ha":6,"couts_tnd_ha":3000}
+  ],
+  "hypotheses": {
+    "efficience": 0.9,
+    "eta": 0.5,
+    "eau_m3": 3840,
+    "currency": "TND"
+  }
+}

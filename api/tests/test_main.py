@@ -480,3 +480,40 @@ def test_sprint_sixteen_queue_requires_location_consent() -> None:
     sent = client.post("/file/parcelles/parcelle-test/envoyer")
     assert sent.status_code == 200
     assert sent.json()["status"] == "envoyee"
+
+
+def test_sprint_seventeen_owner_can_list_only_owned_parcels() -> None:
+    response = client.get("/agriculteurs/usr-demo/parcelles")
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["count"] == 2
+    assert all(parcel["owner_id"] == "usr-demo" for parcel in payload["parcelles"])
+
+    refused = client.get("/agriculteurs/autre/parcelles")
+    assert refused.status_code == 404
+
+
+def test_sprint_seventeen_price_update_recalculates_live_ranking() -> None:
+    update = client.patch(
+        "/prix/olivier",
+        json={"min": 2.0, "typical": 3.0, "max": 4.0, "source": "Marché test"},
+    )
+    assert update.status_code == 200
+    assert update.json()["typical"] == 3.0
+
+    ranking = client.get("/parcelles/parcelle-nord-17/classement-prix")
+    assert ranking.status_code == 200
+    olivier = next(
+        item
+        for item in ranking.json()["classement"]
+        if item["culture"] == "olivier"
+    )
+    assert olivier["prix_typique_tnd"] == 3.0
+
+
+def test_sprint_seventeen_frozen_plan_keeps_saved_label() -> None:
+    ranking = client.get("/parcelles/parcelle-sud-17/classement-prix")
+    assert ranking.status_code == 200
+    payload = ranking.json()
+    assert payload["parcelle"]["plan_fige"] is True
+    assert payload["label_plan_adopte"] == "A"
