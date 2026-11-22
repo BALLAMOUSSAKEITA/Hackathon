@@ -1,0 +1,72 @@
+{
+  "sprint": 12,
+  "langue": "darija",
+  "ferme": {
+    "id": "ferme-demo-sprint-12",
+    "name": "Ferme pilote Ardi",
+    "owner": "Fermer Christian",
+    "surface_hectares": 3.69,
+    "puits_profondeur_m": 60,
+    "debit_m3_h": 12,
+    "culture_actuelle": "Tomate",
+    "qr": "ARDI-FARM-001"
+  },
+  "cartes": [
+    {"step":1,"title":"Darija + agriculteur","message":"Marhbe, fellah · Mzelna nchofo el ferma.","fr":"Darija et profil agriculteur sélectionnés."},
+    {"step":2,"title":"La parcelle","message":"3.69 ha · bir 60 m · debit 12 m3/h · Tomate.","fr":"Parcelle préchargée avec puits et culture actuelle."},
+    {"step":3,"title":"Analyse","message":"180 mm pluie · ET0 980 mm · 3840 m3 · 0.3264 kWh/m3.","fr":"Sol, climat, eau disponible et énergie calculée."},
+    {"step":4,"title":"Que planter ?","message":"Olivier 2.42 DT/m3 · +1.70 DT/m3 par rapport à Tomate.","fr":"Classement réel et écart avec la situation actuelle."},
+    {"step":5,"title":"Plan sobre","message":"Olivier 2.69 ha · 6642 m3 · 2168 kWh · 16236 m3 économisés.","fr":"Plan simulé adopté sans dépasser la parcelle ni le puits."},
+    {"step":6,"title":"Label et QR","message":"Label A · 5294 kWh économisés · ARDI-FARM-001.","fr":"Label actif, vérifications conformes et QR de ferme."},
+    {"step":7,"title":"Assistant Darija","message":"Ahsan choix Olivier · 2.42 DT/m3 · far9 +1.70 DT/m3.","fr":"Question vocale répondue depuis les chiffres de la parcelle."},
+    {"step":8,"title":"Achat acheteur","message":"Huile d'olive · 18.50 TND · paiement simulé D17.","fr":"Scanner le produit, ouvrir sa fiche et payer en simulation."}
+  ],
+  "analyse": {
+    "soil_texture": "limono-sableuse",
+    "rain_mm": 180,
+    "et0_mm": 980,
+    "water_m3": 3840,
+    "kwh_m3": 0.3264,
+    "ndvi_months": 12
+  },
+  "classement": [
+    {"name":"Olivier","dt_m3":2.42,"m3_ha":1800,"label":"A"},
+    {"name":"Palmier dattier","dt_m3":1.82,"m3_ha":2500,"label":"B"},
+    {"name":"Grenadier","dt_m3":1.68,"m3_ha":3800,"label":"B"}
+  ],
+  "plan": {
+    "surface_ha": 2.69,
+    "water_m3": 6642,
+    "water_saved_m3": 16236,
+    "energy_kwh": 2168,
+    "energy_saved_kwh": 5294,
+    "label":"A"
+  },
+  "question": {
+    "darija": "Achnoua ahsan choix?",
+    "answer_darija": "Ahsan choix Olivier.",
+    "answer_fr": "La meilleure option est l'olivier.",
+    "dt_m3": 2.42,
+    "ecart_dt_m3": 1.70
+  },
+  "produit": {
+    "id": "produit-olive-001",
+    "name": "Huile d'olive extra vierge",
+    "label": "A",
+    "qr": "ARDI-PRODUCT-001",
+    "price_tnd": 18.5,
+    "payment": "D17"
+  },
+  "pitch": [
+    {"theme":"eau","phrase":"Du classement au plan, Ardi économise 16236 m³ d'eau."},
+    {"theme":"energie","phrase":"Le puits de 60 m consomme 0.3264 kWh/m³."},
+    {"theme":"revenu","phrase":"L'olivier atteint 2.42 DT/m³, soit 1.70 DT/m³ de plus que la tomate."},
+    {"theme":"label","phrase":"Le plan conforme obtient le label A."},
+    {"theme":"vente","phrase":"Le produit labellisé se vend avec un paiement simulé."}
+  ],
+  "hypotheses": {
+    "eta": 0.5,
+    "efficience_localisee": 0.9,
+    "currency": "TND"
+  }
+}

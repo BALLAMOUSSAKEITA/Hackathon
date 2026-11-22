@@ -348,3 +348,24 @@ def test_sprint_eleven_notifications_are_readable() -> None:
     read = client.patch("/notifications/notif-commande/read")
     assert read.status_code == 200
     assert read.json()["read"] is True
+
+
+def test_sprint_twelve_integrated_fixture_has_eight_cards() -> None:
+    response = client.get("/demo/sprint-12")
+    assert response.status_code == 200
+    fixture = response.json()
+    assert len(fixture["cartes"]) == 8
+    assert [card["step"] for card in fixture["cartes"]] == list(range(1, 9))
+    assert fixture["produit"]["qr"] == "ARDI-PRODUCT-001"
+
+
+def test_sprint_twelve_demo_criteria_are_coherent() -> None:
+    response = client.get("/demo/sprint-12/criteria")
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["cards"] == 8
+    assert payload["pumping_kwh_m3"] == 0.3264
+    assert payload["water_saved_m3"] == 16236
+    assert payload["energy_saved_kwh"] == 5294
+    assert payload["top_crop"] == "Olivier"
+    assert payload["label"] == "A"

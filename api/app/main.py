@@ -32,6 +32,7 @@ SPRINT_8_FIXTURE_PATH = Path(__file__).resolve().parents[2] / "fixtures" / "spri
 SPRINT_9_FIXTURE_PATH = Path(__file__).resolve().parents[2] / "fixtures" / "sprint-09.json"
 SPRINT_10_FIXTURE_PATH = Path(__file__).resolve().parents[2] / "fixtures" / "sprint-10.json"
 SPRINT_11_FIXTURE_PATH = Path(__file__).resolve().parents[2] / "fixtures" / "sprint-11.json"
+SPRINT_12_FIXTURE_PATH = Path(__file__).resolve().parents[2] / "fixtures" / "sprint-12.json"
 ALLOWED_ROLES = {"agriculteur", "acheteur_particulier", "acheteur_professionnel"}
 DEMO_OTP = "123456"
 pending_profiles: dict[str, dict[str, str]] = {}
@@ -564,6 +565,36 @@ def update_order(commande_id: str, payload: dict[str, Any]) -> dict[str, Any]:
 def demo_sprint_11() -> dict[str, Any]:
     with SPRINT_11_FIXTURE_PATH.open("r", encoding="utf-8") as fixture_file:
         return json.load(fixture_file)
+
+
+@app.get("/demo/sprint-12")
+def demo_sprint_12() -> dict[str, Any]:
+    with SPRINT_12_FIXTURE_PATH.open("r", encoding="utf-8") as fixture_file:
+        return json.load(fixture_file)
+
+
+@app.get("/demo/sprint-12/criteria")
+def sprint12_criteria() -> dict[str, Any]:
+    with SPRINT_12_FIXTURE_PATH.open("r", encoding="utf-8") as fixture_file:
+        fixture = json.load(fixture_file)
+
+    pumping_kwh_m3 = (
+        0.00272
+        * fixture["ferme"]["puits_profondeur_m"]
+        / fixture["hypotheses"]["eta"]
+    )
+    label = "A" if fixture["classement"][0]["dt_m3"] >= 2.2 else "E"
+    return {
+        "cards": len(fixture["cartes"]),
+        "pumping_kwh_m3": round(pumping_kwh_m3, 4),
+        "water_saved_m3": fixture["plan"]["water_saved_m3"],
+        "energy_saved_kwh": fixture["plan"]["energy_saved_kwh"],
+        "top_crop": fixture["classement"][0]["name"],
+        "top_dt_m3": fixture["classement"][0]["dt_m3"],
+        "label": label,
+        "qr": fixture["produit"]["qr"],
+        "pitch_themes": len(fixture["pitch"]),
+    }
 
 
 @app.post("/produits/publish")

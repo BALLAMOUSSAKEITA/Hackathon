@@ -20,6 +20,7 @@ Socle technique du parcours agriculteur/acheteur pour le hackathon.
 - `fixtures/sprint-09.json` : 20 questions darija, réponses chiffrées et actions du Sprint 9.
 - `fixtures/sprint-10.json` : marché acheteur, QR, panier et paiement simulé du Sprint 10.
 - `fixtures/sprint-11.json` : ventes, devis, commande et quatre notifications du Sprint 11.
+- `fixtures/sprint-12.json` : scénario intégré, pitch et huit cartes du Sprint 12.
 
 ## Démarrage rapide
 

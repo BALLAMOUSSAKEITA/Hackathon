@@ -82,3 +82,8 @@ PostGIS conformément à `api/alembic/README.md`.
 - `GET /ventes/sprint-11` expose le suivi des ventes.
 - `PATCH /commandes/sprint-11/{id}` accepte ou contre-propose.
 - `GET /notifications` liste les quatre types d'alertes.
+
+## Sprint 12
+
+- `GET /demo/sprint-12` sert le scénario intégré de huit étapes.
+- `GET /demo/sprint-12/criteria` vérifie les chiffres et critères clés du pitch.
