@@ -87,3 +87,10 @@ PostGIS conformément à `api/alembic/README.md`.
 
 - `GET /demo/sprint-12` sert le scénario intégré de huit étapes.
 - `GET /demo/sprint-12/criteria` vérifie les chiffres et critères clés du pitch.
+
+## Sprint 13
+
+- `GET /parcelles/{id}/solaire` dimensionne puissance, panneaux, réservoir,
+  coûts annuels et amortissement.
+- `GET /parcelles/{id}/solaire?profondeur_m=90` recalcule la puissance pour
+  une profondeur différente.

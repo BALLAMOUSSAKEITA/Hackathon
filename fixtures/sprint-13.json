@@ -1,0 +1,37 @@
+{
+  "sprint": 13,
+  "parcelle": {
+    "id": "parcelle-sprint-13",
+    "name": "Bloc nord",
+    "puits_profondeur_m": 60,
+    "debit_m3_h": 12,
+    "pompage_heures_jour": 8,
+    "ensoleillement_kwh_m2_jour": 5.8,
+    "prix_gasoil_tnd_l": 2.85,
+    "prix_steg_tnd_kwh": 0.32
+  },
+  "dimensionnement": {
+    "puissance_kw": 3.92,
+    "nombre_panneaux": 10,
+    "puissance_panneau_kw": 0.4,
+    "volume_reservoir_m3": 96,
+    "cout_solaire_tnd": 8500,
+    "cout_annuel_gasoil_tnd": 1680,
+    "cout_annuel_steg_tnd": 980,
+    "duree_amortissement_ans": 8.1
+  },
+  "pompage": {
+    "meilleures_heures": ["10:00", "11:00", "12:00", "13:00", "14:00"],
+    "production_solaire": "NASA POWER · 5.8 kWh/m²/jour"
+  },
+  "aides": [
+    {"name":"Programme ANME","detail":"Éligibilité à vérifier auprès de l'ANME.","status":"informatif"},
+    {"name":"GDA locale","detail":"Demander les dispositifs de soutien disponibles dans la GDA.","status":"informatif"}
+  ],
+  "hypotheses": {
+    "eta": 0.5,
+    "e_kwh_m3": 0.3264,
+    "formule": "P ≈ 0.00272 × H × debit / eta",
+    "currency": "TND"
+  }
+}

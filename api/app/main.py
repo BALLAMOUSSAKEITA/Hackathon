@@ -33,6 +33,7 @@ SPRINT_9_FIXTURE_PATH = Path(__file__).resolve().parents[2] / "fixtures" / "spri
 SPRINT_10_FIXTURE_PATH = Path(__file__).resolve().parents[2] / "fixtures" / "sprint-10.json"
 SPRINT_11_FIXTURE_PATH = Path(__file__).resolve().parents[2] / "fixtures" / "sprint-11.json"
 SPRINT_12_FIXTURE_PATH = Path(__file__).resolve().parents[2] / "fixtures" / "sprint-12.json"
+SPRINT_13_FIXTURE_PATH = Path(__file__).resolve().parents[2] / "fixtures" / "sprint-13.json"
 ALLOWED_ROLES = {"agriculteur", "acheteur_particulier", "acheteur_professionnel"}
 DEMO_OTP = "123456"
 pending_profiles: dict[str, dict[str, str]] = {}
@@ -594,6 +595,56 @@ def sprint12_criteria() -> dict[str, Any]:
         "label": label,
         "qr": fixture["produit"]["qr"],
         "pitch_themes": len(fixture["pitch"]),
+    }
+
+
+@app.get("/demo/sprint-13")
+def demo_sprint_13() -> dict[str, Any]:
+    with SPRINT_13_FIXTURE_PATH.open("r", encoding="utf-8") as fixture_file:
+        return json.load(fixture_file)
+
+
+@app.get("/parcelles/{parcelle_id}/solaire")
+def solar_sizing(parcelle_id: str, profondeur_m: float | None = None) -> dict[str, Any]:
+    with SPRINT_13_FIXTURE_PATH.open("r", encoding="utf-8") as fixture_file:
+        fixture = json.load(fixture_file)
+
+    if parcelle_id != fixture["parcelle"]["id"]:
+        raise HTTPException(status_code=404, detail="Parcelle introuvable.")
+
+    depth = profondeur_m if profondeur_m is not None else fixture["parcelle"]["puits_profondeur_m"]
+    if depth <= 0:
+        raise HTTPException(status_code=422, detail="Profondeur du puits invalide.")
+
+    flow = fixture["parcelle"]["debit_m3_h"]
+    eta = fixture["hypotheses"]["eta"]
+    power_kw = 0.00272 * depth * flow / eta
+    panel_kw = fixture["dimensionnement"]["puissance_panneau_kw"]
+    panel_count = math.ceil(power_kw / panel_kw)
+    pumping_hours = fixture["parcelle"]["pompage_heures_jour"]
+    reservoir_m3 = round(flow * pumping_hours, 1)
+    gasoil_year = fixture["dimensionnement"]["cout_annuel_gasoil_tnd"]
+    steg_year = fixture["dimensionnement"]["cout_annuel_steg_tnd"]
+    solar_cost = fixture["dimensionnement"]["cout_solaire_tnd"]
+    average_fossil_year = (gasoil_year + steg_year) / 2
+    payback = round(solar_cost / average_fossil_year, 1) if average_fossil_year > 0 else None
+
+    return {
+        "parcelle_id": parcelle_id,
+        "profondeur_m": depth,
+        "debit_m3_h": flow,
+        "puissance_kw": round(power_kw, 2),
+        "nombre_panneaux": panel_count,
+        "puissance_panneau_kw": panel_kw,
+        "volume_reservoir_m3": reservoir_m3,
+        "cout_annuel_gasoil_tnd": gasoil_year,
+        "cout_annuel_steg_tnd": steg_year,
+        "cout_solaire_tnd": solar_cost,
+        "duree_amortissement_ans": payback,
+        "meilleures_heures": fixture["pompage"]["meilleures_heures"],
+        "production_solaire": fixture["pompage"]["production_solaire"],
+        "aides": fixture["aides"],
+        "hypotheses": fixture["hypotheses"],
     }
 
 

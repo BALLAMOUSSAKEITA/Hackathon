@@ -369,3 +369,27 @@ def test_sprint_twelve_demo_criteria_are_coherent() -> None:
     assert payload["energy_saved_kwh"] == 5294
     assert payload["top_crop"] == "Olivier"
     assert payload["label"] == "A"
+
+
+def test_sprint_thirteen_solar_sizing_from_fixture() -> None:
+    response = client.get("/parcelles/parcelle-sprint-13/solaire")
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["profondeur_m"] == 60
+    assert payload["puissance_kw"] == 3.92
+    assert payload["nombre_panneaux"] == 10
+    assert payload["volume_reservoir_m3"] == 96
+
+
+def test_sprint_thirteen_depth_change_changes_solar_power() -> None:
+    shallow = client.get(
+        "/parcelles/parcelle-sprint-13/solaire",
+        params={"profondeur_m": 30},
+    )
+    deep = client.get(
+        "/parcelles/parcelle-sprint-13/solaire",
+        params={"profondeur_m": 90},
+    )
+    assert shallow.status_code == 200
+    assert deep.status_code == 200
+    assert deep.json()["puissance_kw"] > shallow.json()["puissance_kw"]
