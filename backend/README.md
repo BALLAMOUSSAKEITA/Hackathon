@@ -1,4 +1,4 @@
-# Ardi API - Sprints 1 a 9
+# Ardi API - Sprints 1 a 10
 
 API FastAPI pour le socle technique Ardi.
 
@@ -26,6 +26,7 @@ Documentation interactive : `http://127.0.0.1:8000/docs`
 - Fixture sprint 7 : `GET /fixture/sprint-07`
 - Fixture sprint 8 : `GET /fixture/sprint-08`
 - Fixture sprint 9 : `GET /fixture/sprint-09`
+- Fixture sprint 10 : `GET /fixture/sprint-10`
 - Demander un code OTP simulé : `POST /auth/otp`
 - Vérifier le code et créer un utilisateur : `POST /auth/verify`
 - Utilisateurs : `GET /users`, `POST /users`
@@ -39,14 +40,14 @@ Documentation interactive : `http://127.0.0.1:8000/docs`
 - Filtrer les cultures par sol : `GET /cultures?soil=sandy`
 - Analyses : `GET /analyses`
 - Labels : `GET /labels`, `GET /labels/{qr_code}`
-- Produits : `GET /produits`
+- Produits : `GET /produits?label=A&category=huile_olive&region=Sidi%20Bouzid`
 - Plans : `GET /plans`
 - Vérifications : `GET /verifications`
-- Commandes : `GET /commandes`
+- Commandes : `GET /commandes`, `POST /commandes`, `PATCH /commandes/{id}`
 - Alertes : `GET /alertes`
 
 Les données de démonstration sont chargées depuis les fixtures `sprint-01`
-à `sprint-09`. Le sprint 2 fournit les profils agriculteur,
+à `sprint-10`. Le sprint 2 fournit les profils agriculteur,
 acheteur particulier et acheteur professionnel. Le sprint 3 fournit 15 cultures
 avec Kc par stade, rendements, fourchettes de prix, coûts et compatibilité de sol.
 Les valeurs agronomiques et économiques sont indicatives; les sources de prix
@@ -109,6 +110,16 @@ déterministes et limitées aux entrées du fichier; hors fichier, l'assistant
 refuse de répondre et propose une question utile. Le champ `audio` contient
 le texte et la locale prêts pour la synthèse vocale de l'appareil; la fixture
 ne prétend pas générer un fichier audio.
+
+Le sprint 10 alimente `GET /produits` avec son catalogue et accepte les filtres
+`label` (grade, statut ou identifiant), `category` et `region`. Les fiches
+publiques sont accessibles via les QR `ARDI-S10-OLIVE-001` et
+`ARDI-S10-DATES-001`. `POST /commandes` prend `buyer_id`, `product_id`,
+`quantity_kg` et `payment_method` (`D17`, `card` ou `cash_on_delivery`).
+Le paiement est simulé, le total est calculé par l'API, et aucune donnée de
+carte n'est acceptée ni stockée. `PATCH /commandes/{id}` peut modifier la
+quantité, le moyen de paiement ou le statut (`pending`, `confirmed`,
+`cancelled`).
 
 Pour la démonstration, `POST /auth/otp` retourne le code fixe `123456`.
 `POST /auth/verify` reçoit `phone`, `code`, `name`, `role` (`farmer`, `buyer`

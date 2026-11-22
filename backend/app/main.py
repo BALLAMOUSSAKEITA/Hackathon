@@ -19,6 +19,7 @@ from shapely.errors import GEOSException
 from shapely.geometry import shape
 from shapely.geometry.polygon import orient
 from shapely.validation import explain_validity
+from sqlalchemy import inspect, text
 from sqlalchemy.orm import Session
 
 from .database import Base, engine, get_db
@@ -29,6 +30,8 @@ from .schemas import (
     OTPRequest,
     OTPResponse,
     OTPVerify,
+    OrderCreate,
+    OrderPatch,
     ParcelleCreate,
     ParcelleOut,
     SimulationAllocation,
@@ -42,6 +45,23 @@ FIXTURES_DIR = Path(__file__).resolve().parents[1] / "fixtures"
 DEMO_OTP_CODE = "123456"
 pending_otp_phones: set[str] = set()
 GEOD = Geod(ellps="WGS84")
+ORDER_PAYMENT_COLUMNS = {
+    "payment_method": "VARCHAR",
+    "total_tnd": "FLOAT",
+    "payment_status": "VARCHAR",
+}
+
+
+def ensure_order_payment_columns() -> None:
+    columns = {
+        column["name"] for column in inspect(engine).get_columns("commandes")
+    }
+    with engine.begin() as connection:
+        for column, column_type in ORDER_PAYMENT_COLUMNS.items():
+            if column not in columns:
+                connection.execute(
+                    text(f"ALTER TABLE commandes ADD COLUMN {column} {column_type}")
+                )
 
 
 def calculate_polygon_area_ha(geometry: dict[str, Any]) -> float:
@@ -283,6 +303,7 @@ def fetch_external_analysis(latitude: float, longitude: float) -> dict[str, dict
 @asynccontextmanager
 async def lifespan(_: FastAPI):
     Base.metadata.create_all(bind=engine)
+    ensure_order_payment_columns()
     db = next(get_db())
     try:
         for fixture_name in (
@@ -295,6 +316,7 @@ async def lifespan(_: FastAPI):
             "sprint-07.json",
             "sprint-08.json",
             "sprint-09.json",
+            "sprint-10.json",
         ):
             fixture = FIXTURES_DIR / fixture_name
             data = json.loads(fixture.read_text(encoding="utf-8"))
@@ -343,7 +365,7 @@ async def lifespan(_: FastAPI):
 app = FastAPI(
     title="Ardi API",
     version="1.0.0",
-    description="API FastAPI Ardi, sprints de demonstration 1 a 9.",
+    description="API FastAPI Ardi, sprints de demonstration 1 a 10.",
     lifespan=lifespan,
 )
 app.add_middleware(
@@ -424,6 +446,11 @@ def sprint_08_fixture() -> dict[str, Any]:
 @app.get("/fixture/sprint-09")
 def sprint_09_fixture() -> dict[str, Any]:
     return json.loads((FIXTURES_DIR / "sprint-09.json").read_text(encoding="utf-8"))
+
+
+@app.get("/fixture/sprint-10")
+def sprint_10_fixture() -> dict[str, Any]:
+    return json.loads((FIXTURES_DIR / "sprint-10.json").read_text(encoding="utf-8"))
 
 
 def normalize_assistant_question(question: str) -> str:
@@ -1620,12 +1647,19 @@ def public_label(qr_code: str, db: Session = Depends(get_db)):
     parcel = db.get(models.Parcelle, label.parcel_id)
     owner = db.get(models.User, parcel.owner_id) if parcel is not None else None
     farm = None
-    for fixture_name in ("sprint-01.json", "sprint-08.json"):
+    for fixture_name in ("sprint-01.json", "sprint-08.json", "sprint-10.json"):
         fixture_data = json.loads(
             (FIXTURES_DIR / fixture_name).read_text(encoding="utf-8")
         )
-        if fixture_data.get("farm", {}).get("id") == label.farm_id:
-            farm = fixture_data["farm"]
+        farms = [
+            *fixture_data.get("farms", []),
+            *([fixture_data["farm"]] if fixture_data.get("farm") else []),
+        ]
+        matching_farm = next(
+            (item for item in farms if item.get("id") == label.farm_id), None
+        )
+        if matching_farm is not None:
+            farm = matching_farm
             break
     if farm is None:
         farm = {
@@ -1650,6 +1684,26 @@ def public_label(qr_code: str, db: Session = Depends(get_db)):
         if product is not None
         else None
     )
+    if product_data is not None:
+        sprint10 = json.loads(
+            (FIXTURES_DIR / "sprint-10.json").read_text(encoding="utf-8")
+        )
+        public_details = next(
+            (
+                details
+                for details in sprint10.get("product_details", [])
+                if details["product_id"] == product.id
+            ),
+            None,
+        )
+        if public_details is not None:
+            product_data.update(
+                {
+                    key: value
+                    for key, value in public_details.items()
+                    if key != "product_id"
+                }
+            )
     verifications = (
         db.query(models.Verification)
         .filter(models.Verification.parcel_id == label.parcel_id)
@@ -1673,9 +1727,183 @@ def public_label(qr_code: str, db: Session = Depends(get_db)):
     }
 
 
+def sprint_10_products() -> tuple[dict[str, Any], list[dict[str, Any]]]:
+    fixture = json.loads((FIXTURES_DIR / "sprint-10.json").read_text(encoding="utf-8"))
+    farms = {
+        farm["id"]: farm
+        for farm in [
+            *fixture.get("farms", []),
+            *([fixture["farm"]] if fixture.get("farm") else []),
+        ]
+    }
+    labels = {label["id"]: label for label in fixture.get("labels", [])}
+    details = {
+        item["product_id"]: item
+        for item in fixture.get("product_details", [])
+    }
+    products = []
+    for product in fixture.get("products", []):
+        label = labels.get(product["label_id"])
+        farm = farms.get(product["farm_id"])
+        item = {
+            **product,
+            "farm": farm,
+            "label": (
+                {
+                    "id": label["id"],
+                    "grade": label["grade"],
+                    "status": label["status"],
+                    "qr_code": label["qr_code"],
+                }
+                if label is not None
+                else None
+            ),
+        }
+        product_details = details.get(product["id"])
+        if product_details is not None:
+            item.update(
+                {
+                    key: value
+                    for key, value in product_details.items()
+                    if key != "product_id"
+                }
+            )
+        products.append(item)
+    return fixture, products
+
+
+def order_payment_status(payment_method: str) -> str:
+    return (
+        "due_on_delivery"
+        if payment_method == "cash_on_delivery"
+        else "simulated"
+    )
+
+
+def serialize_order(order: models.Commande) -> dict[str, Any]:
+    return {
+        "id": order.id,
+        "buyer_id": order.buyer_id,
+        "product_id": order.product_id,
+        "quantity_kg": order.quantity_kg,
+        "status": order.status,
+        "payment_method": order.payment_method,
+        "payment_status": order.payment_status,
+        "total_tnd": order.total_tnd,
+    }
+
+
 @app.get("/produits")
-def list_products(db: Session = Depends(get_db)):
-    return db.query(models.Produit).all()
+def list_products(
+    label: str | None = Query(default=None, max_length=80),
+    category: str | None = Query(default=None, max_length=80),
+    region: str | None = Query(default=None, max_length=80),
+):
+    _, products = sprint_10_products()
+    if label is not None:
+        requested_label = label.strip().casefold()
+        products = [
+            product
+            for product in products
+            if product["label"] is not None
+            and requested_label
+            in {
+                product["label"]["grade"].casefold(),
+                product["label"]["status"].casefold(),
+                product["label"]["id"].casefold(),
+            }
+        ]
+    if category is not None:
+        requested_category = category.strip().casefold()
+        products = [
+            product
+            for product in products
+            if product["category"].strip().casefold() == requested_category
+        ]
+    if region is not None:
+        requested_region = region.strip().casefold()
+        products = [
+            product
+            for product in products
+            if product["farm"] is not None
+            and product["farm"]["region"].strip().casefold() == requested_region
+        ]
+    return products
+
+
+@app.post("/commandes", status_code=201)
+def create_order(payload: OrderCreate, db: Session = Depends(get_db)):
+    fixture, _ = sprint_10_products()
+    product = next(
+        (item for item in fixture["products"] if item["id"] == payload.product_id),
+        None,
+    )
+    if product is None:
+        raise HTTPException(404, "Product not found in Sprint 10")
+    label = next(
+        (item for item in fixture["labels"] if item["id"] == product["label_id"]),
+        None,
+    )
+    if label is None or label["status"] != "active":
+        raise HTTPException(409, "Product label is not active")
+    if payload.quantity_kg > product["quantity_kg"]:
+        raise HTTPException(422, "Quantity exceeds available product stock")
+
+    buyer = db.get(models.User, payload.buyer_id)
+    if buyer is None:
+        raise HTTPException(404, "Buyer not found")
+    if buyer.role != "buyer":
+        raise HTTPException(403, "Only buyer accounts can place this order")
+
+    order = models.Commande(
+        id=f"order-sprint-10-{uuid4().hex}",
+        buyer_id=payload.buyer_id,
+        product_id=payload.product_id,
+        quantity_kg=payload.quantity_kg,
+        status="pending",
+        payment_method=payload.payment_method,
+        payment_status=order_payment_status(payload.payment_method),
+        total_tnd=round(payload.quantity_kg * product["price_tnd_kg"], 2),
+    )
+    db.add(order)
+    db.commit()
+    db.refresh(order)
+    return serialize_order(order)
+
+
+@app.patch("/commandes/{order_id}")
+def update_order(
+    order_id: str,
+    payload: OrderPatch,
+    db: Session = Depends(get_db),
+):
+    order = db.get(models.Commande, order_id)
+    if order is None:
+        raise HTTPException(404, "Order not found")
+
+    fixture, _ = sprint_10_products()
+    product = next(
+        (item for item in fixture["products"] if item["id"] == order.product_id),
+        None,
+    )
+    if product is None:
+        raise HTTPException(404, "Order is outside the Sprint 10 catalog")
+    if payload.quantity_kg is not None:
+        if payload.quantity_kg > product["quantity_kg"]:
+            raise HTTPException(422, "Quantity exceeds available product stock")
+        order.quantity_kg = payload.quantity_kg
+        order.total_tnd = round(
+            payload.quantity_kg * product["price_tnd_kg"], 2
+        )
+    if payload.payment_method is not None:
+        order.payment_method = payload.payment_method
+        order.payment_status = order_payment_status(payload.payment_method)
+    if payload.status is not None:
+        order.status = payload.status
+
+    db.commit()
+    db.refresh(order)
+    return serialize_order(order)
 
 
 @app.get("/plans")

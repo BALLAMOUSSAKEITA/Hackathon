@@ -67,6 +67,32 @@ class AssistantRequest(BaseModel):
         return self
 
 
+class OrderCreate(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    buyer_id: str = Field(min_length=1)
+    product_id: str = Field(min_length=1)
+    quantity_kg: float = Field(gt=0, allow_inf_nan=False)
+    payment_method: Literal["D17", "card", "cash_on_delivery"]
+
+
+class OrderPatch(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    quantity_kg: float | None = Field(default=None, gt=0, allow_inf_nan=False)
+    payment_method: Literal["D17", "card", "cash_on_delivery"] | None = None
+    status: Literal["pending", "confirmed", "cancelled"] | None = None
+
+    @model_validator(mode="after")
+    def require_order_update(self):
+        if all(
+            value is None
+            for value in (self.quantity_kg, self.payment_method, self.status)
+        ):
+            raise ValueError("Provide at least one order field to update")
+        return self
+
+
 class ParcelleCreate(ORMModel):
     id: str
     owner_id: str

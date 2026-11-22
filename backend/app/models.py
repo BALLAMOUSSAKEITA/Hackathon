@@ -124,6 +124,9 @@ class Commande(Base):
     product_id: Mapped[str] = mapped_column(String, ForeignKey("produits.id"))
     quantity_kg: Mapped[float] = mapped_column(Float)
     status: Mapped[str] = mapped_column(String)
+    payment_method: Mapped[str | None] = mapped_column(String, nullable=True)
+    total_tnd: Mapped[float | None] = mapped_column(Float, nullable=True)
+    payment_status: Mapped[str | None] = mapped_column(String, nullable=True)
 
 
 class Alerte(Base):

@@ -182,6 +182,88 @@ def test_sprint_09_assistant_supports_audio_transcripts_and_refuses_unknown_data
     assert invalid_response.status_code == 422
 
 
+def test_sprint_10_market_filters_and_public_qr_fiche():
+    with TestClient(app) as client:
+        fixture = client.get("/fixture/sprint-10")
+        all_products = client.get("/produits")
+        label_a = client.get("/produits", params={"label": "A"})
+        dates = client.get("/produits", params={"category": "dattes"})
+        kebili = client.get("/produits", params={"region": "kebili"})
+        no_match = client.get("/produits", params={"category": "unknown"})
+        scanned_label = client.get("/labels/ARDI-S10-DATES-001")
+
+    assert fixture.status_code == 200
+    assert len(all_products.json()) == 2
+    assert len(label_a.json()) == 1
+    assert label_a.json()[0]["label"]["grade"] == "A"
+    assert dates.json()[0]["id"] == "product-sprint-10-dates"
+    assert kebili.json()[0]["farm"]["region"] == "Kebili"
+    assert no_match.json() == []
+    assert scanned_label.status_code == 200
+    public = scanned_label.json()
+    assert public["product"]["id"] == "product-sprint-10-dates"
+    assert public["product"]["impact"]["water_saved_m3"] == 650
+    assert public["farm"]["region"] == "Kebili"
+
+
+def test_sprint_10_orders_simulate_payment_without_card_data():
+    with TestClient(app) as client:
+        d17_order = client.post(
+            "/commandes",
+            json={
+                "buyer_id": "user-sprint-10-buyer",
+                "product_id": "product-sprint-10-olive-oil",
+                "quantity_kg": 2,
+                "payment_method": "D17",
+            },
+        )
+        updated_order = client.patch(
+            f"/commandes/{d17_order.json()['id']}",
+            json={
+                "quantity_kg": 3,
+                "payment_method": "card",
+                "status": "confirmed",
+            },
+        )
+        delivery_order = client.post(
+            "/commandes",
+            json={
+                "buyer_id": "user-sprint-10-buyer",
+                "product_id": "product-sprint-10-dates",
+                "quantity_kg": 1,
+                "payment_method": "cash_on_delivery",
+            },
+        )
+        card_data_order = client.post(
+            "/commandes",
+            json={
+                "buyer_id": "user-sprint-10-buyer",
+                "product_id": "product-sprint-10-olive-oil",
+                "quantity_kg": 1,
+                "payment_method": "card",
+                "card_number": "4111111111111111",
+            },
+        )
+        empty_patch = client.patch(
+            f"/commandes/{d17_order.json()['id']}",
+            json={},
+        )
+
+    assert d17_order.status_code == 201
+    assert d17_order.json()["total_tnd"] == 48
+    assert d17_order.json()["payment_status"] == "simulated"
+    assert updated_order.status_code == 200
+    assert updated_order.json()["total_tnd"] == 72
+    assert updated_order.json()["payment_method"] == "card"
+    assert updated_order.json()["payment_status"] == "simulated"
+    assert updated_order.json()["status"] == "confirmed"
+    assert "card_number" not in updated_order.json()
+    assert delivery_order.status_code == 201
+    assert delivery_order.json()["payment_status"] == "due_on_delivery"
+    assert card_data_order.status_code == 422
+    assert empty_patch.status_code == 422
+
+
 def test_sprint_02_fixture_has_all_demo_roles():
     with TestClient(app) as client:
         response = client.get("/fixture/sprint-02")
