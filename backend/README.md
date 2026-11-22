@@ -1,4 +1,4 @@
-# Ardi API - Sprints 1 a 7
+# Ardi API - Sprints 1 a 8
 
 API FastAPI pour le socle technique Ardi.
 
@@ -24,6 +24,7 @@ Documentation interactive : `http://127.0.0.1:8000/docs`
 - Fixture sprint 5 : `GET /fixture/sprint-05`
 - Fixture sprint 6 : `GET /fixture/sprint-06`
 - Fixture sprint 7 : `GET /fixture/sprint-07`
+- Fixture sprint 8 : `GET /fixture/sprint-08`
 - Demander un code OTP simulé : `POST /auth/otp`
 - Vérifier le code et créer un utilisateur : `POST /auth/verify`
 - Utilisateurs : `GET /users`, `POST /users`
@@ -43,7 +44,7 @@ Documentation interactive : `http://127.0.0.1:8000/docs`
 - Alertes : `GET /alertes`
 
 Les données de démonstration sont chargées depuis les fixtures `sprint-01`
-à `sprint-07`. Le sprint 2 fournit les profils agriculteur,
+à `sprint-08`. Le sprint 2 fournit les profils agriculteur,
 acheteur particulier et acheteur professionnel. Le sprint 3 fournit 15 cultures
 avec Kc par stade, rendements, fourchettes de prix, coûts et compatibilité de sol.
 Les valeurs agronomiques et économiques sont indicatives; les sources de prix
@@ -87,6 +88,15 @@ actuelle; elle retourne aussi les alertes de dépassement de surface ou d'eau.
 L'adoption refuse une surface supérieure à la parcelle. Un dépassement d'eau
 est conservé comme alerte dans le plan adopté. Les plans sont persistés via
 l'entité `Plan` et consultables avec `GET /plans`.
+
+Le sprint 8 fournit le bilan d'accueil, le plan chiffré, les vérifications
+simulées, un produit et le QR `ARDI-S08-FARM-001`. La fixture expose les labels
+actuel et potentiel calculés depuis le plan. `GET /labels/{qr_code}` retourne la
+fiche publique avec la ferme, le produit, le grade, le statut et les
+vérifications. Un label suspendu retourne son statut sans exposer de grade.
+Le grade A exige au moins 2,2 DT/m³, une culture compatible, l'irrigation
+localisée et une consommation conforme au plan. Les seuils B à E sont 1,5,
+1,1 et 0,8 DT/m³; un dépassement répété du puits donne E.
 
 Pour la démonstration, `POST /auth/otp` retourne le code fixe `123456`.
 `POST /auth/verify` reçoit `phone`, `code`, `name`, `role` (`farmer`, `buyer`

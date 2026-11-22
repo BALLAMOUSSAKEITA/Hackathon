@@ -290,6 +290,7 @@ async def lifespan(_: FastAPI):
             "sprint-05.json",
             "sprint-06.json",
             "sprint-07.json",
+            "sprint-08.json",
         ):
             fixture = FIXTURES_DIR / fixture_name
             data = json.loads(fixture.read_text(encoding="utf-8"))
@@ -338,7 +339,7 @@ async def lifespan(_: FastAPI):
 app = FastAPI(
     title="Ardi API",
     version="1.0.0",
-    description="API FastAPI Ardi, sprints de demonstration 1 a 7.",
+    description="API FastAPI Ardi, sprints de demonstration 1 a 8.",
     lifespan=lifespan,
 )
 app.add_middleware(
@@ -401,6 +402,19 @@ def sprint_06_fixture() -> dict[str, Any]:
 @app.get("/fixture/sprint-07")
 def sprint_07_fixture() -> dict[str, Any]:
     return json.loads((FIXTURES_DIR / "sprint-07.json").read_text(encoding="utf-8"))
+
+
+@app.get("/fixture/sprint-08")
+def sprint_08_fixture() -> dict[str, Any]:
+    data = json.loads((FIXTURES_DIR / "sprint-08.json").read_text(encoding="utf-8"))
+    data["calculated_labels"] = {
+        plan_name: calculate_label_grade(plan)
+        for plan_name, plan in data["plan"].items()
+    }
+    data["home"]["current_label_grade"] = data["calculated_labels"]["current"]
+    data["home"]["potential_label_grade"] = data["calculated_labels"]["potential"]
+    data["labels"][0]["grade"] = data["calculated_labels"]["current"]
+    return data
 
 
 @app.post("/auth/otp", response_model=OTPResponse)
@@ -1465,14 +1479,112 @@ def list_labels(db: Session = Depends(get_db)):
     return db.query(models.Label).all()
 
 
+def calculate_label_grade(plan: dict[str, Any]) -> str:
+    revenue_dt_m3 = float(plan["revenue_dt_m3"])
+    if revenue_dt_m3 < 0.8 or int(plan.get("repeated_well_overruns", 0)) > 0:
+        return "E"
+
+    water_conforms = (
+        float(plan["water_demand_m3"]) <= float(plan["available_water_m3"])
+        and plan.get("plan_compliant", False)
+    )
+    localized_irrigation = plan.get("irrigation_method") in {
+        "drip",
+        "localized",
+        "micro_drip",
+    }
+    if (
+        revenue_dt_m3 >= 2.2
+        and plan.get("compatible", False)
+        and localized_irrigation
+        and water_conforms
+    ):
+        return "A"
+    if revenue_dt_m3 >= 1.5:
+        return "B"
+    if revenue_dt_m3 >= 1.1:
+        return "C"
+    if revenue_dt_m3 >= 0.8:
+        return "D"
+    return "E"
+
+
 @app.get("/labels/{qr_code}")
 def public_label(qr_code: str, db: Session = Depends(get_db)):
     label = db.query(models.Label).filter(models.Label.qr_code == qr_code).first()
     if not label:
         raise HTTPException(404, "Label not found")
     if label.status != "active":
+        if label.status == "suspended":
+            raise HTTPException(
+                409,
+                detail={"message": "Label is suspended", "status": label.status},
+            )
         raise HTTPException(409, "Label is not active")
-    return label
+
+    fixture8 = json.loads((FIXTURES_DIR / "sprint-08.json").read_text(encoding="utf-8"))
+    fixture_label = next(
+        (row for row in fixture8["labels"] if row["qr_code"] == qr_code), None
+    )
+    grade = (
+        calculate_label_grade(fixture8["plan"]["current"])
+        if fixture_label is not None
+        else label.grade
+    )
+    parcel = db.get(models.Parcelle, label.parcel_id)
+    owner = db.get(models.User, parcel.owner_id) if parcel is not None else None
+    farm = None
+    for fixture_name in ("sprint-01.json", "sprint-08.json"):
+        fixture_data = json.loads(
+            (FIXTURES_DIR / fixture_name).read_text(encoding="utf-8")
+        )
+        if fixture_data.get("farm", {}).get("id") == label.farm_id:
+            farm = fixture_data["farm"]
+            break
+    if farm is None:
+        farm = {
+            "id": label.farm_id,
+            "name": owner.name if owner is not None else label.farm_id,
+            "owner_id": parcel.owner_id if parcel is not None else None,
+        }
+
+    product = (
+        db.query(models.Produit)
+        .filter(models.Produit.label_id == label.id)
+        .first()
+    )
+    product_data = (
+        {
+            "id": product.id,
+            "name": product.name,
+            "category": product.category,
+            "quantity_kg": product.quantity_kg,
+            "price_tnd_kg": product.price_tnd_kg,
+        }
+        if product is not None
+        else None
+    )
+    verifications = (
+        db.query(models.Verification)
+        .filter(models.Verification.parcel_id == label.parcel_id)
+        .all()
+    )
+    return {
+        "id": label.id,
+        "qr_code": label.qr_code,
+        "grade": grade,
+        "status": label.status,
+        "farm": farm,
+        "product": product_data,
+        "verifications": [
+            {
+                "kind": verification.kind,
+                "status": verification.status,
+                "evidence": verification.evidence,
+            }
+            for verification in verifications
+        ],
+    }
 
 
 @app.get("/produits")

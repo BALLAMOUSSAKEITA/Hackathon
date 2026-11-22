@@ -34,6 +34,87 @@ def test_public_active_label():
         assert response.json()["grade"] == "B"
 
 
+def test_sprint_08_fixture_computes_labels_and_public_qr_details():
+    with TestClient(app) as client:
+        fixture = client.get("/fixture/sprint-08")
+        public_label = client.get("/labels/ARDI-S08-FARM-001")
+
+    assert fixture.status_code == 200
+    data = fixture.json()
+    assert data["calculated_labels"] == {"current": "B", "potential": "A"}
+    assert data["home"]["potential_label_grade"] == "A"
+    assert len(data["verifications"]) == 2
+    assert public_label.status_code == 200
+    public = public_label.json()
+    assert public["grade"] == "B"
+    assert public["status"] == "active"
+    assert public["farm"]["id"] == "farm-sprint-08"
+    assert public["product"]["id"] == "product-sprint-08-olive-oil"
+    assert {row["status"] for row in public["verifications"]} == {"conforme"}
+
+
+def test_label_grade_thresholds_and_a_requirements():
+    base = {
+        "compatible": True,
+        "irrigation_method": "drip",
+        "water_demand_m3": 900,
+        "available_water_m3": 1000,
+        "plan_compliant": True,
+        "repeated_well_overruns": 0,
+    }
+
+    assert main_module.calculate_label_grade({**base, "revenue_dt_m3": 2.2}) == "A"
+    assert main_module.calculate_label_grade({**base, "revenue_dt_m3": 1.5}) == "B"
+    assert main_module.calculate_label_grade({**base, "revenue_dt_m3": 1.1}) == "C"
+    assert main_module.calculate_label_grade({**base, "revenue_dt_m3": 0.8}) == "D"
+    assert main_module.calculate_label_grade({**base, "revenue_dt_m3": 0.79}) == "E"
+    assert main_module.calculate_label_grade(
+        {**base, "revenue_dt_m3": 2.2, "compatible": False}
+    ) == "B"
+    assert main_module.calculate_label_grade(
+        {**base, "revenue_dt_m3": 2.2, "irrigation_method": "gravity"}
+    ) == "B"
+    assert main_module.calculate_label_grade(
+        {**base, "revenue_dt_m3": 2.2, "water_demand_m3": 1100}
+    ) == "B"
+    assert main_module.calculate_label_grade(
+        {**base, "revenue_dt_m3": 2.2, "plan_compliant": False}
+    ) == "B"
+    assert main_module.calculate_label_grade(
+        {**base, "revenue_dt_m3": 2.2, "repeated_well_overruns": 1}
+    ) == "E"
+
+
+def test_suspended_label_remains_openable_and_shows_status():
+    with TestClient(app) as client:
+        session_generator = main_module.get_db()
+        db = next(session_generator)
+        label = db.get(main_module.models.Label, "label-sprint-08")
+        original_status = label.status
+        label.status = "suspended"
+        db.commit()
+        session_generator.close()
+        try:
+            response = client.get("/labels/ARDI-S08-FARM-001")
+        finally:
+            session_generator = main_module.get_db()
+            db = next(session_generator)
+            label = db.get(main_module.models.Label, "label-sprint-08")
+            label.status = original_status
+            db.commit()
+            session_generator.close()
+
+    assert response.status_code == 409
+    assert response.json()["detail"]["status"] == "suspended"
+    assert "grade" not in response.json()["detail"]
+
+
+def test_unknown_public_qr_is_not_found():
+    with TestClient(app) as client:
+        response = client.get("/labels/UNKNOWN-QR")
+    assert response.status_code == 404
+
+
 def test_sprint_02_fixture_has_all_demo_roles():
     with TestClient(app) as client:
         response = client.get("/fixture/sprint-02")
