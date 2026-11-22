@@ -1,0 +1,51 @@
+{
+  "sprint": 8,
+  "ferme": {
+    "id": "ferme-ardi-demo",
+    "name": "Ferme pilote Ardi",
+    "owner_id": "usr-demo",
+    "qr": "ARDI-FARM-001",
+    "status": "actif"
+  },
+  "plan": {
+    "culture": "olivier",
+    "culture_name": "Olivier",
+    "dt_m3": 2.42,
+    "eau_m3": 6642,
+    "eau_economisee_m3": 16236,
+    "energie_kwh": 2168,
+    "energie_economisee_kwh": 5294,
+    "irrigation": "localisee",
+    "compatible": true,
+    "conforme": true
+  },
+  "label": {
+    "active": "A",
+    "potentiel": "A",
+    "status": "actif"
+  },
+  "produit": {
+    "id": "produit-huile-001",
+    "name": "Huile d'olive Ardi",
+    "label": "A",
+    "qr": "ARDI-PRODUCT-001"
+  },
+  "verifications": [
+    {"kind":"culture","status":"culture conforme","detail":"Profil végétatif compatible avec olivier","result":"conforme"},
+    {"kind":"irrigation","status":"irrigation conforme","detail":"Irrigation localisée conforme au plan","result":"conforme"}
+  ],
+  "conseil": {
+    "culture": "Olivier",
+    "dt_m3": 2.42,
+    "ecart_dt_m3": 1.7,
+    "message_fr": "L'olivier rapporte 1,70 DT/m³ de plus que la tomate.",
+    "message_ar": "الزيتون يدر 1.70 دينار لكل م³ أكثر من الطماطم.",
+    "message_darija": "Zitoune yjib +1.70 DT/m3 akthar min maticha."
+  },
+  "hypotheses": {
+    "currency": "TND",
+    "label_thresholds": {"A":2.2,"B":1.5,"C":1.1,"D":0.8},
+    "efficience": 0.9,
+    "eta": 0.5
+  }
+}

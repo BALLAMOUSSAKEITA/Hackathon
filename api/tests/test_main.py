@@ -217,3 +217,30 @@ def test_sprint_seven_adopt_plan_rejects_well_overflow() -> None:
         json={"allocations": {"olivier": 3.69}},
     )
     assert response.status_code in {200, 422}
+
+
+def test_sprint_eight_label_a_and_e_thresholds() -> None:
+    label_a = client.post(
+        "/labels/calculate",
+        json={"dt_m3": 2.2, "compatible": True, "irrigation": "localisee", "conforme": True},
+    )
+    assert label_a.status_code == 200
+    assert label_a.json()["letter"] == "A"
+
+    label_e = client.post(
+        "/labels/calculate",
+        json={"dt_m3": 0.79, "compatible": True, "irrigation": "localisee", "conforme": True},
+    )
+    assert label_e.status_code == 200
+    assert label_e.json()["letter"] == "E"
+
+
+def test_sprint_eight_public_farm_and_product_qr() -> None:
+    farm = client.get("/labels/ARDI-FARM-001")
+    assert farm.status_code == 200
+    assert farm.json()["note"] == "A"
+    assert farm.json()["status"] == "actif"
+
+    product = client.get("/labels/ARDI-PRODUCT-001")
+    assert product.status_code == 200
+    assert product.json()["produit"] == "Huile d'olive Ardi"

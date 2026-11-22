@@ -57,3 +57,9 @@ PostGIS conformément à `api/alembic/README.md`.
   écart et label à chaque jeu d'allocation.
 - `POST /parcelles/{id}/plan` adopte uniquement un plan sans dépassement
   de la parcelle ou du puits.
+
+## Sprint 8
+
+- `POST /labels/calculate` calcule la lettre A–E selon le DT/m³, la compatibilité,
+  l'irrigation localisée et la conformité.
+- `GET /labels/{qr}` expose la fiche publique d'une ferme ou d'un produit.

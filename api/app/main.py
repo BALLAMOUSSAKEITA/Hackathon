@@ -20,6 +20,7 @@ SPRINT_4_FIXTURE_PATH = Path(__file__).resolve().parents[2] / "fixtures" / "spri
 SPRINT_5_FIXTURE_PATH = Path(__file__).resolve().parents[2] / "fixtures" / "sprint-05.json"
 SPRINT_6_FIXTURE_PATH = Path(__file__).resolve().parents[2] / "fixtures" / "sprint-06.json"
 SPRINT_7_FIXTURE_PATH = Path(__file__).resolve().parents[2] / "fixtures" / "sprint-07.json"
+SPRINT_8_FIXTURE_PATH = Path(__file__).resolve().parents[2] / "fixtures" / "sprint-08.json"
 ALLOWED_ROLES = {"agriculteur", "acheteur_particulier", "acheteur_professionnel"}
 DEMO_OTP = "123456"
 pending_profiles: dict[str, dict[str, str]] = {}
@@ -340,6 +341,61 @@ def adopt_plan(parcelle_id: str, payload: SimulationRequest) -> dict[str, Any]:
         "status": "adopte",
         "parcelle_id": parcelle_id,
         "plan": simulation,
+    }
+
+
+def calculate_label(dt_m3: float, compatible: bool, localized: bool, conforms: bool) -> str:
+    if not compatible or not localized or not conforms:
+        return "E"
+    return label_from_dt_m3(dt_m3)
+
+
+@app.get("/demo/sprint-08")
+def demo_sprint_8() -> dict[str, Any]:
+    with SPRINT_8_FIXTURE_PATH.open("r", encoding="utf-8") as fixture_file:
+        return json.load(fixture_file)
+
+
+@app.post("/labels/calculate")
+def calculate_demo_label(payload: dict[str, Any]) -> dict[str, Any]:
+    dt_m3 = float(payload.get("dt_m3", 0))
+    compatible = bool(payload.get("compatible", False))
+    localized = payload.get("irrigation") == "localisee"
+    conforms = bool(payload.get("conforme", False))
+    return {
+        "letter": calculate_label(dt_m3, compatible, localized, conforms),
+        "dt_m3": dt_m3,
+        "compatible": compatible,
+        "irrigation": "localisee" if localized else str(payload.get("irrigation", "unknown")),
+        "conforme": conforms,
+    }
+
+
+@app.get("/labels/{qr}")
+def public_label(qr: str) -> dict[str, Any]:
+    with SPRINT_8_FIXTURE_PATH.open("r", encoding="utf-8") as fixture_file:
+        fixture = json.load(fixture_file)
+
+    known_qr = {fixture["ferme"]["qr"], fixture["produit"]["qr"]}
+    if qr not in known_qr:
+        raise HTTPException(status_code=404, detail="QR introuvable.")
+
+    plan = fixture["plan"]
+    letter = calculate_label(
+        plan["dt_m3"],
+        plan["compatible"],
+        plan["irrigation"] == "localisee",
+        plan["conforme"],
+    )
+    return {
+        "qr": qr,
+        "note": letter,
+        "ferme": fixture["ferme"]["name"],
+        "produit": fixture["produit"]["name"] if qr == fixture["produit"]["qr"] else None,
+        "status": "actif" if fixture["ferme"]["status"] == "actif" else "suspendu",
+        "economie_eau_m3": plan["eau_economisee_m3"],
+        "economie_energie_kwh": plan["energie_economisee_kwh"],
+        "verifications": fixture["verifications"],
     }
 
 

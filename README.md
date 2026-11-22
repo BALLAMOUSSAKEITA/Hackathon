@@ -16,6 +16,7 @@ Socle technique du parcours agriculteur/acheteur pour le hackathon.
 - `fixtures/sprint-05.json` : sol, climat, eau, énergie et NDVI du Sprint 5.
 - `fixtures/sprint-06.json` : classement des cultures, écarts et exclusions du Sprint 6.
 - `fixtures/sprint-07.json` : répartition, situation actuelle et capacités du Sprint 7.
+- `fixtures/sprint-08.json` : accueil, label, vérifications et QR du Sprint 8.
 
 ## Démarrage rapide
 
