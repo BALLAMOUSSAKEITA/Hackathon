@@ -1,0 +1,76 @@
+{
+  "farmer_id": "user-demo",
+  "users": [
+    {
+      "id": "user-demo",
+      "phone": "+21600000000",
+      "name": "Nafissatou",
+      "role": "farmer",
+      "language": "fr"
+    }
+  ],
+  "parcelles": [
+    {
+      "id": "parcel-sprint-05",
+      "owner_id": "user-demo",
+      "name": "Parcelle analyse demo",
+      "area_ha": 2.4,
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [9.48, 35.0286],
+            [9.4816933, 35.0286],
+            [9.4816933, 35.03],
+            [9.48, 35.03],
+            [9.48, 35.0286]
+          ]
+        ]
+      },
+      "water_source": "well",
+      "well_depth_m": 60,
+      "pump_flow_m3_h": 18,
+      "energy_type": "solar",
+      "current_crop_id": "crop-wheat"
+    }
+  ],
+  "water": {
+    "pump_hours_per_day": 6,
+    "season_days": 180,
+    "efficiency": 0.5
+  },
+  "analysis_inputs": {
+    "soil": {
+      "texture": "loam",
+      "ph": 7.4,
+      "organic_matter_percent": 1.8,
+      "source": "SoilGrids v2.0 (snapshot de demonstration)"
+    },
+    "climate": {
+      "rain_mm": 320,
+      "period_days": 365,
+      "temperature_c": 24,
+      "et0_daily_mm": 4.8,
+      "source": "Open-Meteo (snapshot de demonstration)"
+    },
+    "solar": {
+      "irradiance_kwh_m2_day": 5.4,
+      "source": "NASA POWER (snapshot de demonstration)"
+    }
+  },
+  "ndvi_source": "Serie NDVI mensuelle figee pour la demonstration",
+  "ndvi_monthly": [
+    {"month": "2025-11", "value": 0.31},
+    {"month": "2025-12", "value": 0.34},
+    {"month": "2026-01", "value": 0.38},
+    {"month": "2026-02", "value": 0.43},
+    {"month": "2026-03", "value": 0.49},
+    {"month": "2026-04", "value": 0.54},
+    {"month": "2026-05", "value": 0.57},
+    {"month": "2026-06", "value": 0.53},
+    {"month": "2026-07", "value": 0.47},
+    {"month": "2026-08", "value": 0.42},
+    {"month": "2026-09", "value": 0.37},
+    {"month": "2026-10", "value": 0.33}
+  ]
+}

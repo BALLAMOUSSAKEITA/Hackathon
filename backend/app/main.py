@@ -1,12 +1,17 @@
 import json
 import math
+from concurrent.futures import ThreadPoolExecutor, TimeoutError as FuturesTimeoutError
 from contextlib import asynccontextmanager
+from datetime import datetime, timedelta, timezone
+from functools import lru_cache
 from pathlib import Path
+from statistics import mean
 from typing import Any
 from uuid import uuid4
 
 from fastapi import Depends, FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
+import httpx
 from pyproj import Geod
 from shapely.errors import GEOSException
 from shapely.geometry import shape
@@ -17,6 +22,7 @@ from sqlalchemy.orm import Session
 from .database import Base, engine, get_db
 from . import models
 from .schemas import (
+    AnalyseRequest,
     OTPRequest,
     OTPResponse,
     OTPVerify,
@@ -85,6 +91,190 @@ def calculate_polygon_area_ha(geometry: dict[str, Any]) -> float:
     return area_ha
 
 
+class ExternalSourceError(Exception):
+    pass
+
+
+def fetch_json(source: str, url: str, params: dict[str, Any]) -> dict[str, Any]:
+    try:
+        response = httpx.get(
+            url,
+            params=params,
+            timeout=httpx.Timeout(2.5, connect=1.0),
+        )
+        response.raise_for_status()
+        return response.json()
+    except (httpx.HTTPError, ValueError) as error:
+        raise ExternalSourceError(f"{source} is unavailable or returned invalid data") from error
+
+
+@lru_cache(maxsize=128)
+def fetch_soilgrids(latitude: float, longitude: float) -> dict[str, Any]:
+    data = fetch_json(
+        "SoilGrids",
+        "https://rest.isric.org/soilgrids/v2.0/properties/query",
+        {
+            "lat": latitude,
+            "lon": longitude,
+            "property": ["phh2o", "soc", "sand", "clay"],
+            "depth": "0-5cm",
+            "value": "mean",
+        },
+    )
+    try:
+        layers = data["properties"]["layers"]
+
+        def layer_mean(name: str) -> float:
+            layer = next(item for item in layers if item["name"] == name)
+            depth = next(item for item in layer["depths"] if item["label"] == "0-5cm")
+            value = float(depth["values"]["mean"])
+            if not math.isfinite(value):
+                raise ValueError("SoilGrids returned a non-finite value")
+            return value
+
+        ph = layer_mean("phh2o") / 10
+        organic_carbon_g_kg = layer_mean("soc")
+        sand_percent = layer_mean("sand") / 10
+        clay_percent = layer_mean("clay") / 10
+        if (
+            not 0 <= ph <= 14
+            or not 0 <= organic_carbon_g_kg <= 1000
+            or not 0 <= sand_percent <= 100
+            or not 0 <= clay_percent <= 100
+        ):
+            raise ValueError("SoilGrids returned a value outside expected ranges")
+    except (KeyError, StopIteration, TypeError, ValueError) as error:
+        raise ExternalSourceError("SoilGrids response is missing required soil properties") from error
+
+    if clay_percent >= 40:
+        texture = "clay"
+    elif sand_percent >= 70:
+        texture = "sandy"
+    elif sand_percent >= 52 and clay_percent < 20:
+        texture = "sandy_loam"
+    elif clay_percent >= 27:
+        texture = "clay_loam"
+    else:
+        texture = "loam"
+
+    return {
+        "texture": texture,
+        "ph": round(ph, 2),
+        "organic_matter_percent": round(organic_carbon_g_kg * 1.724 / 10, 2),
+        "source": "SoilGrids v2.0",
+    }
+
+
+@lru_cache(maxsize=128)
+def fetch_open_meteo(
+    latitude: float,
+    longitude: float,
+    start_date: str,
+    end_date: str,
+) -> dict[str, Any]:
+    data = fetch_json(
+        "Open-Meteo",
+        "https://archive-api.open-meteo.com/v1/archive",
+        {
+            "latitude": latitude,
+            "longitude": longitude,
+            "start_date": start_date,
+            "end_date": end_date,
+            "daily": "precipitation_sum,temperature_2m_mean,et0_fao_evapotranspiration",
+            "timezone": "UTC",
+        },
+    )
+    try:
+        daily = data["daily"]
+        precipitation = [float(value) for value in daily["precipitation_sum"] if value is not None]
+        temperatures = [float(value) for value in daily["temperature_2m_mean"] if value is not None]
+        et0_values = [
+            float(value)
+            for value in daily["et0_fao_evapotranspiration"]
+            if value is not None
+        ]
+        if not precipitation or not temperatures or not et0_values:
+            raise ValueError("Open-Meteo returned empty daily series")
+        if not all(
+            math.isfinite(value)
+            for series in (precipitation, temperatures, et0_values)
+            for value in series
+        ):
+            raise ValueError("Open-Meteo returned a non-finite value")
+        if (
+            any(value < 0 for value in precipitation)
+            or any(value < 0 for value in et0_values)
+            or any(not -90 <= value <= 70 for value in temperatures)
+        ):
+            raise ValueError("Open-Meteo returned a value outside expected ranges")
+    except (KeyError, TypeError, ValueError) as error:
+        raise ExternalSourceError("Open-Meteo response is missing required climate data") from error
+
+    return {
+        "rain_mm": round(sum(precipitation), 1),
+        "period_days": len(precipitation),
+        "temperature_c": round(mean(temperatures), 1),
+        "et0_daily_mm": round(mean(et0_values), 2),
+        "source": "Open-Meteo archive",
+    }
+
+
+@lru_cache(maxsize=128)
+def fetch_nasa_power(latitude: float, longitude: float) -> dict[str, Any]:
+    data = fetch_json(
+        "NASA POWER",
+        "https://power.larc.nasa.gov/api/temporal/climatology/point",
+        {
+            "parameters": "ALLSKY_SFC_SW_DWN",
+            "community": "AG",
+            "longitude": longitude,
+            "latitude": latitude,
+            "format": "JSON",
+        },
+    )
+    try:
+        irradiance = float(data["properties"]["parameter"]["ALLSKY_SFC_SW_DWN"]["ANN"])
+        if not math.isfinite(irradiance) or irradiance < 0:
+            raise ValueError("NASA POWER returned an invalid irradiance value")
+    except (KeyError, TypeError, ValueError) as error:
+        raise ExternalSourceError("NASA POWER response is missing solar irradiance") from error
+    return {
+        "irradiance_kwh_m2_day": round(irradiance, 2),
+        "source": "NASA POWER",
+    }
+
+
+def fetch_external_analysis(latitude: float, longitude: float) -> dict[str, dict[str, Any]]:
+    end_date = datetime.now(timezone.utc).date() - timedelta(days=7)
+    start_date = end_date - timedelta(days=364)
+    coordinates = (round(latitude, 4), round(longitude, 4))
+
+    with ThreadPoolExecutor(max_workers=3) as executor:
+        futures = {
+            "soil": executor.submit(fetch_soilgrids, *coordinates),
+            "climate": executor.submit(
+                fetch_open_meteo,
+                *coordinates,
+                start_date.isoformat(),
+                end_date.isoformat(),
+            ),
+            "solar": executor.submit(fetch_nasa_power, *coordinates),
+        }
+        try:
+            return {
+                key: future.result(timeout=4)
+                for key, future in futures.items()
+            }
+        except FuturesTimeoutError as error:
+            for future in futures.values():
+                future.cancel()
+            raise HTTPException(504, "External analysis sources exceeded the time limit") from error
+        except ExternalSourceError as error:
+            for future in futures.values():
+                future.cancel()
+            raise HTTPException(502, str(error)) from error
+
+
 @asynccontextmanager
 async def lifespan(_: FastAPI):
     Base.metadata.create_all(bind=engine)
@@ -95,6 +285,7 @@ async def lifespan(_: FastAPI):
             "sprint-02.json",
             "sprint-03.json",
             "sprint-04.json",
+            "sprint-05.json",
         ):
             fixture = FIXTURES_DIR / fixture_name
             data = json.loads(fixture.read_text(encoding="utf-8"))
@@ -143,7 +334,7 @@ async def lifespan(_: FastAPI):
 app = FastAPI(
     title="Ardi API",
     version="1.0.0",
-    description="API FastAPI Ardi, sprints de demonstration 1 a 3.",
+    description="API FastAPI Ardi, sprints de demonstration 1 a 5.",
     lifespan=lifespan,
 )
 app.add_middleware(
@@ -191,6 +382,11 @@ def sprint_03_fixture() -> dict[str, Any]:
 @app.get("/fixture/sprint-04")
 def sprint_04_fixture() -> dict[str, Any]:
     return json.loads((FIXTURES_DIR / "sprint-04.json").read_text(encoding="utf-8"))
+
+
+@app.get("/fixture/sprint-05")
+def sprint_05_fixture() -> dict[str, Any]:
+    return json.loads((FIXTURES_DIR / "sprint-05.json").read_text(encoding="utf-8"))
 
 
 @app.post("/auth/otp", response_model=OTPResponse)
@@ -273,6 +469,117 @@ def get_parcelle(parcel_id: str, db: Session = Depends(get_db)):
     if not parcel:
         raise HTTPException(404, "Parcel not found")
     return parcel
+
+
+@app.post("/parcelles/{parcel_id}/analyse")
+def analyze_parcelle(
+    parcel_id: str,
+    payload: AnalyseRequest | None = None,
+    db: Session = Depends(get_db),
+):
+    parcel = db.get(models.Parcelle, parcel_id)
+    if parcel is None:
+        raise HTTPException(404, "Parcel not found")
+    if parcel.pump_flow_m3_h is None or parcel.well_depth_m is None:
+        raise HTTPException(422, "Parcel needs pump flow and well depth for water and energy analysis")
+
+    fixture = json.loads((FIXTURES_DIR / "sprint-05.json").read_text(encoding="utf-8"))
+    fixture_parcel_ids = {row["id"] for row in fixture["parcelles"]}
+    uses_fixture = parcel_id in fixture_parcel_ids
+    if uses_fixture:
+        source_data = fixture["analysis_inputs"]
+        water_settings = fixture["water"]
+        ndvi_monthly = fixture["ndvi_monthly"]
+        ndvi_source = fixture["ndvi_source"]
+    else:
+        centroid = shape(parcel.geometry).centroid
+        source_data = fetch_external_analysis(centroid.y, centroid.x)
+        water_settings = {}
+        ndvi_monthly = []
+        ndvi_source = "No fixed NDVI series is available for this parcel"
+
+    pump_hours_per_day = (
+        payload.pump_hours_per_day
+        if payload and payload.pump_hours_per_day is not None
+        else water_settings.get("pump_hours_per_day", 6)
+    )
+    season_days = (
+        payload.season_days
+        if payload and payload.season_days is not None
+        else water_settings.get("season_days", 180)
+    )
+    efficiency = (
+        payload.efficiency
+        if payload and payload.efficiency is not None
+        else water_settings.get("efficiency", 0.5)
+    )
+    available_water_m3 = round(
+        parcel.pump_flow_m3_h * pump_hours_per_day * season_days, 2
+    )
+    pumping_energy_kwh_m3 = round(0.00272 * parcel.well_depth_m / efficiency, 4)
+
+    soil = source_data["soil"]
+    climate = source_data["climate"]
+    solar = source_data["solar"]
+    sources = {
+        "soil": soil["source"],
+        "climate": climate["source"],
+        "solar": solar["source"],
+        "ndvi": ndvi_source,
+    }
+    assumptions = {
+        "pump_flow_m3_h": parcel.pump_flow_m3_h,
+        "pump_hours_per_day": pump_hours_per_day,
+        "season_days": season_days,
+        "water_formula": "pump_flow_m3_h * pump_hours_per_day * season_days",
+        "well_depth_m": parcel.well_depth_m,
+        "efficiency": efficiency,
+        "energy_formula": "0.00272 * well_depth_m / efficiency",
+        "climate_period_days": climate.get("period_days"),
+        "et0_period": "daily mean, mm/day",
+        "settings_source": "sprint-05 fixture" if uses_fixture else "request or documented defaults",
+    }
+    analysis = models.Analyse(
+        id=str(uuid4()),
+        parcel_id=parcel_id,
+        soil_texture=soil["texture"],
+        ph=soil["ph"],
+        organic_matter_percent=soil["organic_matter_percent"],
+        rain_mm=climate["rain_mm"],
+        temperature_c=climate["temperature_c"],
+        et0_mm=climate["et0_daily_mm"],
+        available_water_m3=available_water_m3,
+        pumping_energy_kwh_m3=pumping_energy_kwh_m3,
+    )
+    db.add(analysis)
+    db.flush()
+    detail = models.AnalyseDetail(
+        analysis_id=analysis.id,
+        solar_irradiance_kwh_m2_day=solar["irradiance_kwh_m2_day"],
+        sources=sources,
+        ndvi_monthly=ndvi_monthly,
+        assumptions=assumptions,
+    )
+    db.add(detail)
+    db.commit()
+    db.refresh(analysis)
+
+    return {
+        "id": analysis.id,
+        "parcel_id": analysis.parcel_id,
+        "soil_texture": analysis.soil_texture,
+        "ph": analysis.ph,
+        "organic_matter_percent": analysis.organic_matter_percent,
+        "rain_mm": analysis.rain_mm,
+        "temperature_c": analysis.temperature_c,
+        "et0_mm": analysis.et0_mm,
+        "solar_irradiance_kwh_m2_day": detail.solar_irradiance_kwh_m2_day,
+        "available_water_m3": analysis.available_water_m3,
+        "pumping_energy_kwh_m3": analysis.pumping_energy_kwh_m3,
+        "ndvi_monthly": detail.ndvi_monthly,
+        "sources": detail.sources,
+        "assumptions": detail.assumptions,
+    }
 
 
 @app.get("/cultures")

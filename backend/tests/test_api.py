@@ -6,6 +6,7 @@ os.environ["DATABASE_URL"] = "sqlite:///./test-ardi.db"
 from fastapi.testclient import TestClient
 
 from app.database import Base, engine
+from app import main as main_module
 from app.main import app
 
 
@@ -266,3 +267,98 @@ def test_parcel_post_requires_existing_owner():
     with TestClient(app) as client:
         response = client.post("/parcelles", json=payload)
         assert response.status_code == 404
+
+
+def test_sprint_05_analysis_uses_fixture_and_calculates_water_and_energy():
+    with TestClient(app) as client:
+        fixture = client.get("/fixture/sprint-05")
+        response = client.post("/parcelles/parcel-sprint-05/analyse")
+
+        assert fixture.status_code == 200
+        assert response.status_code == 200
+        analysis = response.json()
+        assert analysis["soil_texture"] == "loam"
+        assert analysis["ph"] == 7.4
+        assert analysis["available_water_m3"] == 19_440
+        assert analysis["pumping_energy_kwh_m3"] == 0.3264
+        assert analysis["solar_irradiance_kwh_m2_day"] == 5.4
+        assert len(analysis["ndvi_monthly"]) == 12
+        assert analysis["sources"]["soil"].startswith("SoilGrids")
+        assert analysis["sources"]["climate"].startswith("Open-Meteo")
+
+
+def test_analysis_request_can_override_water_assumptions():
+    with TestClient(app) as client:
+        response = client.post(
+            "/parcelles/parcel-sprint-05/analyse",
+            json={
+                "pump_hours_per_day": 4,
+                "season_days": 90,
+                "efficiency": 0.4,
+            },
+        )
+        assert response.status_code == 200
+        assert response.json()["available_water_m3"] == 6_480
+        assert response.json()["pumping_energy_kwh_m3"] == 0.408
+
+
+def test_analysis_returns_not_found_for_unknown_parcel():
+    with TestClient(app) as client:
+        response = client.post("/parcelles/missing-parcel/analyse")
+        assert response.status_code == 404
+
+
+def test_external_analysis_sources_are_cached(monkeypatch):
+    calls = []
+
+    def fake_fetch_json(source, url, params):
+        calls.append(source)
+        if source == "SoilGrids":
+            values = {"phh2o": 74, "soc": 10, "sand": 400, "clay": 200}
+            return {
+                "properties": {
+                    "layers": [
+                        {
+                            "name": name,
+                            "depths": [{"label": "0-5cm", "values": {"mean": value}}],
+                        }
+                        for name, value in values.items()
+                    ]
+                }
+            }
+        if source == "Open-Meteo":
+            return {
+                "daily": {
+                    "precipitation_sum": [1, 2],
+                    "temperature_2m_mean": [20, 22],
+                    "et0_fao_evapotranspiration": [4, 5],
+                }
+            }
+        return {
+            "properties": {
+                "parameter": {"ALLSKY_SFC_SW_DWN": {"ANN": 5.4}}
+            }
+        }
+
+    monkeypatch.setattr(main_module, "fetch_json", fake_fetch_json)
+    cached_fetchers = (
+        main_module.fetch_soilgrids,
+        main_module.fetch_open_meteo,
+        main_module.fetch_nasa_power,
+    )
+    for fetcher in cached_fetchers:
+        fetcher.cache_clear()
+    try:
+        assert main_module.fetch_soilgrids(35.0, 9.0) == main_module.fetch_soilgrids(
+            35.0, 9.0
+        )
+        assert main_module.fetch_open_meteo(
+            35.0, 9.0, "2025-11-01", "2026-10-31"
+        ) == main_module.fetch_open_meteo(35.0, 9.0, "2025-11-01", "2026-10-31")
+        assert main_module.fetch_nasa_power(35.0, 9.0) == main_module.fetch_nasa_power(
+            35.0, 9.0
+        )
+        assert calls == ["SoilGrids", "Open-Meteo", "NASA POWER"]
+    finally:
+        for fetcher in cached_fetchers:
+            fetcher.cache_clear()

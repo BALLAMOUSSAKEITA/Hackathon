@@ -41,6 +41,17 @@ class Analyse(Base):
     pumping_energy_kwh_m3: Mapped[float] = mapped_column(Float)
 
 
+class AnalyseDetail(Base):
+    __tablename__ = "analyse_details"
+    analysis_id: Mapped[str] = mapped_column(
+        String, ForeignKey("analyses.id"), primary_key=True
+    )
+    solar_irradiance_kwh_m2_day: Mapped[float] = mapped_column(Float)
+    sources: Mapped[dict] = mapped_column(JSON)
+    ndvi_monthly: Mapped[list[dict]] = mapped_column(JSON)
+    assumptions: Mapped[dict] = mapped_column(JSON)
+
+
 class Culture(Base):
     __tablename__ = "cultures"
     id: Mapped[str] = mapped_column(String, primary_key=True)

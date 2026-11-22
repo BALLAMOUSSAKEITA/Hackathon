@@ -36,6 +36,12 @@ class OTPVerify(BaseModel):
     language: Literal["fr", "ar", "darija"]
 
 
+class AnalyseRequest(BaseModel):
+    pump_hours_per_day: float | None = Field(default=None, ge=0, le=24)
+    season_days: int | None = Field(default=None, gt=0, le=366)
+    efficiency: float | None = Field(default=None, gt=0, le=1)
+
+
 class ParcelleCreate(ORMModel):
     id: str
     owner_id: str
