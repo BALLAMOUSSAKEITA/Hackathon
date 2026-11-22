@@ -34,6 +34,7 @@ SPRINT_10_FIXTURE_PATH = Path(__file__).resolve().parents[2] / "fixtures" / "spr
 SPRINT_11_FIXTURE_PATH = Path(__file__).resolve().parents[2] / "fixtures" / "sprint-11.json"
 SPRINT_12_FIXTURE_PATH = Path(__file__).resolve().parents[2] / "fixtures" / "sprint-12.json"
 SPRINT_13_FIXTURE_PATH = Path(__file__).resolve().parents[2] / "fixtures" / "sprint-13.json"
+SPRINT_14_FIXTURE_PATH = Path(__file__).resolve().parents[2] / "fixtures" / "sprint-14.json"
 ALLOWED_ROLES = {"agriculteur", "acheteur_particulier", "acheteur_professionnel"}
 DEMO_OTP = "123456"
 pending_profiles: dict[str, dict[str, str]] = {}
@@ -645,6 +646,90 @@ def solar_sizing(parcelle_id: str, profondeur_m: float | None = None) -> dict[st
         "production_solaire": fixture["pompage"]["production_solaire"],
         "aides": fixture["aides"],
         "hypotheses": fixture["hypotheses"],
+    }
+
+
+@app.get("/demo/sprint-14")
+def demo_sprint_14() -> dict[str, Any]:
+    with SPRINT_14_FIXTURE_PATH.open("r", encoding="utf-8") as fixture_file:
+        return json.load(fixture_file)
+
+
+def alert_status(images: list[dict[str, Any]]) -> str:
+    concordant = [image for image in images if image.get("agreement") is True]
+    if len(concordant) >= 2:
+        return "ecart_confirme"
+    if len(concordant) == 1:
+        return "a_confirmer"
+    return "dans_le_plan"
+
+
+@app.get("/parcelles/{parcelle_id}/suivi")
+def parcel_followup(parcelle_id: str) -> dict[str, Any]:
+    with SPRINT_14_FIXTURE_PATH.open("r", encoding="utf-8") as fixture_file:
+        fixture = json.load(fixture_file)
+
+    if parcelle_id != fixture["parcelle"]["id"]:
+        raise HTTPException(status_code=404, detail="Parcelle introuvable.")
+
+    overrun = (
+        fixture["parcelle"]["eau_consomme_m3"]
+        - fixture["parcelle"]["plan_eau_m3"]
+    )
+    status = alert_status(fixture["images"])
+    alerte = dict(fixture["alerte"])
+    alerte["status"] = status
+    alerte["ecart_m3"] = overrun
+    if overrun > 0:
+        alerte["active"] = True
+    else:
+        alerte["active"] = False
+        alerte["status"] = "dans_le_plan"
+
+    return {
+        "parcelle": fixture["parcelle"],
+        "zones": fixture["zones"],
+        "ndvi_12_mois": fixture["ndvi_12_mois"],
+        "images": fixture["images"],
+        "alerte": alerte,
+        "hypotheses": fixture["hypotheses"],
+    }
+
+
+@app.post("/parcelles/{parcelle_id}/suivi/alerte")
+def evaluate_alert(parcelle_id: str, payload: dict[str, Any]) -> dict[str, Any]:
+    images = payload.get("images")
+    if not isinstance(images, list):
+        raise HTTPException(status_code=422, detail="Liste d'images requise.")
+
+    with SPRINT_14_FIXTURE_PATH.open("r", encoding="utf-8") as fixture_file:
+        fixture = json.load(fixture_file)
+    if parcelle_id != fixture["parcelle"]["id"]:
+        raise HTTPException(status_code=404, detail="Parcelle introuvable.")
+
+    status = alert_status(images)
+    return {
+        "parcelle_id": parcelle_id,
+        "status": status,
+        "images_concordantes": sum(
+            1 for image in images if image.get("agreement") is True
+        ),
+    }
+
+
+@app.post("/parcelles/{parcelle_id}/suivi/contestation")
+def contest_alert(parcelle_id: str, payload: dict[str, Any]) -> dict[str, Any]:
+    photo = str(payload.get("photo", "")).strip()
+    latitude = payload.get("latitude")
+    longitude = payload.get("longitude")
+    if not photo or latitude is None or longitude is None:
+        raise HTTPException(status_code=422, detail="Photo et géolocalisation requises.")
+    return {
+        "parcelle_id": parcelle_id,
+        "status": "contestee",
+        "photo": photo,
+        "latitude": latitude,
+        "longitude": longitude,
     }
 
 

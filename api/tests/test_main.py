@@ -393,3 +393,38 @@ def test_sprint_thirteen_depth_change_changes_solar_power() -> None:
     assert shallow.status_code == 200
     assert deep.status_code == 200
     assert deep.json()["puissance_kw"] > shallow.json()["puissance_kw"]
+
+
+def test_sprint_fourteen_followup_flags_irrigation_overrun() -> None:
+    response = client.get("/parcelles/parcelle-sprint-14/suivi")
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["alerte"]["active"] is True
+    assert payload["alerte"]["ecart_m3"] == 558
+    assert payload["alerte"]["status"] == "ecart_confirme"
+    assert len(payload["zones"]) == 3
+
+
+def test_sprint_fourteen_two_images_confirm_alert_but_one_stays_pending() -> None:
+    one = client.post(
+        "/parcelles/parcelle-sprint-14/suivi/alerte",
+        json={"images": [{"agreement": True}]},
+    )
+    assert one.status_code == 200
+    assert one.json()["status"] == "a_confirmer"
+
+    two = client.post(
+        "/parcelles/parcelle-sprint-14/suivi/alerte",
+        json={"images": [{"agreement": True}, {"agreement": True}]},
+    )
+    assert two.status_code == 200
+    assert two.json()["status"] == "ecart_confirme"
+
+
+def test_sprint_fourteen_contestation_requires_location() -> None:
+    response = client.post(
+        "/parcelles/parcelle-sprint-14/suivi/contestation",
+        json={"photo": "fixture://photo.jpg", "latitude": 35.67, "longitude": 9.83},
+    )
+    assert response.status_code == 200
+    assert response.json()["status"] == "contestee"

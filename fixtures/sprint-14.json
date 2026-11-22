@@ -1,0 +1,40 @@
+{
+  "sprint": 14,
+  "parcelle": {
+    "id": "parcelle-sprint-14",
+    "name": "Bloc nord",
+    "surface_hectares": 3.69,
+    "plan_eau_m3": 6642,
+    "eau_consomme_m3": 7200
+  },
+  "zones": [
+    {"id":"zone-nord","name":"Zone nord","ndvi":0.56,"humidite_pct":38,"eau_m3":2400},
+    {"id":"zone-centre","name":"Zone centre","ndvi":0.48,"humidite_pct":31,"eau_m3":2800},
+    {"id":"zone-sud","name":"Zone sud","ndvi":0.42,"humidite_pct":27,"eau_m3":2000}
+  ],
+  "ndvi_12_mois": [
+    {"mois":"2025-12","valeur":0.42},{"mois":"2026-01","valeur":0.44},
+    {"mois":"2026-02","valeur":0.48},{"mois":"2026-03","valeur":0.52},
+    {"mois":"2026-04","valeur":0.58},{"mois":"2026-05","valeur":0.61},
+    {"mois":"2026-06","valeur":0.55},{"mois":"2026-07","valeur":0.49},
+    {"mois":"2026-08","valeur":0.46},{"mois":"2026-09","valeur":0.51},
+    {"mois":"2026-10","valeur":0.56},{"mois":"2026-11","valeur":0.50}
+  ],
+  "images": [
+    {"id":"image-1","date":"2026-11-20","ecart_irrigation_m3":620,"agreement":true},
+    {"id":"image-2","date":"2026-11-25","ecart_irrigation_m3":580,"agreement":true}
+  ],
+  "alerte": {
+    "id": "alerte-sprint-14",
+    "type": "irrigation_non_conforme",
+    "message": "La consommation dépasse le plan de 558 m³.",
+    "audio_darija": "El ma akther b 558 m3 mel plan.",
+    "status": "ecart_confirme",
+    "requires_confirmation_images": 2
+  },
+  "hypotheses": {
+    "confirmation_images": 2,
+    "update_frequency_days": 5,
+    "source_ndvi": "Sentinel-2"
+  }
+}

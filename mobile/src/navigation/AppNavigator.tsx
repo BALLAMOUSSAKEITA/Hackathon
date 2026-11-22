@@ -20,6 +20,7 @@ import { SalesScreen } from "../screens/SalesScreen";
 import { NotificationsScreen } from "../screens/NotificationsScreen";
 import { DemoScreen } from "../screens/DemoScreen";
 import { SolarEnergyScreen } from "../screens/SolarEnergyScreen";
+import { SatelliteFollowupScreen } from "../screens/SatelliteFollowupScreen";
 
 export type RootStackParamList = {
   Welcome: undefined;
@@ -40,6 +41,7 @@ export type RootStackParamList = {
   Notifications: undefined;
   Demo: undefined;
   SolarEnergy: undefined;
+  SatelliteFollowup: undefined;
   [key: string]: object | undefined;
 };
 
@@ -67,7 +69,7 @@ const emptyTitles: Record<number, string> = {
 export function AppNavigator() {
   return (
     <Stack.Navigator
-      initialRouteName="SolarEnergy"
+      initialRouteName="SatelliteFollowup"
       screenOptions={{
         headerShown: false,
         contentStyle: { backgroundColor: "#f4f7ef" },
@@ -91,6 +93,7 @@ export function AppNavigator() {
       <Stack.Screen name="Notifications" component={NotificationsScreen} />
       <Stack.Screen name="Demo" component={DemoScreen} />
       <Stack.Screen name="SolarEnergy" component={SolarEnergyScreen} />
+      <Stack.Screen name="SatelliteFollowup" component={SatelliteFollowupScreen} />
       <Stack.Screen
         name="SolarEnergy"
         children={() => <EmptyStateScreen title="Pompe solaire · 60 m" />}

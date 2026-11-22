@@ -94,3 +94,9 @@ PostGIS conformément à `api/alembic/README.md`.
   coûts annuels et amortissement.
 - `GET /parcelles/{id}/solaire?profondeur_m=90` recalcule la puissance pour
   une profondeur différente.
+
+## Sprint 14
+
+- `GET /parcelles/{id}/suivi` expose zones, NDVI, consommation d'eau et alertes.
+- `POST /parcelles/{id}/suivi/alerte` confirme un écart après deux images concordantes.
+- `POST /parcelles/{id}/suivi/contestation` reçoit une photo géolocalisée.
