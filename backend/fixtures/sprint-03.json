@@ -1,0 +1,320 @@
+{
+  "data_notice": "Rendements, couts, besoins en eau et prix sont des valeurs indicatives de demonstration. Les prix et sources ONAGRI/marche de gros restent a confirmer avant toute decision agricole.",
+  "cultures": [
+    {
+      "id": "olive",
+      "name": {"fr": "Olivier", "ar": "زيتون", "darija": "zitoun", "ar_dz": "zitoun"},
+      "water_need_mm": 450,
+      "yield_t_ha": 3.2,
+      "price_tnd_t": 2800,
+      "duration_days": 365,
+      "water_demand": "low",
+      "details": {
+        "kc_by_stage": {"initial": 0.65, "development": 0.70, "mid_season": 0.70, "late_season": 0.70},
+        "yield_range_t_ha": {"min": 1.5, "typical": 3.2, "max": 6.0},
+        "price_range_tnd_t": {"min": 1800, "typical": 2800, "max": 4200},
+        "price_source": "Valeur indicative de demonstration; campagne et source ONAGRI/marche de gros a confirmer.",
+        "costs_tnd_ha": {"min": 1800, "typical": 3200, "max": 5200},
+        "compatible_soils": ["clay", "loam", "sandy_loam", "calcareous"],
+        "salt_tolerance_dS_m": 6.0,
+        "heat_tolerance_c": 40,
+        "first_production_days": 1095,
+        "kc_source": "FAO-56, coefficient indicatif; adaptation au cultivar tunisien a valider."
+      }
+    },
+    {
+      "id": "pistachio",
+      "name": {"fr": "Pistachier", "ar": "فستق حلبي", "darija": "fustuq", "ar_dz": "fustuq"},
+      "water_need_mm": 600,
+      "yield_t_ha": 1.2,
+      "price_tnd_t": 17000,
+      "duration_days": 365,
+      "water_demand": "low",
+      "details": {
+        "kc_by_stage": {"initial": 0.40, "development": 0.70, "mid_season": 0.90, "late_season": 0.70},
+        "yield_range_t_ha": {"min": 0.5, "typical": 1.2, "max": 2.0},
+        "price_range_tnd_t": {"min": 12000, "typical": 17000, "max": 23000},
+        "price_source": "Valeur indicative de demonstration; campagne et source ONAGRI/marche de gros a confirmer.",
+        "costs_tnd_ha": {"min": 2800, "typical": 4500, "max": 7000},
+        "compatible_soils": ["loam", "sandy_loam", "sandy", "calcareous"],
+        "salt_tolerance_dS_m": 8.0,
+        "heat_tolerance_c": 42,
+        "first_production_days": 1825,
+        "kc_source": "FAO-56, coefficient indicatif; adaptation au cultivar tunisien a valider."
+      }
+    },
+    {
+      "id": "pomegranate",
+      "name": {"fr": "Grenadier", "ar": "رمان", "darija": "rmen", "ar_dz": "rmen"},
+      "water_need_mm": 600,
+      "yield_t_ha": 12,
+      "price_tnd_t": 2200,
+      "duration_days": 365,
+      "water_demand": "medium",
+      "details": {
+        "kc_by_stage": {"initial": 0.40, "development": 0.75, "mid_season": 0.90, "late_season": 0.65},
+        "yield_range_t_ha": {"min": 8, "typical": 12, "max": 20},
+        "price_range_tnd_t": {"min": 1400, "typical": 2200, "max": 3200},
+        "price_source": "Valeur indicative de demonstration; campagne et source ONAGRI/marche de gros a confirmer.",
+        "costs_tnd_ha": {"min": 3500, "typical": 5500, "max": 8500},
+        "compatible_soils": ["loam", "clay", "sandy_loam"],
+        "salt_tolerance_dS_m": 4.0,
+        "heat_tolerance_c": 40,
+        "first_production_days": 730,
+        "kc_source": "FAO-56, coefficient indicatif; adaptation au cultivar tunisien a valider."
+      }
+    },
+    {
+      "id": "prickly-pear",
+      "name": {"fr": "Figuier de Barbarie", "ar": "تين شوكي", "darija": "hendi", "ar_dz": "hendi"},
+      "water_need_mm": 200,
+      "yield_t_ha": 8,
+      "price_tnd_t": 700,
+      "duration_days": 365,
+      "water_demand": "very_low",
+      "details": {
+        "kc_by_stage": {"initial": 0.15, "development": 0.30, "mid_season": 0.45, "late_season": 0.30},
+        "yield_range_t_ha": {"min": 5, "typical": 8, "max": 15},
+        "price_range_tnd_t": {"min": 400, "typical": 700, "max": 1100},
+        "price_source": "Valeur indicative de demonstration; campagne et source ONAGRI/marche de gros a confirmer.",
+        "costs_tnd_ha": {"min": 1200, "typical": 2200, "max": 3800},
+        "compatible_soils": ["sandy", "sandy_loam", "calcareous"],
+        "salt_tolerance_dS_m": 8.0,
+        "heat_tolerance_c": 45,
+        "first_production_days": 730,
+        "kc_source": "Estimation de demonstration; calibrage local requis (FAO-56: ETc = Kc x ET0)."
+      }
+    },
+    {
+      "id": "date-palm",
+      "name": {"fr": "Palmier dattier", "ar": "نخيل التمر", "darija": "nakhl", "ar_dz": "nakhl"},
+      "water_need_mm": 1100,
+      "yield_t_ha": 7,
+      "price_tnd_t": 5500,
+      "duration_days": 365,
+      "water_demand": "high",
+      "details": {
+        "kc_by_stage": {"initial": 0.90, "development": 0.95, "mid_season": 0.95, "late_season": 0.95},
+        "yield_range_t_ha": {"min": 5, "typical": 7, "max": 10},
+        "price_range_tnd_t": {"min": 3500, "typical": 5500, "max": 8500},
+        "price_source": "Valeur indicative de demonstration; campagne et source ONAGRI/marche de gros a confirmer.",
+        "costs_tnd_ha": {"min": 4000, "typical": 6500, "max": 10000},
+        "compatible_soils": ["sandy", "sandy_loam", "loam"],
+        "salt_tolerance_dS_m": 8.0,
+        "heat_tolerance_c": 45,
+        "first_production_days": 1460,
+        "kc_source": "FAO-56, coefficient indicatif; adaptation au cultivar tunisien a valider."
+      }
+    },
+    {
+      "id": "onion",
+      "name": {"fr": "Oignon", "ar": "بصل", "darija": "besla", "ar_dz": "besla"},
+      "water_need_mm": 500,
+      "yield_t_ha": 35,
+      "price_tnd_t": 1200,
+      "duration_days": 150,
+      "water_demand": "high",
+      "details": {
+        "kc_by_stage": {"initial": 0.70, "development": 0.80, "mid_season": 1.05, "late_season": 0.75},
+        "yield_range_t_ha": {"min": 25, "typical": 35, "max": 45},
+        "price_range_tnd_t": {"min": 700, "typical": 1200, "max": 1900},
+        "price_source": "Valeur indicative de demonstration; campagne et source ONAGRI/marche de gros a confirmer.",
+        "costs_tnd_ha": {"min": 5000, "typical": 7500, "max": 11000},
+        "compatible_soils": ["loam", "sandy_loam", "clay"],
+        "salt_tolerance_dS_m": 1.5,
+        "heat_tolerance_c": 35,
+        "first_production_days": 150,
+        "kc_source": "FAO-56, coefficient indicatif; adaptation au cultivar tunisien a valider."
+      }
+    },
+    {
+      "id": "tomato",
+      "name": {"fr": "Tomate", "ar": "طماطم", "darija": "maticha", "ar_dz": "maticha"},
+      "water_need_mm": 600,
+      "yield_t_ha": 50,
+      "price_tnd_t": 1600,
+      "duration_days": 150,
+      "water_demand": "high",
+      "details": {
+        "kc_by_stage": {"initial": 0.60, "development": 0.80, "mid_season": 1.15, "late_season": 0.80},
+        "yield_range_t_ha": {"min": 30, "typical": 50, "max": 70},
+        "price_range_tnd_t": {"min": 900, "typical": 1600, "max": 2600},
+        "price_source": "Valeur indicative de demonstration; campagne et source ONAGRI/marche de gros a confirmer.",
+        "costs_tnd_ha": {"min": 8000, "typical": 12500, "max": 19000},
+        "compatible_soils": ["loam", "sandy_loam", "clay"],
+        "salt_tolerance_dS_m": 2.5,
+        "heat_tolerance_c": 35,
+        "first_production_days": 100,
+        "kc_source": "FAO-56, coefficient indicatif; adaptation au cultivar tunisien a valider."
+      }
+    },
+    {
+      "id": "watermelon",
+      "name": {"fr": "Pastèque", "ar": "بطيخ", "darija": "dellaa", "ar_dz": "dellaa"},
+      "water_need_mm": 400,
+      "yield_t_ha": 30,
+      "price_tnd_t": 1000,
+      "duration_days": 100,
+      "water_demand": "medium",
+      "details": {
+        "kc_by_stage": {"initial": 0.40, "development": 0.70, "mid_season": 1.00, "late_season": 0.75},
+        "yield_range_t_ha": {"min": 20, "typical": 30, "max": 40},
+        "price_range_tnd_t": {"min": 600, "typical": 1000, "max": 1600},
+        "price_source": "Valeur indicative de demonstration; campagne et source ONAGRI/marche de gros a confirmer.",
+        "costs_tnd_ha": {"min": 4000, "typical": 6500, "max": 10000},
+        "compatible_soils": ["sandy", "sandy_loam", "loam"],
+        "salt_tolerance_dS_m": 2.0,
+        "heat_tolerance_c": 40,
+        "first_production_days": 100,
+        "kc_source": "FAO-56, coefficient indicatif; adaptation au cultivar tunisien a valider."
+      }
+    },
+    {
+      "id": "barley",
+      "name": {"fr": "Orge", "ar": "شعير", "darija": "cha3ir", "ar_dz": "cha3ir"},
+      "water_need_mm": 350,
+      "yield_t_ha": 2.4,
+      "price_tnd_t": 900,
+      "duration_days": 130,
+      "water_demand": "medium",
+      "details": {
+        "kc_by_stage": {"initial": 0.30, "development": 0.75, "mid_season": 1.15, "late_season": 0.25},
+        "yield_range_t_ha": {"min": 1.5, "typical": 2.4, "max": 3.5},
+        "price_range_tnd_t": {"min": 700, "typical": 900, "max": 1200},
+        "price_source": "Valeur indicative de demonstration; campagne et source ONAGRI/marche de gros a confirmer.",
+        "costs_tnd_ha": {"min": 1000, "typical": 1700, "max": 2800},
+        "compatible_soils": ["clay", "loam", "sandy_loam", "calcareous"],
+        "salt_tolerance_dS_m": 8.0,
+        "heat_tolerance_c": 38,
+        "first_production_days": 130,
+        "kc_source": "FAO-56, coefficient indicatif; adaptation au cultivar tunisien a valider."
+      }
+    },
+    {
+      "id": "capers",
+      "name": {"fr": "Câprier", "ar": "قبار", "darija": "kbar", "ar_dz": "kbar"},
+      "water_need_mm": 250,
+      "yield_t_ha": 0.7,
+      "price_tnd_t": 7000,
+      "duration_days": 365,
+      "water_demand": "low",
+      "details": {
+        "kc_by_stage": {"initial": 0.30, "development": 0.50, "mid_season": 0.75, "late_season": 0.65},
+        "yield_range_t_ha": {"min": 0.3, "typical": 0.7, "max": 1.0},
+        "price_range_tnd_t": {"min": 4500, "typical": 7000, "max": 10000},
+        "price_source": "Valeur indicative de demonstration; campagne et source ONAGRI/marche de gros a confirmer.",
+        "costs_tnd_ha": {"min": 1800, "typical": 3200, "max": 5000},
+        "compatible_soils": ["calcareous", "sandy_loam", "loam"],
+        "salt_tolerance_dS_m": 6.0,
+        "heat_tolerance_c": 42,
+        "first_production_days": 730,
+        "kc_source": "Estimation de demonstration; calibrage local requis (FAO-56: ETc = Kc x ET0)."
+      }
+    },
+    {
+      "id": "crop-wheat",
+      "name": {"fr": "Blé dur", "ar": "قمح صلب", "darija": "l-qmah s-sleb", "ar_dz": "l-qmah s-sleb"},
+      "water_need_mm": 450,
+      "yield_t_ha": 3.2,
+      "price_tnd_t": 980,
+      "duration_days": 150,
+      "water_demand": "high",
+      "details": {
+        "kc_by_stage": {"initial": 0.30, "development": 0.75, "mid_season": 1.15, "late_season": 0.25},
+        "yield_range_t_ha": {"min": 2.0, "typical": 3.2, "max": 4.5},
+        "price_range_tnd_t": {"min": 800, "typical": 980, "max": 1300},
+        "price_source": "Valeur indicative de demonstration; campagne et source ONAGRI/marche de gros a confirmer.",
+        "costs_tnd_ha": {"min": 1400, "typical": 2300, "max": 3500},
+        "compatible_soils": ["clay", "loam", "sandy_loam"],
+        "salt_tolerance_dS_m": 6.0,
+        "heat_tolerance_c": 35,
+        "first_production_days": 150,
+        "kc_source": "FAO-56, coefficient indicatif; adaptation au cultivar tunisien a valider."
+      }
+    },
+    {
+      "id": "chickpea",
+      "name": {"fr": "Pois chiche", "ar": "حمص", "darija": "homs", "ar_dz": "homs"},
+      "water_need_mm": 300,
+      "yield_t_ha": 1.2,
+      "price_tnd_t": 3500,
+      "duration_days": 120,
+      "water_demand": "low",
+      "details": {
+        "kc_by_stage": {"initial": 0.40, "development": 0.70, "mid_season": 1.00, "late_season": 0.35},
+        "yield_range_t_ha": {"min": 0.8, "typical": 1.2, "max": 2.0},
+        "price_range_tnd_t": {"min": 2500, "typical": 3500, "max": 5000},
+        "price_source": "Valeur indicative de demonstration; campagne et source ONAGRI/marche de gros a confirmer.",
+        "costs_tnd_ha": {"min": 1200, "typical": 2100, "max": 3400},
+        "compatible_soils": ["clay", "loam", "sandy_loam"],
+        "salt_tolerance_dS_m": 2.0,
+        "heat_tolerance_c": 35,
+        "first_production_days": 120,
+        "kc_source": "FAO-56, coefficient indicatif; adaptation au cultivar tunisien a valider."
+      }
+    },
+    {
+      "id": "pepper",
+      "name": {"fr": "Poivron", "ar": "فلفل", "darija": "felfel", "ar_dz": "felfel"},
+      "water_need_mm": 600,
+      "yield_t_ha": 30,
+      "price_tnd_t": 2300,
+      "duration_days": 160,
+      "water_demand": "high",
+      "details": {
+        "kc_by_stage": {"initial": 0.60, "development": 0.80, "mid_season": 1.05, "late_season": 0.90},
+        "yield_range_t_ha": {"min": 20, "typical": 30, "max": 40},
+        "price_range_tnd_t": {"min": 1500, "typical": 2300, "max": 3500},
+        "price_source": "Valeur indicative de demonstration; campagne et source ONAGRI/marche de gros a confirmer.",
+        "costs_tnd_ha": {"min": 7000, "typical": 11000, "max": 17000},
+        "compatible_soils": ["loam", "sandy_loam"],
+        "salt_tolerance_dS_m": 1.5,
+        "heat_tolerance_c": 35,
+        "first_production_days": 100,
+        "kc_source": "FAO-56, coefficient indicatif; adaptation au cultivar tunisien a valider."
+      }
+    },
+    {
+      "id": "grape",
+      "name": {"fr": "Vigne", "ar": "عنب", "darija": "3neb", "ar_dz": "3neb"},
+      "water_need_mm": 500,
+      "yield_t_ha": 15,
+      "price_tnd_t": 2200,
+      "duration_days": 365,
+      "water_demand": "medium",
+      "details": {
+        "kc_by_stage": {"initial": 0.30, "development": 0.70, "mid_season": 0.85, "late_season": 0.45},
+        "yield_range_t_ha": {"min": 10, "typical": 15, "max": 25},
+        "price_range_tnd_t": {"min": 1500, "typical": 2200, "max": 3300},
+        "price_source": "Valeur indicative de demonstration; campagne et source ONAGRI/marche de gros a confirmer.",
+        "costs_tnd_ha": {"min": 5000, "typical": 8500, "max": 13000},
+        "compatible_soils": ["loam", "sandy_loam", "calcareous"],
+        "salt_tolerance_dS_m": 2.0,
+        "heat_tolerance_c": 38,
+        "first_production_days": 730,
+        "kc_source": "FAO-56, coefficient indicatif; adaptation au cultivar tunisien a valider."
+      }
+    },
+    {
+      "id": "fig",
+      "name": {"fr": "Figuier", "ar": "تين", "darija": "karmous", "ar_dz": "karmous"},
+      "water_need_mm": 500,
+      "yield_t_ha": 8,
+      "price_tnd_t": 2800,
+      "duration_days": 365,
+      "water_demand": "medium",
+      "details": {
+        "kc_by_stage": {"initial": 0.30, "development": 0.70, "mid_season": 0.90, "late_season": 0.65},
+        "yield_range_t_ha": {"min": 5, "typical": 8, "max": 12},
+        "price_range_tnd_t": {"min": 1800, "typical": 2800, "max": 4200},
+        "price_source": "Valeur indicative de demonstration; campagne et source ONAGRI/marche de gros a confirmer.",
+        "costs_tnd_ha": {"min": 2500, "typical": 4500, "max": 7000},
+        "compatible_soils": ["loam", "clay", "sandy_loam", "calcareous"],
+        "salt_tolerance_dS_m": 4.0,
+        "heat_tolerance_c": 40,
+        "first_production_days": 730,
+        "kc_source": "FAO-56, coefficient indicatif; adaptation au cultivar tunisien a valider."
+      }
+    }
+  ]
+}

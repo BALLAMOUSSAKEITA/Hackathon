@@ -1,0 +1,146 @@
+{
+  "farm": {
+    "id": "farm-sprint-11",
+    "name": "Ferme El Baraka",
+    "region": "Sidi Bouzid",
+    "owner_id": "user-sprint-11-farmer"
+  },
+  "users": [
+    {
+      "id": "user-sprint-11-farmer",
+      "phone": "+21600000021",
+      "name": "Producteur demo",
+      "role": "farmer",
+      "language": "fr"
+    },
+    {
+      "id": "user-sprint-11-buyer",
+      "phone": "+21600000022",
+      "name": "Acheteur demo Sprint 11",
+      "role": "buyer",
+      "language": "fr"
+    }
+  ],
+  "parcelles": [
+    {
+      "id": "parcel-sprint-11",
+      "owner_id": "user-sprint-11-farmer",
+      "name": "Parcelle de demonstration",
+      "area_ha": 2.8,
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [9.47, 35.04],
+            [9.48, 35.04],
+            [9.48, 35.03],
+            [9.47, 35.03],
+            [9.47, 35.04]
+          ]
+        ]
+      },
+      "water_source": "well",
+      "well_depth_m": 45,
+      "pump_flow_m3_h": 12,
+      "energy_type": "solar",
+      "current_crop_id": "olive"
+    }
+  ],
+  "labels": [
+    {
+      "id": "label-sprint-11",
+      "farm_id": "farm-sprint-11",
+      "parcel_id": "parcel-sprint-11",
+      "grade": "A",
+      "qr_code": "ARDI-S11-FARM-001",
+      "status": "active"
+    }
+  ],
+  "verifications": [
+    {
+      "id": "verification-sprint-11-crop",
+      "parcel_id": "parcel-sprint-11",
+      "kind": "crop_conformity",
+      "status": "conforme",
+      "evidence": {
+        "source": "verification demo"
+      }
+    }
+  ],
+  "products": [
+    {
+      "id": "product-sprint-11-olive-oil",
+      "farm_id": "farm-sprint-11",
+      "label_id": "label-sprint-11",
+      "name": "Huile d'olive extra vierge",
+      "category": "huile_olive",
+      "quantity_kg": 100,
+      "price_tnd_kg": 22,
+      "photo_url": "/assets/huile-olive-sprint-11.jpg"
+    }
+  ],
+  "orders": [
+    {
+      "id": "order-sprint-11-received",
+      "buyer_id": "user-sprint-11-buyer",
+      "product_id": "product-sprint-11-olive-oil",
+      "quantity_kg": 4,
+      "status": "pending",
+      "payment_method": "cash_on_delivery",
+      "total_tnd": 88,
+      "payment_status": "due_on_delivery",
+      "counteroffer_price_tnd_kg": null
+    }
+  ],
+  "quote_request": {
+    "id": "quote-sprint-11-demo",
+    "buyer_id": "user-sprint-11-buyer",
+    "product_id": "product-sprint-11-olive-oil",
+    "quantity_kg": 25,
+    "message": "Demande de devis pour une commande de groupe.",
+    "status": "pending",
+    "proposed_price_tnd_kg": 20.5
+  },
+  "market_benchmark": {
+    "category": "huile_olive",
+    "typical_price_tnd_kg": 20.5
+  },
+  "alerts": [
+    {
+      "id": "alert-sprint-11-irrigation",
+      "parcel_id": "parcel-sprint-11",
+      "type": "irrigation",
+      "message": "Verifier l'irrigation de la parcelle avant ce soir.",
+      "severity": "info",
+      "date": "2026-11-22T08:00:00+01:00",
+      "read": false
+    },
+    {
+      "id": "alert-sprint-11-pumping",
+      "parcel_id": "parcel-sprint-11",
+      "type": "pompage",
+      "message": "Le pompage solaire est disponible pendant les heures ensoleillees.",
+      "severity": "info",
+      "date": "2026-11-22T09:00:00+01:00",
+      "read": false
+    },
+    {
+      "id": "alert-sprint-11-order",
+      "parcel_id": "parcel-sprint-11",
+      "type": "commande",
+      "message": "Une nouvelle commande attend votre reponse.",
+      "severity": "success",
+      "date": "2026-11-22T10:00:00+01:00",
+      "read": false
+    },
+    {
+      "id": "alert-sprint-11-label",
+      "parcel_id": "parcel-sprint-11",
+      "type": "label",
+      "message": "Votre label A est actif.",
+      "severity": "success",
+      "date": "2026-11-22T10:30:00+01:00",
+      "read": false
+    }
+  ]
+}

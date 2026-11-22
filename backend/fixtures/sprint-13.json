@@ -1,0 +1,65 @@
+{
+  "farm": {
+    "id": "farm-sprint-13",
+    "name": "Ferme demo Sidi Bouzid",
+    "region": "Sidi Bouzid",
+    "owner_id": "user-sprint-13"
+  },
+  "users": [
+    {
+      "id": "user-sprint-13",
+      "phone": "+21600000041",
+      "name": "Producteur demo energie",
+      "role": "farmer",
+      "language": "fr"
+    }
+  ],
+  "parcelles": [
+    {
+      "id": "parcel-sprint-13",
+      "owner_id": "user-sprint-13",
+      "name": "Parcelle pompe solaire",
+      "area_ha": 2.4,
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [9.48, 35.0286],
+            [9.4816933, 35.0286],
+            [9.4816933, 35.03],
+            [9.48, 35.03],
+            [9.48, 35.0286]
+          ]
+        ]
+      },
+      "water_source": "well",
+      "well_depth_m": 60,
+      "pump_flow_m3_h": 18,
+      "energy_type": "solar",
+      "current_crop_id": "crop-wheat"
+    }
+  ],
+  "solar": {
+    "irradiance_kwh_m2_day": 5.4,
+    "source": "NASA POWER (snapshot de demonstration)"
+  },
+  "system": {
+    "pump_hours_per_day": 6,
+    "season_days": 180,
+    "eta": 0.5,
+    "system_performance_ratio": 0.75,
+    "panel_power_w": 450,
+    "tank_autonomy_days": 0.5,
+    "steg_price_tnd_kwh": 0.25,
+    "diesel_price_tnd_liter": 2.8,
+    "diesel_liter_per_kwh": 0.28,
+    "solar_panel_cost_tnd_kwp": 2500,
+    "annual_maintenance_fraction": 0.02
+  },
+  "recommended_pumping_window": {
+    "start": "09:00",
+    "end": "16:00",
+    "note": "Fenetre indicative a adapter a l'ensoleillement local."
+  },
+  "assistance_information": "Les aides a l'equipement solaire dependent des programmes et de l'eligibilite locale. Cette information est indicative et ne constitue pas une promesse de financement."
+}

@@ -1,0 +1,161 @@
+{
+  "farm": {
+    "id": "farm-sprint-08",
+    "name": "Ferme demo Sidi Bouzid",
+    "region": "Sidi Bouzid",
+    "owner_id": "user-demo"
+  },
+  "users": [
+    {
+      "id": "user-demo",
+      "phone": "+21600000000",
+      "name": "Nafissatou",
+      "role": "farmer",
+      "language": "fr"
+    }
+  ],
+  "parcelles": [
+    {
+      "id": "parcel-sprint-08",
+      "owner_id": "user-demo",
+      "name": "Parcelle accueil demo",
+      "area_ha": 2.4,
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              9.48,
+              35.03
+            ],
+            [
+              9.5,
+              35.03
+            ],
+            [
+              9.5,
+              35.01
+            ],
+            [
+              9.48,
+              35.01
+            ],
+            [
+              9.48,
+              35.03
+            ]
+          ]
+        ]
+      },
+      "water_source": "well",
+      "well_depth_m": 60,
+      "pump_flow_m3_h": 18,
+      "energy_type": "solar",
+      "current_crop_id": "crop-wheat"
+    }
+  ],
+  "plan": {
+    "current": {
+      "id": "plan-current-sprint-08",
+      "culture_id": "crop-wheat",
+      "culture_name": {
+        "fr": "Ble dur",
+        "ar": "قمح صلب",
+        "darija": "l-qmah s-sleb"
+      },
+      "area_ha": 2.4,
+      "revenue_dt_m3": 1.6,
+      "water_demand_m3": 19440,
+      "available_water_m3": 19440,
+      "energy_kwh": 6345.22,
+      "compatible": true,
+      "irrigation_method": "drip",
+      "plan_compliant": true,
+      "repeated_well_overruns": 0
+    },
+    "potential": {
+      "id": "plan-potential-sprint-08",
+      "culture_id": "olive",
+      "culture_name": {
+        "fr": "Olivier",
+        "ar": "زيتون",
+        "darija": "zitoun"
+      },
+      "area_ha": 2.4,
+      "revenue_dt_m3": 2.45,
+      "water_demand_m3": 15000,
+      "available_water_m3": 19440,
+      "energy_kwh": 4896,
+      "compatible": true,
+      "irrigation_method": "drip",
+      "plan_compliant": true,
+      "repeated_well_overruns": 0
+    }
+  },
+  "home": {
+    "current_label_grade": "B",
+    "potential_label_grade": "A",
+    "season_summary": {
+      "water_saved_m3": 4440,
+      "energy_saved_kwh": 1449.22,
+      "net_revenue_delta_tnd": 5646
+    },
+    "today_advice": {
+      "culture_id": "olive",
+      "culture_name": {
+        "fr": "Olivier",
+        "ar": "زيتون",
+        "darija": "zitoun"
+      },
+      "revenue_dt_m3": 2.45,
+      "gap_dt_m3": 0.85
+    }
+  },
+  "labels": [
+    {
+      "id": "label-sprint-08",
+      "farm_id": "farm-sprint-08",
+      "parcel_id": "parcel-sprint-08",
+      "grade": "B",
+      "qr_code": "ARDI-S08-FARM-001",
+      "status": "active"
+    }
+  ],
+  "verifications": [
+    {
+      "id": "verification-sprint-08-crop",
+      "parcel_id": "parcel-sprint-08",
+      "kind": "crop_conformity",
+      "status": "conforme",
+      "evidence": {
+        "result": "culture conforme",
+        "source": "satellite simule"
+      }
+    },
+    {
+      "id": "verification-sprint-08-irrigation",
+      "parcel_id": "parcel-sprint-08",
+      "kind": "irrigation_conformity",
+      "status": "conforme",
+      "evidence": {
+        "result": "irrigation conforme",
+        "source": "controle simule"
+      }
+    }
+  ],
+  "products": [
+    {
+      "id": "product-sprint-08-olive-oil",
+      "farm_id": "farm-sprint-08",
+      "label_id": "label-sprint-08",
+      "name": "Huile d'olive de Sidi Bouzid",
+      "category": "olive_oil",
+      "quantity_kg": 500,
+      "price_tnd_kg": 18
+    }
+  ],
+  "qr": {
+    "value": "ARDI-S08-FARM-001",
+    "label_id": "label-sprint-08"
+  }
+}

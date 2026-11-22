@@ -1,0 +1,37 @@
+{
+  "farmer_id": "user-demo",
+  "users": [
+    {
+      "id": "user-demo",
+      "phone": "+21600000000",
+      "name": "Nafissatou",
+      "role": "farmer",
+      "language": "fr"
+    }
+  ],
+  "parcelles": [
+    {
+      "id": "parcel-sprint-04",
+      "owner_id": "user-demo",
+      "name": "Parcelle Sprint 4",
+      "area_ha": 2.4,
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [9.48, 35.0286],
+            [9.4816933, 35.0286],
+            [9.4816933, 35.03],
+            [9.48, 35.03],
+            [9.48, 35.0286]
+          ]
+        ]
+      },
+      "water_source": "well",
+      "well_depth_m": 60,
+      "pump_flow_m3_h": 18,
+      "energy_type": "solar",
+      "current_crop_id": "crop-wheat"
+    }
+  ]
+}

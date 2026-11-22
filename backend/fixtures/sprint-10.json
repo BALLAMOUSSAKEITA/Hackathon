@@ -1,0 +1,191 @@
+{
+  "farm": {
+    "id": "farm-sprint-10-sidi-bouzid",
+    "name": "Ferme El Baraka",
+    "region": "Sidi Bouzid",
+    "owner_id": "user-sprint-10-farmer-sb"
+  },
+  "farms": [
+    {
+      "id": "farm-sprint-10-sidi-bouzid",
+      "name": "Ferme El Baraka",
+      "region": "Sidi Bouzid",
+      "owner_id": "user-sprint-10-farmer-sb"
+    },
+    {
+      "id": "farm-sprint-10-kebili",
+      "name": "Ferme Deglet Nour",
+      "region": "Kebili",
+      "owner_id": "user-sprint-10-farmer-kb"
+    }
+  ],
+  "users": [
+    {
+      "id": "user-sprint-10-buyer",
+      "phone": "+21600000010",
+      "name": "Acheteur demo",
+      "role": "buyer",
+      "language": "fr"
+    },
+    {
+      "id": "user-sprint-10-farmer-sb",
+      "phone": "+21600000011",
+      "name": "Producteur Sidi Bouzid",
+      "role": "farmer",
+      "language": "fr"
+    },
+    {
+      "id": "user-sprint-10-farmer-kb",
+      "phone": "+21600000012",
+      "name": "Producteur Kebili",
+      "role": "farmer",
+      "language": "fr"
+    }
+  ],
+  "parcelles": [
+    {
+      "id": "parcel-sprint-10-sidi-bouzid",
+      "owner_id": "user-sprint-10-farmer-sb",
+      "name": "Parcelle oliviers",
+      "area_ha": 3.2,
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [9.48, 35.03],
+            [9.49, 35.03],
+            [9.49, 35.02],
+            [9.48, 35.02],
+            [9.48, 35.03]
+          ]
+        ]
+      },
+      "water_source": "well",
+      "well_depth_m": 48,
+      "pump_flow_m3_h": 12,
+      "energy_type": "solar",
+      "current_crop_id": "olive"
+    },
+    {
+      "id": "parcel-sprint-10-kebili",
+      "owner_id": "user-sprint-10-farmer-kb",
+      "name": "Parcelle dattiers",
+      "area_ha": 2.1,
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [8.97, 33.71],
+            [8.98, 33.71],
+            [8.98, 33.70],
+            [8.97, 33.70],
+            [8.97, 33.71]
+          ]
+        ]
+      },
+      "water_source": "well",
+      "well_depth_m": 35,
+      "pump_flow_m3_h": 10,
+      "energy_type": "steg",
+      "current_crop_id": "dates"
+    }
+  ],
+  "labels": [
+    {
+      "id": "label-sprint-10-olive",
+      "farm_id": "farm-sprint-10-sidi-bouzid",
+      "parcel_id": "parcel-sprint-10-sidi-bouzid",
+      "grade": "A",
+      "qr_code": "ARDI-S10-OLIVE-001",
+      "status": "active"
+    },
+    {
+      "id": "label-sprint-10-dates",
+      "farm_id": "farm-sprint-10-kebili",
+      "parcel_id": "parcel-sprint-10-kebili",
+      "grade": "B",
+      "qr_code": "ARDI-S10-DATES-001",
+      "status": "active"
+    }
+  ],
+  "verifications": [
+    {
+      "id": "verification-sprint-10-olive",
+      "parcel_id": "parcel-sprint-10-sidi-bouzid",
+      "kind": "crop_conformity",
+      "status": "conforme",
+      "evidence": {
+        "source": "verification demo"
+      }
+    },
+    {
+      "id": "verification-sprint-10-dates",
+      "parcel_id": "parcel-sprint-10-kebili",
+      "kind": "irrigation_conformity",
+      "status": "conforme",
+      "evidence": {
+        "source": "verification demo"
+      }
+    }
+  ],
+  "products": [
+    {
+      "id": "product-sprint-10-olive-oil",
+      "farm_id": "farm-sprint-10-sidi-bouzid",
+      "label_id": "label-sprint-10-olive",
+      "name": "Huile d'olive de Sidi Bouzid",
+      "category": "huile_olive",
+      "quantity_kg": 120,
+      "price_tnd_kg": 24
+    },
+    {
+      "id": "product-sprint-10-dates",
+      "farm_id": "farm-sprint-10-kebili",
+      "label_id": "label-sprint-10-dates",
+      "name": "Dattes Deglet Nour",
+      "category": "dattes",
+      "quantity_kg": 80,
+      "price_tnd_kg": 12.5
+    }
+  ],
+  "product_details": [
+    {
+      "product_id": "product-sprint-10-olive-oil",
+      "impact": {
+        "water_saved_m3": 900,
+        "energy_saved_kwh": 320
+      },
+      "farm_story": "Ferme familiale de Sidi Bouzid, en irrigation localisee."
+    },
+    {
+      "product_id": "product-sprint-10-dates",
+      "impact": {
+        "water_saved_m3": 650,
+        "energy_saved_kwh": 210
+      },
+      "farm_story": "Dattes cultivees dans les oasis de Kebili."
+    }
+  ],
+  "qr_codes": [
+    {
+      "value": "ARDI-S10-OLIVE-001",
+      "label_id": "label-sprint-10-olive",
+      "product_id": "product-sprint-10-olive-oil"
+    },
+    {
+      "value": "ARDI-S10-DATES-001",
+      "label_id": "label-sprint-10-dates",
+      "product_id": "product-sprint-10-dates"
+    }
+  ],
+  "basket": {
+    "buyer_id": "user-sprint-10-buyer",
+    "items": [],
+    "payment_methods": [
+      "D17",
+      "card",
+      "cash_on_delivery"
+    ]
+  },
+  "orders": []
+}

@@ -1,0 +1,129 @@
+{
+  "users": [
+    {
+      "id": "user-sprint-16",
+      "phone": "+21600000071",
+      "name": "Producteur demo Sprint 16",
+      "role": "farmer",
+      "language": "fr"
+    }
+  ],
+  "location_consent_notice": {
+    "required": true,
+    "law": "Loi organique tunisienne n° 2004-63 sur la protection des données personnelles",
+    "text": "Les coordonnées de votre parcelle seront enregistrées pour fournir l'analyse et les recommandations agricoles. Vous pouvez refuser; la parcelle ne sera alors pas enregistrée.",
+    "authority_information": "Pour les informations sur vos droits, consultez l'INPDP."
+  },
+  "parcel_to_upload": {
+    "id": "parcel-sprint-16-offline",
+    "owner_id": "user-sprint-16",
+    "name": "Parcelle hors ligne",
+    "area_ha": 2.4,
+    "geometry": {
+      "type": "Polygon",
+      "coordinates": [
+        [
+          [9.48, 35.0286],
+          [9.4816933, 35.0286],
+          [9.4816933, 35.03],
+          [9.48, 35.03],
+          [9.48, 35.0286]
+        ]
+      ]
+    },
+    "water_source": "well",
+    "well_depth_m": 60,
+    "pump_flow_m3_h": 18,
+    "energy_type": "solar",
+    "current_crop_id": "crop-wheat",
+    "location_consent_required": true
+  },
+  "photo": {
+    "id": "photo-sprint-16",
+    "file_name": "parcelle-sprint-16.jpg",
+    "mime_type": "image/jpeg",
+    "status": "pending_upload",
+    "compressed": false
+  },
+  "analysis": {
+    "parcel_id": "parcel-sprint-16-offline",
+    "soil": {
+      "texture": "loam",
+      "ph": 7.4,
+      "organic_matter_percent": 1.8,
+      "source": "SoilGrids v2.0 (snapshot de demonstration)"
+    },
+    "climate": {
+      "rain_mm": 320,
+      "period_days": 365,
+      "temperature_c": 24,
+      "et0_daily_mm": 4.8,
+      "source": "Open-Meteo (snapshot de demonstration)"
+    },
+    "solar": {
+      "irradiance_kwh_m2_day": 5.4,
+      "source": "NASA POWER (snapshot de demonstration)"
+    },
+    "available_water_m3": 19440,
+    "pumping_energy_kwh_m3": 0.3264,
+    "ndvi_monthly": [
+      {"month": "2025-12", "value": 0.31},
+      {"month": "2026-01", "value": 0.34},
+      {"month": "2026-02", "value": 0.38},
+      {"month": "2026-03", "value": 0.43},
+      {"month": "2026-04", "value": 0.49},
+      {"month": "2026-05", "value": 0.54},
+      {"month": "2026-06", "value": 0.57},
+      {"month": "2026-07", "value": 0.53},
+      {"month": "2026-08", "value": 0.47},
+      {"month": "2026-09", "value": 0.42},
+      {"month": "2026-10", "value": 0.37},
+      {"month": "2026-11", "value": 0.33}
+    ],
+    "sources": {
+      "soil": "SoilGrids v2.0 (snapshot de demonstration)",
+      "climate": "Open-Meteo (snapshot de demonstration)",
+      "solar": "NASA POWER (snapshot de demonstration)",
+      "ndvi": "Sentinel-2 (serie mensuelle de demonstration)"
+    },
+    "assumptions": {
+      "pump_hours_per_day": 6,
+      "season_days": 180,
+      "energy_efficiency": 0.5,
+      "water_formula": "pump_flow_m3_h * pump_hours_per_day * season_days",
+      "energy_formula": "0.00272 * well_depth_m / energy_efficiency"
+    }
+  },
+  "ranking": {
+    "parcel_id": "parcel-sprint-16-offline",
+    "recommendations": [
+      {
+        "crop_id": "olive",
+        "rank": 1,
+        "risk_adjusted_revenue_tnd_m3": 2.4,
+        "water_demand_m3": 15800,
+        "source": "Sprint 16 fixture ranking",
+        "assumption": "Irrigation localisee, rendement et prix indicatifs."
+      },
+      {
+        "crop_id": "pomegranate",
+        "rank": 2,
+        "risk_adjusted_revenue_tnd_m3": 1.8,
+        "water_demand_m3": 17100,
+        "source": "Sprint 16 fixture ranking",
+        "assumption": "Prix et besoin en eau indicatifs."
+      }
+    ],
+    "excluded_crops": [
+      {
+        "crop_id": "rice",
+        "reason": "water_capacity",
+        "source": "Sprint 16 fixture ranking"
+      }
+    ],
+    "assumptions": {
+      "available_water_m3": 19440,
+      "risk_adjusted_revenue_formula": "net revenue after water and energy risks"
+    }
+  }
+}

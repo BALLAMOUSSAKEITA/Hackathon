@@ -1,0 +1,303 @@
+{
+  "farm": {
+    "id": "farm-sprint-09",
+    "name": "Ferme demo Sidi Bouzid",
+    "region": "Sidi Bouzid",
+    "owner_id": "user-demo"
+  },
+  "parcel": {
+    "id": "parcel-sprint-09",
+    "name": "Parcelle voix demo",
+    "area_ha": 2.4,
+    "well_depth_m": 60,
+    "pump_flow_m3_h": 18,
+    "current_crop": {
+      "id": "crop-wheat",
+      "name": {
+        "fr": "Ble dur",
+        "ar": "قمح صلب",
+        "darija": "l-qmah s-sleb"
+      }
+    }
+  },
+  "analysis": {
+    "soil_texture": "loam",
+    "et0_daily_mm": 4.8,
+    "available_water_m3": 19440,
+    "pumping_energy_kwh_m3": 0.3264
+  },
+  "plan": {
+    "current": {
+      "culture_id": "crop-wheat",
+      "area_ha": 2.4,
+      "water_demand_m3": 19440,
+      "energy_kwh": 6345.22,
+      "revenue_dt_m3": 1.6,
+      "label": "B"
+    },
+    "proposed": {
+      "culture_id": "olive",
+      "area_ha": 2.4,
+      "water_demand_m3": 15000,
+      "energy_kwh": 4896,
+      "revenue_dt_m3": 2.45,
+      "label": "A"
+    }
+  },
+  "ranking": {
+    "best_option": {
+      "culture_id": "olive",
+      "name": {
+        "fr": "Olivier",
+        "ar": "زيتون",
+        "darija": "zitoun"
+      },
+      "area_ha": 2.4,
+      "water_demand_m3": 15000,
+      "energy_kwh": 4896,
+      "revenue_dt_m3": 2.45,
+      "label": "A"
+    },
+    "current": {
+      "revenue_dt_m3": 1.6,
+      "label": "B",
+      "water_demand_m3": 19440,
+      "energy_kwh": 6345.22
+    },
+    "gap_dt_m3": 0.85,
+    "water_saved_m3": 4440,
+    "energy_saved_kwh": 1449.22,
+    "intercropping": {
+      "culture_id": "olive-barley-intercrop",
+      "name": {
+        "fr": "Olivier + orge (interculture)",
+        "ar": "زيتون مع شعير بيني",
+        "darija": "zitoun m3a cha3ir bin chjar"
+      },
+      "revenue_dt_m3": 2.1
+    }
+  },
+  "actions": {
+    "simulator": {
+      "type": "simulator",
+      "title": {
+        "fr": "Ouvrir le simulateur",
+        "ar": "افتح المحاكي",
+        "darija": "7ell el simulateur"
+      },
+      "parcel_id": "parcel-sprint-09",
+      "allocations": [
+        {
+          "crop_id": "olive",
+          "area_ha": 2.4
+        }
+      ],
+      "available_water_m3": 19440
+    },
+    "solar_pump": {
+      "type": "solar_pump",
+      "title": {
+        "fr": "Voir la pompe solaire",
+        "ar": "شوف المضخة الشمسية",
+        "darija": "chouf el pompe solaire"
+      },
+      "well_depth_m": 60,
+      "pump_flow_m3_h": 18,
+      "energy_kwh_m3": 0.3264
+    }
+  },
+  "questions": [
+    {
+      "id": "parcel_area",
+      "phrases": ["ch9adech msaha mta3 el parcelle"],
+      "answers": {
+        "darija": "El parcelle fiha 2.4 hectares.",
+        "ar": "مساحة القطعة 2.4 هكتار.",
+        "fr": "La parcelle couvre 2.4 hectares."
+      }
+    },
+    {
+      "id": "well_depth",
+      "phrases": ["qadech 3om9 el bir"],
+      "answers": {
+        "darija": "3om9 el bir 60 metres.",
+        "ar": "عمق البئر 60 متر.",
+        "fr": "Le puits a une profondeur de 60 metres."
+      }
+    },
+    {
+      "id": "water_capacity",
+      "phrases": ["qadech ma tnajem t3tini el bir"],
+      "answers": {
+        "darija": "Capacite el bir 19440 m3 fel saison.",
+        "ar": "قدرة البئر 19440 م3 في الموسم.",
+        "fr": "La capacite saisonniere du puits est de 19440 m3."
+      }
+    },
+    {
+      "id": "current_crop",
+      "phrases": ["chneya el culture mta3i taw"],
+      "answers": {
+        "darija": "El culture lyouma hiya ble dur.",
+        "ar": "المحصول الحالي هو القمح الصلب.",
+        "fr": "La culture actuelle est le ble dur."
+      }
+    },
+    {
+      "id": "best_option",
+      "phrases": ["chneya a7sen culture n7ot"],
+      "answers": {
+        "darija": "A7sen option fel fichier hiya zitoun b 2.45 DT/m3.",
+        "ar": "أفضل خيار في الملف هو الزيتون بقيمة 2.45 DT/m3.",
+        "fr": "La meilleure option du fichier est l'olivier a 2.45 DT/m3."
+      }
+    },
+    {
+      "id": "income_gap",
+      "phrases": ["qadech el far9 bin el ble w el olivier fel revenu"],
+      "answers": {
+        "darija": "El far9 bin el situation lyouma w zitoun 0.85 DT/m3.",
+        "ar": "الفرق بين الوضع الحالي والزيتون هو 0.85 DT/m3.",
+        "fr": "L'ecart entre la situation actuelle et l'olivier est de 0.85 DT/m3."
+      }
+    },
+    {
+      "id": "water_saved",
+      "phrases": ["qadech ma najjem nrajj3"],
+      "answers": {
+        "darija": "Plan zitoun ynajem youaffar 4440 m3 mel ma.",
+        "ar": "يمكن لخطة الزيتون توفير 4440 م3 من الماء.",
+        "fr": "Le plan olivier permettrait d'economiser 4440 m3 d'eau."
+      }
+    },
+    {
+      "id": "energy_saved",
+      "phrases": ["qadech nreb7 fel energie"],
+      "answers": {
+        "darija": "El economie fel energie 1449.22 kWh.",
+        "ar": "توفير الطاقة هو 1449.22 kWh.",
+        "fr": "L'economie d'energie est de 1449.22 kWh."
+      }
+    },
+    {
+      "id": "current_label",
+      "phrases": ["chneya el label mte3i taw"],
+      "answers": {
+        "darija": "El label lyouma B.",
+        "ar": "التصنيف الحالي هو B.",
+        "fr": "Le label actuel est B."
+      }
+    },
+    {
+      "id": "potential_label",
+      "phrases": ["chneya el label potentiel"],
+      "answers": {
+        "darija": "Label el plan el potentiel A.",
+        "ar": "تصنيف الخطة المحتملة هو A.",
+        "fr": "Le label potentiel du plan est A."
+      }
+    },
+    {
+      "id": "irrigation_method",
+      "phrases": ["chneya tari9et erri"],
+      "answers": {
+        "darija": "El plan el potentiel yesta3mel erri bel goutte a goutte.",
+        "ar": "تستخدم الخطة المحتملة الري بالتنقيط.",
+        "fr": "Le plan potentiel utilise l'irrigation goutte a goutte."
+      }
+    },
+    {
+      "id": "et0",
+      "phrases": ["qadech et0 fel nhar"],
+      "answers": {
+        "darija": "ET0 moyenne fel fichier 4.8 mm fel nhar.",
+        "ar": "متوسط ET0 في الملف هو 4.8 مم يوميا.",
+        "fr": "L'ET0 moyen du fichier est de 4.8 mm par jour."
+      }
+    },
+    {
+      "id": "energy_intensity",
+      "phrases": ["qadech energie lel metre cube"],
+      "answers": {
+        "darija": "El pompage yesta7lek 0.3264 kWh lel m3.",
+        "ar": "يستهلك الضخ 0.3264 kWh لكل م3.",
+        "fr": "Le pompage consomme 0.3264 kWh par m3."
+      }
+    },
+    {
+      "id": "pump_flow",
+      "phrases": ["qadech debit el pompe"],
+      "answers": {
+        "darija": "Debit el pompe 18 m3 fel se3a.",
+        "ar": "تدفق المضخة 18 م3 في الساعة.",
+        "fr": "Le debit de la pompe est de 18 m3 par heure."
+      }
+    },
+    {
+      "id": "potential_area",
+      "phrases": ["qadech el superficie mta3 el plan el jdid"],
+      "answers": {
+        "darija": "El plan el jdid yghatti 2.4 hectares.",
+        "ar": "تغطي الخطة الجديدة 2.4 هكتار.",
+        "fr": "Le nouveau plan couvre 2.4 hectares."
+      }
+    },
+    {
+      "id": "potential_water",
+      "phrases": ["qadech el ma el plan olivier"],
+      "answers": {
+        "darija": "Besoin el ma fel plan olivier 15000 m3.",
+        "ar": "احتياج الماء في خطة الزيتون 15000 م3.",
+        "fr": "Le besoin en eau du plan olivier est de 15000 m3."
+      }
+    },
+    {
+      "id": "potential_energy",
+      "phrases": ["qadech el energie mta3 plan olivier"],
+      "answers": {
+        "darija": "El plan olivier yesta7lek 4896 kWh.",
+        "ar": "تستهلك خطة الزيتون 4896 kWh.",
+        "fr": "Le plan olivier consomme 4896 kWh."
+      }
+    },
+    {
+      "id": "intercropping",
+      "phrases": ["kifech el culture intercalaires"],
+      "answers": {
+        "darija": "Interculture zitoun m3a cha3ir mawjouda fel fichier.",
+        "ar": "الزراعة البينية للزيتون مع الشعير موجودة في الملف.",
+        "fr": "L'interculture olivier avec orge figure dans le fichier."
+      }
+    },
+    {
+      "id": "intercropping_revenue",
+      "phrases": ["qadech revenu olivier m3a orge fel interculture"],
+      "answers": {
+        "darija": "Revenu el interculture zitoun w cha3ir 2.1 DT/m3.",
+        "ar": "دخل الزراعة البينية للزيتون والشعير هو 2.1 DT/m3.",
+        "fr": "Le revenu de l'interculture olivier et orge est de 2.1 DT/m3."
+      }
+    },
+    {
+      "id": "verifications",
+      "phrases": ["el verification te3 el culture w erri chnowa resultat"],
+      "answers": {
+        "darija": "Verification el culture conforme w verification el erri conforme.",
+        "ar": "التحقق من المحصول مطابق والتحقق من الري مطابق.",
+        "fr": "La verification de la culture et celle de l'irrigation sont conformes."
+      }
+    }
+  ],
+  "out_of_scope": {
+    "answer": {
+      "darija": "Ma nal9ach el ma3louma hedhi fi fichier Ardi.",
+      "ar": "لم أجد هذه المعلومة في ملف أردي.",
+      "fr": "Je ne trouve pas cette information dans le fichier Ardi."
+    },
+    "suggested_question": {
+      "darija": "Es2elni 3al parcelle, el bir, el culture wala el label.",
+      "ar": "اسألني عن القطعة أو البئر أو المحصول أو التصنيف.",
+      "fr": "Demandez-moi plutot la parcelle, le puits, la culture ou le label."
+    }
+  }
+}

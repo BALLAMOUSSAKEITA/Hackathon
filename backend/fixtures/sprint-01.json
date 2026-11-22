@@ -1,0 +1,84 @@
+{
+  "farm": {
+    "id": "farm-demo",
+    "name": "Ferme demo Sidi Bouzid",
+    "region": "Sidi Bouzid",
+    "owner_id": "user-demo"
+  },
+  "users": [
+    {
+      "id": "user-demo",
+      "phone": "+21600000000",
+      "name": "Nafissatou",
+      "role": "farmer",
+      "language": "fr"
+    }
+  ],
+  "parcelles": [
+    {
+      "id": "parcel-demo",
+      "owner_id": "user-demo",
+      "name": "Parcelle Nord",
+      "area_ha": 2.4,
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[9.48, 35.03], [9.50, 35.03], [9.50, 35.01], [9.48, 35.01], [9.48, 35.03]]]
+      },
+      "water_source": "well",
+      "well_depth_m": 60,
+      "pump_flow_m3_h": 18,
+      "energy_type": "solar",
+      "current_crop_id": "crop-wheat"
+    }
+  ],
+  "analyses": [
+    {
+      "id": "analysis-demo",
+      "parcel_id": "parcel-demo",
+      "soil_texture": "loam",
+      "ph": 7.4,
+      "organic_matter_percent": 1.8,
+      "rain_mm": 320,
+      "temperature_c": 24,
+      "et0_mm": 4.8,
+      "available_water_m3": 6480,
+      "pumping_energy_kwh_m3": 0.33
+    }
+  ],
+  "cultures": [
+    {
+      "id": "crop-wheat",
+      "name": {"fr": "Ble", "ar": "قمح", "ar_dz": "l-qmah"},
+      "water_need_mm": 450,
+      "yield_t_ha": 3.2,
+      "price_tnd_t": 980,
+      "duration_days": 150,
+      "water_demand": "high"
+    }
+  ],
+  "plans": [],
+  "labels": [
+    {
+      "id": "label-demo",
+      "farm_id": "farm-demo",
+      "parcel_id": "parcel-demo",
+      "grade": "B",
+      "qr_code": "ARDI-DEMO-001",
+      "status": "active"
+    }
+  ],
+  "verifications": [],
+  "products": [
+    {
+      "id": "product-demo",
+      "farm_id": "farm-demo",
+      "label_id": "label-demo",
+      "name": "Ble local",
+      "category": "cereals",
+      "quantity_kg": 500,
+      "price_tnd_kg": 1.2
+    }
+  ],
+  "orders": [],
+  "alerts": []
+}

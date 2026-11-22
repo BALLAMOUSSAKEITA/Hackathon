@@ -1,0 +1,276 @@
+{
+  "farmer_id": "user-demo",
+  "users": [
+    {
+      "id": "user-demo",
+      "phone": "+21600000000",
+      "name": "Nafissatou",
+      "role": "farmer",
+      "language": "fr"
+    }
+  ],
+  "parcelles": [
+    {
+      "id": "parcel-sprint-07",
+      "owner_id": "user-demo",
+      "name": "Parcelle simulateur demo",
+      "area_ha": 2.4,
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              9.48,
+              35.0286
+            ],
+            [
+              9.4816933,
+              35.0286
+            ],
+            [
+              9.4816933,
+              35.03
+            ],
+            [
+              9.48,
+              35.03
+            ],
+            [
+              9.48,
+              35.0286
+            ]
+          ]
+        ]
+      },
+      "water_source": "well",
+      "well_depth_m": 60,
+      "pump_flow_m3_h": 18,
+      "energy_type": "solar",
+      "current_crop_id": "tomato"
+    }
+  ],
+  "analysis_context": {
+    "et0_daily_mm": 4.8,
+    "effective_rain_mm": 56,
+    "stage_weights": {
+      "initial": 0.15,
+      "development": 0.25,
+      "mid_season": 0.4,
+      "late_season": 0.2
+    }
+  },
+  "water": {
+    "pump_hours_per_day": 4,
+    "season_days": 180,
+    "energy_efficiency": 0.5,
+    "irrigation_method": "drip",
+    "irrigation_efficiency": 0.9,
+    "energy_price_tnd_kwh": 0.3
+  },
+  "proposed_culture_ids": [
+    "tomato",
+    "barley",
+    "capers",
+    "olive"
+  ],
+  "current_situation": {
+    "allocations": [
+      {
+        "crop_id": "tomato",
+        "area_ha": 2.4
+      }
+    ]
+  },
+  "cultures": [
+    {
+      "id": "olive",
+      "name": {
+        "fr": "Olivier",
+        "ar": "زيتون",
+        "darija": "zitoun",
+        "ar_dz": "zitoun"
+      },
+      "water_need_mm": 450,
+      "yield_t_ha": 3.2,
+      "price_tnd_t": 2800,
+      "duration_days": 365,
+      "water_demand": "low",
+      "details": {
+        "kc_by_stage": {
+          "initial": 0.65,
+          "development": 0.7,
+          "mid_season": 0.7,
+          "late_season": 0.7
+        },
+        "yield_range_t_ha": {
+          "min": 1.5,
+          "typical": 3.2,
+          "max": 6.0
+        },
+        "price_range_tnd_t": {
+          "min": 1800,
+          "typical": 2800,
+          "max": 4200
+        },
+        "price_source": "Valeur indicative de demonstration; campagne et source ONAGRI/marche de gros a confirmer.",
+        "costs_tnd_ha": {
+          "min": 1800,
+          "typical": 3200,
+          "max": 5200
+        },
+        "compatible_soils": [
+          "clay",
+          "loam",
+          "sandy_loam",
+          "calcareous"
+        ],
+        "salt_tolerance_dS_m": 6.0,
+        "heat_tolerance_c": 40,
+        "first_production_days": 1095,
+        "kc_source": "FAO-56, coefficient indicatif; adaptation au cultivar tunisien a valider."
+      }
+    },
+    {
+      "id": "tomato",
+      "name": {
+        "fr": "Tomate",
+        "ar": "طماطم",
+        "darija": "maticha",
+        "ar_dz": "maticha"
+      },
+      "water_need_mm": 600,
+      "yield_t_ha": 50,
+      "price_tnd_t": 1600,
+      "duration_days": 150,
+      "water_demand": "high",
+      "details": {
+        "kc_by_stage": {
+          "initial": 0.6,
+          "development": 0.8,
+          "mid_season": 1.15,
+          "late_season": 0.8
+        },
+        "yield_range_t_ha": {
+          "min": 30,
+          "typical": 50,
+          "max": 70
+        },
+        "price_range_tnd_t": {
+          "min": 900,
+          "typical": 1600,
+          "max": 2600
+        },
+        "price_source": "Valeur indicative de demonstration; campagne et source ONAGRI/marche de gros a confirmer.",
+        "costs_tnd_ha": {
+          "min": 8000,
+          "typical": 12500,
+          "max": 19000
+        },
+        "compatible_soils": [
+          "loam",
+          "sandy_loam",
+          "clay"
+        ],
+        "salt_tolerance_dS_m": 2.5,
+        "heat_tolerance_c": 35,
+        "first_production_days": 100,
+        "kc_source": "FAO-56, coefficient indicatif; adaptation au cultivar tunisien a valider."
+      }
+    },
+    {
+      "id": "barley",
+      "name": {
+        "fr": "Orge",
+        "ar": "شعير",
+        "darija": "cha3ir",
+        "ar_dz": "cha3ir"
+      },
+      "water_need_mm": 350,
+      "yield_t_ha": 2.4,
+      "price_tnd_t": 900,
+      "duration_days": 130,
+      "water_demand": "medium",
+      "details": {
+        "kc_by_stage": {
+          "initial": 0.3,
+          "development": 0.75,
+          "mid_season": 1.15,
+          "late_season": 0.25
+        },
+        "yield_range_t_ha": {
+          "min": 1.5,
+          "typical": 2.4,
+          "max": 3.5
+        },
+        "price_range_tnd_t": {
+          "min": 700,
+          "typical": 900,
+          "max": 1200
+        },
+        "price_source": "Valeur indicative de demonstration; campagne et source ONAGRI/marche de gros a confirmer.",
+        "costs_tnd_ha": {
+          "min": 1000,
+          "typical": 1700,
+          "max": 2800
+        },
+        "compatible_soils": [
+          "clay",
+          "loam",
+          "sandy_loam",
+          "calcareous"
+        ],
+        "salt_tolerance_dS_m": 8.0,
+        "heat_tolerance_c": 38,
+        "first_production_days": 130,
+        "kc_source": "FAO-56, coefficient indicatif; adaptation au cultivar tunisien a valider."
+      }
+    },
+    {
+      "id": "capers",
+      "name": {
+        "fr": "Câprier",
+        "ar": "قبار",
+        "darija": "kbar",
+        "ar_dz": "kbar"
+      },
+      "water_need_mm": 250,
+      "yield_t_ha": 0.7,
+      "price_tnd_t": 7000,
+      "duration_days": 365,
+      "water_demand": "low",
+      "details": {
+        "kc_by_stage": {
+          "initial": 0.3,
+          "development": 0.5,
+          "mid_season": 0.75,
+          "late_season": 0.65
+        },
+        "yield_range_t_ha": {
+          "min": 0.3,
+          "typical": 0.7,
+          "max": 1.0
+        },
+        "price_range_tnd_t": {
+          "min": 4500,
+          "typical": 7000,
+          "max": 10000
+        },
+        "price_source": "Valeur indicative de demonstration; campagne et source ONAGRI/marche de gros a confirmer.",
+        "costs_tnd_ha": {
+          "min": 1800,
+          "typical": 3200,
+          "max": 5000
+        },
+        "compatible_soils": [
+          "calcareous",
+          "sandy_loam",
+          "loam"
+        ],
+        "salt_tolerance_dS_m": 6.0,
+        "heat_tolerance_c": 42,
+        "first_production_days": 730,
+        "kc_source": "Estimation de demonstration; calibrage local requis (FAO-56: ETc = Kc x ET0)."
+      }
+    }
+  ]
+}
