@@ -185,6 +185,85 @@ def test_culture_detail_endpoint():
         assert response.json()["name"]["fr"] == "Olivier"
 
 
+def test_sprint_06_fixture_is_standalone_with_crops_and_intercrop():
+    with TestClient(app) as client:
+        response = client.get("/fixture/sprint-06")
+
+    assert response.status_code == 200
+    fixture = response.json()
+    assert len(fixture["cultures"]) == 15
+    assert fixture["intercrops"][0]["id"] == "olive-barley-intercrop"
+    assert fixture["analysis_context"]["soil_salinity_dS_m"] > 0
+
+
+def test_recommendations_sort_without_returning_excluded_crops():
+    with TestClient(app) as client:
+        default = client.get("/parcelles/parcel-sprint-06/recommandations")
+        water = client.get(
+            "/parcelles/parcel-sprint-06/recommandations?tri=eau"
+        )
+        speed = client.get(
+            "/parcelles/parcel-sprint-06/recommandations?tri=rapidite"
+        )
+
+    assert default.status_code == 200
+    assert water.status_code == 200
+    assert speed.status_code == 200
+    default_data = default.json()
+    water_data = water.json()
+    speed_data = speed.json()
+    default_rows = default_data["recommendations"]
+    water_rows = water_data["recommendations"]
+    speed_rows = speed_data["recommendations"]
+
+    assert default_data["sort"] == "revenu_m3"
+    assert default_data["best_crop_id"] == default_rows[0]["id"]
+    assert [row["id"] for row in default_rows] != [
+        row["id"] for row in water_rows
+    ]
+    assert [row["water_m3_ha"] for row in water_rows] == sorted(
+        row["water_m3_ha"] for row in water_rows
+    )
+    assert [row["days_to_production"] for row in speed_rows] == sorted(
+        row["days_to_production"] for row in speed_rows
+    )
+    assert "olive-barley-intercrop" in {row["id"] for row in default_rows}
+    for data in (default_data, water_data, speed_data):
+        assert not {row["id"] for row in data["recommendations"]} & {
+            row["id"] for row in data["excluded_crops"]
+        }
+
+
+def test_recommendations_exclude_incompatible_crops_and_apply_risk():
+    with TestClient(app) as client:
+        response = client.get("/parcelles/parcel-sprint-06/recommandations")
+
+    assert response.status_code == 200
+    data = response.json()
+    ranked_ids = {row["id"] for row in data["recommendations"]}
+    excluded = {row["id"]: row["reasons"] for row in data["excluded_crops"]}
+
+    assert "prickly-pear" not in ranked_ids
+    assert "soil" in excluded["prickly-pear"]
+    assert "salinity" in excluded["watermelon"]
+    assert "heat" in excluded["tomato"]
+    assert "water" in excluded["date-palm"]
+    olive = next(row for row in data["recommendations"] if row["id"] == "olive")
+    assert olive["risk_penalty_dt_m3"] > 0
+    assert olive["risk_adjusted_revenue_dt_m3"] < olive["revenue_dt_m3"]
+    assert olive["label"] in {"A", "B", "C", "D", "E"}
+    assert data["current_crop"]["id"] == "crop-wheat"
+    assert data["current_crop"]["compatible"] is False
+
+
+def test_recommendations_sort_rejects_unknown_mode():
+    with TestClient(app) as client:
+        response = client.get(
+            "/parcelles/parcel-sprint-06/recommandations?tri=prix"
+        )
+    assert response.status_code == 422
+
+
 def test_sprint_04_parcel_post_recalculates_area():
     with TestClient(app) as client:
         fixture = client.get("/fixture/sprint-04").json()

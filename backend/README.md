@@ -1,4 +1,4 @@
-# Ardi API - Sprints 1 a 5
+# Ardi API - Sprints 1 a 6
 
 API FastAPI pour le socle technique Ardi.
 
@@ -22,11 +22,13 @@ Documentation interactive : `http://127.0.0.1:8000/docs`
 - Fixture sprint 3 : `GET /fixture/sprint-03`
 - Fixture sprint 4 : `GET /fixture/sprint-04`
 - Fixture sprint 5 : `GET /fixture/sprint-05`
+- Fixture sprint 6 : `GET /fixture/sprint-06`
 - Demander un code OTP simulé : `POST /auth/otp`
 - Vérifier le code et créer un utilisateur : `POST /auth/verify`
 - Utilisateurs : `GET /users`, `POST /users`
 - Parcelles : `GET /parcelles`, `POST /parcelles`, `GET /parcelles/{parcel_id}`
 - Analyse d'une parcelle : `POST /parcelles/{parcel_id}/analyse`
+- Recommandations de cultures : `GET /parcelles/{parcel_id}/recommandations`
 - Cultures : `GET /cultures`, `GET /cultures/{culture_id}`
 - Filtrer les cultures par sol : `GET /cultures?soil=sandy`
 - Analyses : `GET /analyses`
@@ -38,7 +40,7 @@ Documentation interactive : `http://127.0.0.1:8000/docs`
 - Alertes : `GET /alertes`
 
 Les données de démonstration sont chargées depuis les fixtures `sprint-01`
-à `sprint-05`. Le sprint 2 fournit les profils agriculteur,
+à `sprint-06`. Le sprint 2 fournit les profils agriculteur,
 acheteur particulier et acheteur professionnel. Le sprint 3 fournit 15 cultures
 avec Kc par stade, rendements, fourchettes de prix, coûts et compatibilité de sol.
 Les valeurs agronomiques et économiques sont indicatives; les sources de prix
@@ -55,6 +57,24 @@ Pour analyser la parcelle de démo, appeler
 `POST /parcelles/parcel-sprint-05/analyse` sans corps. Les paramètres
 `pump_hours_per_day`, `season_days` et `efficiency` peuvent être fournis pour
 remplacer les hypothèses du fichier.
+
+Le sprint 6 fournit un classement calculé depuis sa propre fixture, avec
+15 cultures, une interculture et les hypothèses de sol, climat, puits et
+irrigation. Exemple :
+
+```text
+GET /parcelles/parcel-sprint-06/recommandations
+GET /parcelles/parcel-sprint-06/recommandations?tri=eau
+GET /parcelles/parcel-sprint-06/recommandations?tri=rapidite
+```
+
+Le tri par défaut utilise le revenu net ajusté du risque par m³ (`revenu_m3`).
+Les autres tris sont `eau` (m³/ha croissants) et `rapidite` (jours avant
+production croissants). Les cultures incompatibles avec le sol, la salinité,
+la température ou la capacité du puits apparaissent séparément dans
+`excluded_crops` et jamais dans `recommendations`. Les formules et hypothèses
+utilisées sont retournées dans la réponse. Les prix et paramètres agronomiques
+restent indicatifs, à confirmer localement.
 
 Pour la démonstration, `POST /auth/otp` retourne le code fixe `123456`.
 `POST /auth/verify` reçoit `phone`, `code`, `name`, `role` (`farmer`, `buyer`
