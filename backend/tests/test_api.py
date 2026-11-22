@@ -1,12 +1,13 @@
 import json
 import os
 import re
+from time import perf_counter
 from uuid import uuid4
 
 import pytest
 os.environ["DATABASE_URL"] = "sqlite:///./test-ardi.db"
 
-from fastapi import HTTPException
+from fastapi import FastAPI, HTTPException
 from fastapi.testclient import TestClient
 
 from app.database import Base, engine
@@ -22,6 +23,45 @@ def test_health():
         response = client.get("/health")
         assert response.status_code == 200
         assert response.json()["status"] == "ok"
+
+
+def test_sprint_16_fixture_is_cached_and_served_under_ten_seconds():
+    main_module.load_sprint_16_fixture.cache_clear()
+    started_at = perf_counter()
+    try:
+        with TestClient(app) as client:
+            first = client.get("/fixture/sprint-16")
+            second = client.get("/fixture/sprint-16")
+        elapsed = perf_counter() - started_at
+
+        assert first.status_code == 200
+        assert second.status_code == 200
+        assert first.json()["analysis"]["parcel_id"] == "parcel-sprint-16-offline"
+        assert first.json()["ranking"]["recommendations"]
+        assert first.json()["parcel_to_upload"]["location_consent_required"] is True
+        assert first.json()["location_consent_notice"]["required"] is True
+        assert "2004-63" in first.json()["location_consent_notice"]["law"]
+        assert first.json()["photo"]["status"] == "pending_upload"
+        assert main_module.load_sprint_16_fixture.cache_info().hits == 1
+        assert elapsed < 10
+    finally:
+        main_module.load_sprint_16_fixture.cache_clear()
+
+
+def test_sprint_16_production_redirects_http_to_https(monkeypatch):
+    secure_app = FastAPI()
+    monkeypatch.setenv("ARDI_ENV", "production")
+    main_module.configure_https_redirect(secure_app)
+
+    @secure_app.get("/probe")
+    def secure_probe():
+        return {"status": "ok"}
+
+    with TestClient(secure_app) as client:
+        response = client.get("/probe", follow_redirects=False)
+
+    assert response.status_code == 307
+    assert response.headers["location"] == "https://testserver/probe"
 
 
 def test_fixture_demo_loaded():
@@ -1069,12 +1109,38 @@ def test_sprint_04_parcel_post_recalculates_area():
         parcel = fixture["parcelles"][0]
         parcel["id"] = f"parcel-test-{uuid4()}"
         parcel["area_ha"] = 99
+        parcel["location_consent"] = True
 
         response = client.post("/parcelles", json=parcel)
 
         assert response.status_code == 201
         assert response.json()["area_ha"] == 2.4
         assert response.json()["area_ha"] != 99
+        assert response.json()["location_consent"] is True
+
+
+def test_parcel_post_requires_explicit_location_consent():
+    with TestClient(app) as client:
+        parcel = client.get("/fixture/sprint-16").json()["parcel_to_upload"]
+        payload = {
+            key: value
+            for key, value in parcel.items()
+            if key != "location_consent_required"
+        }
+        payload["id"] = f"parcel-test-{uuid4()}"
+        payload["location_consent"] = False
+        rejected = client.post("/parcelles", json=payload)
+
+        payload.pop("location_consent")
+        missing_consent = client.post("/parcelles", json=payload)
+
+    assert rejected.status_code == 403
+    assert "Explicit consent" in rejected.json()["detail"]
+    assert missing_consent.status_code == 422
+    session_generator = main_module.get_db()
+    db = next(session_generator)
+    assert db.get(main_module.models.Parcelle, payload["id"]) is None
+    session_generator.close()
 
 
 def test_parcel_post_rejects_self_intersecting_polygon():
@@ -1100,6 +1166,7 @@ def test_parcel_post_rejects_self_intersecting_polygon():
         "pump_flow_m3_h": 18,
         "energy_type": "solar",
         "current_crop_id": "crop-wheat",
+        "location_consent": True,
     }
     with TestClient(app) as client:
         response = client.post("/parcelles", json=payload)
@@ -1113,6 +1180,7 @@ def test_parcel_post_rejects_non_polygon_geometry():
         "name": "Not a polygon",
         "area_ha": 1,
         "geometry": {"type": "Point", "coordinates": [9.48, 35.0286]},
+        "location_consent": True,
         "water_source": "well",
         "energy_type": "solar",
     }
@@ -1139,6 +1207,7 @@ def test_parcel_post_requires_existing_owner():
                 ]
             ],
         },
+        "location_consent": True,
         "water_source": "well",
         "energy_type": "solar",
     }

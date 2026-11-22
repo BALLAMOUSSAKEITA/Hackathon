@@ -133,6 +133,7 @@ class ParcelleCreate(ORMModel):
     name: str
     area_ha: float = Field(gt=0)
     geometry: dict
+    location_consent: bool
     water_source: Literal["well", "gda", "dam", "network"]
     well_depth_m: float | None = Field(default=None, ge=0)
     pump_flow_m3_h: float | None = Field(default=None, ge=0)

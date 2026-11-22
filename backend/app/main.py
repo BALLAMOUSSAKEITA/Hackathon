@@ -2,6 +2,7 @@ import csv
 import io
 import json
 import math
+import os
 import re
 import unicodedata
 from concurrent.futures import ThreadPoolExecutor, TimeoutError as FuturesTimeoutError
@@ -16,6 +17,7 @@ from uuid import uuid4
 
 from fastapi import BackgroundTasks, Depends, FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
 from fastapi.responses import Response
 import httpx
 from pyproj import Geod
@@ -53,6 +55,7 @@ DEMO_OTP_CODE = "123456"
 pending_otp_phones: set[str] = set()
 GEOD = Geod(ellps="WGS84")
 SPRINT_SCHEMA_COLUMNS = {
+    "parcelles": {"location_consent": "BOOLEAN NOT NULL DEFAULT 0"},
     "commandes": {
         "payment_method": "VARCHAR",
         "total_tnd": "FLOAT",
@@ -78,6 +81,11 @@ def ensure_sprint_schema_columns() -> None:
                         )
                     )
                     columns.add(column)
+
+
+def configure_https_redirect(application: FastAPI) -> None:
+    if os.getenv("ARDI_ENV", "development").strip().casefold() == "production":
+        application.add_middleware(HTTPSRedirectMiddleware)
 
 
 def calculate_polygon_area_ha(geometry: dict[str, Any]) -> float:
@@ -338,6 +346,7 @@ async def lifespan(_: FastAPI):
             "sprint-13.json",
             "sprint-14.json",
             "sprint-15.json",
+            "sprint-16.json",
         ):
             fixture = FIXTURES_DIR / fixture_name
             data = json.loads(fixture.read_text(encoding="utf-8"))
@@ -391,7 +400,7 @@ async def lifespan(_: FastAPI):
 app = FastAPI(
     title="Ardi API",
     version="1.0.0",
-    description="API FastAPI Ardi, sprints de demonstration 1 a 15.",
+    description="API FastAPI Ardi, sprints de demonstration 1 a 16.",
     lifespan=lifespan,
 )
 app.add_middleware(
@@ -401,6 +410,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+configure_https_redirect(app)
 
 ENTITY_MODELS = {
     "users": models.User,
@@ -527,6 +537,16 @@ def load_sprint_15_fixture() -> dict[str, Any]:
 @app.get("/fixture/sprint-15")
 def sprint_15_fixture() -> dict[str, Any]:
     return load_sprint_15_fixture()
+
+
+@lru_cache(maxsize=1)
+def load_sprint_16_fixture() -> dict[str, Any]:
+    return json.loads((FIXTURES_DIR / "sprint-16.json").read_text(encoding="utf-8"))
+
+
+@app.get("/fixture/sprint-16")
+def sprint_16_fixture() -> dict[str, Any]:
+    return load_sprint_16_fixture()
 
 
 def normalize_assistant_question(question: str) -> str:
@@ -666,6 +686,10 @@ def list_parcelles(owner_id: str | None = Query(default=None), db: Session = Dep
 
 @app.post("/parcelles", response_model=ParcelleOut, status_code=201)
 def create_parcelle(payload: ParcelleCreate, db: Session = Depends(get_db)):
+    if not payload.location_consent:
+        raise HTTPException(
+            403, "Explicit consent is required before storing parcel location"
+        )
     area_ha = calculate_polygon_area_ha(payload.geometry)
     if db.get(models.User, payload.owner_id) is None:
         raise HTTPException(404, "Owner not found")

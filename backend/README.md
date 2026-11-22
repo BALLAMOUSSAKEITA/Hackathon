@@ -1,4 +1,4 @@
-# Ardi API - Sprints 1 a 15
+# Ardi API - Sprints 1 a 16
 
 API FastAPI pour le socle technique Ardi.
 
@@ -32,6 +32,7 @@ Documentation interactive : `http://127.0.0.1:8000/docs`
 - Fixture sprint 13 : `GET /fixture/sprint-13`
 - Fixture sprint 14 : `GET /fixture/sprint-14`
 - Fixture sprint 15 : `GET /fixture/sprint-15`
+- Fixture sprint 16 : `GET /fixture/sprint-16`
 - Demander un code OTP simulé : `POST /auth/otp`
 - Vérifier le code et créer un utilisateur : `POST /auth/verify`
 - Utilisateurs : `GET /users`, `POST /users`
@@ -58,7 +59,7 @@ Documentation interactive : `http://127.0.0.1:8000/docs`
 - Alertes : `GET /alertes`, `PATCH /alertes/{id}`
 
 Les données de démonstration sont chargées depuis les fixtures `sprint-01`
-à `sprint-15`. Le sprint 2 fournit les profils agriculteur,
+à `sprint-16`. Le sprint 2 fournit les profils agriculteur,
 acheteur particulier et acheteur professionnel. Le sprint 3 fournit 15 cultures
 avec Kc par stade, rendements, fourchettes de prix, coûts et compatibilité de sol.
 Les valeurs agronomiques et économiques sont indicatives; les sources de prix
@@ -177,6 +178,17 @@ sont indicatifs et présents dans la fixture. L'export retourne les lignes CSV
 avec commandes, labels, fermes, eau et énergie. `POST /commandes/gros` est
 réservé aux profils `professional`; il crée un statut `wholesale_pending` sans
 moyen de paiement ni montant facturé.
+
+Le sprint 16 expose une fixture autonome (`GET /fixture/sprint-16`) contenant
+l'analyse, le classement, la parcelle en attente d'envoi et une référence de
+photo. La fixture est conservée dans un cache mémoire du processus et les
+sources SoilGrids, Open-Meteo et NASA POWER sont elles aussi mises en cache.
+`POST /parcelles` exige `location_consent: true` avant de valider ou enregistrer
+la géométrie; le refus retourne HTTP 403. En production, définir
+`ARDI_ENV=production` derrière un proxy TLS de confiance : l'API redirige alors
+les requêtes HTTP vers HTTPS. Configurez Uvicorn pour ne faire confiance qu'aux
+en-têtes proxy de l'adresse du proxy TLS. Les appels aux sources externes
+utilisent HTTPS.
 
 Pour la démonstration, `POST /auth/otp` retourne le code fixe `123456`.
 `POST /auth/verify` reçoit `phone`, `code`, `name`, `role` (`farmer`, `buyer`

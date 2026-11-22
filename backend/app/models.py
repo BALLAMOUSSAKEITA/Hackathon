@@ -20,6 +20,9 @@ class Parcelle(Base):
     name: Mapped[str] = mapped_column(String)
     area_ha: Mapped[float] = mapped_column(Float)
     geometry: Mapped[dict] = mapped_column(JSON)
+    location_consent: Mapped[bool] = mapped_column(
+        Boolean, nullable=False, default=False
+    )
     water_source: Mapped[str] = mapped_column(String)
     well_depth_m: Mapped[float | None] = mapped_column(Float, nullable=True)
     pump_flow_m3_h: Mapped[float | None] = mapped_column(Float, nullable=True)
