@@ -31,11 +31,13 @@ SPRINT_7_FIXTURE_PATH = Path(__file__).resolve().parents[2] / "fixtures" / "spri
 SPRINT_8_FIXTURE_PATH = Path(__file__).resolve().parents[2] / "fixtures" / "sprint-08.json"
 SPRINT_9_FIXTURE_PATH = Path(__file__).resolve().parents[2] / "fixtures" / "sprint-09.json"
 SPRINT_10_FIXTURE_PATH = Path(__file__).resolve().parents[2] / "fixtures" / "sprint-10.json"
+SPRINT_11_FIXTURE_PATH = Path(__file__).resolve().parents[2] / "fixtures" / "sprint-11.json"
 ALLOWED_ROLES = {"agriculteur", "acheteur_particulier", "acheteur_professionnel"}
 DEMO_OTP = "123456"
 pending_profiles: dict[str, dict[str, str]] = {}
 adopted_plans: dict[str, dict[str, Any]] = {}
 orders: dict[str, dict[str, Any]] = {}
+sprint11_order_store: dict[str, dict[str, Any]] = {}
 
 app = FastAPI(
     title="Ardi API",
@@ -556,6 +558,98 @@ def update_order(commande_id: str, payload: dict[str, Any]) -> dict[str, Any]:
         raise HTTPException(status_code=422, detail="Statut de commande inconnu.")
     order["status"] = status
     return order
+
+
+@app.get("/demo/sprint-11")
+def demo_sprint_11() -> dict[str, Any]:
+    with SPRINT_11_FIXTURE_PATH.open("r", encoding="utf-8") as fixture_file:
+        return json.load(fixture_file)
+
+
+@app.post("/produits/publish")
+def publish_product(payload: dict[str, Any]) -> dict[str, Any]:
+    with SPRINT_11_FIXTURE_PATH.open("r", encoding="utf-8") as fixture_file:
+        fixture = json.load(fixture_file)
+
+    name = str(payload.get("name", "")).strip()
+    price = float(payload.get("price_tnd", 0))
+    stock = float(payload.get("stock", 0))
+    if not name or price <= 0 or stock <= 0:
+        raise HTTPException(status_code=422, detail="Nom, prix ou stock invalide.")
+    return {
+        "id": f"produit-{uuid.uuid4().hex[:8]}",
+        "name": name,
+        "price_tnd": price,
+        "stock": stock,
+        "ferme_id": fixture["ferme"]["id"],
+        "label": fixture["ferme"]["label"],
+        "status": "publie",
+    }
+
+
+@app.get("/ventes/sprint-11")
+def sprint11_sales() -> dict[str, Any]:
+    with SPRINT_11_FIXTURE_PATH.open("r", encoding="utf-8") as fixture_file:
+        fixture = json.load(fixture_file)
+    return fixture["vente"]
+
+
+@app.get("/commandes/sprint-11")
+def sprint11_orders() -> dict[str, Any]:
+    with SPRINT_11_FIXTURE_PATH.open("r", encoding="utf-8") as fixture_file:
+        fixture = json.load(fixture_file)
+    order = sprint11_order_store.setdefault(
+        fixture["commande"]["id"],
+        dict(fixture["commande"]),
+    )
+    return {"devis": fixture["devis"], "commande": order}
+
+
+@app.patch("/commandes/sprint-11/{commande_id}")
+def sprint11_update_order(commande_id: str, payload: dict[str, Any]) -> dict[str, Any]:
+    with SPRINT_11_FIXTURE_PATH.open("r", encoding="utf-8") as fixture_file:
+        fixture = json.load(fixture_file)
+    if commande_id != fixture["commande"]["id"]:
+        raise HTTPException(status_code=404, detail="Commande introuvable.")
+
+    action = payload.get("action")
+    if action == "accepter":
+        status = "acceptee"
+        price = float(payload.get("price_tnd", fixture["commande"]["price_tnd"]))
+    elif action == "contre_proposer":
+        status = "contre_proposition"
+        price = float(payload.get("price_tnd", 0))
+        if price <= 0:
+            raise HTTPException(status_code=422, detail="Prix de contre-offre invalide.")
+    else:
+        raise HTTPException(status_code=422, detail="Action inconnue.")
+
+    order = sprint11_order_store.setdefault(commande_id, dict(fixture["commande"]))
+    order["status"] = status
+    order["price_tnd"] = price
+    sprint11_order_store[commande_id] = order
+    return order
+
+
+@app.get("/notifications")
+def notifications() -> dict[str, Any]:
+    with SPRINT_11_FIXTURE_PATH.open("r", encoding="utf-8") as fixture_file:
+        fixture = json.load(fixture_file)
+    return {"count": len(fixture["notifications"]), "notifications": fixture["notifications"]}
+
+
+@app.patch("/notifications/{notification_id}/read")
+def mark_notification_read(notification_id: str) -> dict[str, Any]:
+    with SPRINT_11_FIXTURE_PATH.open("r", encoding="utf-8") as fixture_file:
+        fixture = json.load(fixture_file)
+    notification = next(
+        (item for item in fixture["notifications"] if item["id"] == notification_id),
+        None,
+    )
+    if notification is None:
+        raise HTTPException(status_code=404, detail="Notification introuvable.")
+    notification["read"] = True
+    return notification
 
 
 @app.post("/auth/otp", status_code=200)

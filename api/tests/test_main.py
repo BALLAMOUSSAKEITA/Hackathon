@@ -304,3 +304,47 @@ def test_sprint_ten_order_simulation() -> None:
     )
     assert update.status_code == 200
     assert update.json()["status"] == "acceptee"
+
+
+def test_sprint_eleven_publish_product_and_sales() -> None:
+    publish = client.post(
+        "/produits/publish",
+        json={"name": "Huile test", "price_tnd": 19.0, "stock": 30},
+    )
+    assert publish.status_code == 200
+    assert publish.json()["status"] == "publie"
+    assert publish.json()["label"] == "A"
+
+    sales = client.get("/ventes/sprint-11")
+    assert sales.status_code == 200
+    assert sales.json()["month_total_tnd"] == 740
+    assert sales.json()["average_price_tnd"] == 18.5
+
+
+def test_sprint_eleven_accept_and_counteroffer_change_status() -> None:
+    accepted = client.patch(
+        "/commandes/sprint-11/commande-011",
+        json={"action": "accepter", "price_tnd": 18.5},
+    )
+    assert accepted.status_code == 200
+    assert accepted.json()["status"] == "acceptee"
+
+    counter = client.patch(
+        "/commandes/sprint-11/commande-011",
+        json={"action": "contre_proposer", "price_tnd": 19.0},
+    )
+    assert counter.status_code == 200
+    assert counter.json()["status"] == "contre_proposition"
+    assert counter.json()["price_tnd"] == 19.0
+
+
+def test_sprint_eleven_notifications_are_readable() -> None:
+    notifications = client.get("/notifications")
+    assert notifications.status_code == 200
+    assert notifications.json()["count"] == 4
+    types = {item["type"] for item in notifications.json()["notifications"]}
+    assert types == {"irrigation", "pompage", "commande", "label"}
+
+    read = client.patch("/notifications/notif-commande/read")
+    assert read.status_code == 200
+    assert read.json()["read"] is True

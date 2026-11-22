@@ -75,3 +75,10 @@ PostGIS conformément à `api/alembic/README.md`.
 - `GET /produits` filtre les produits par label, catégorie ou région.
 - `GET /produits/qr/{qr}` ouvre la fiche du produit correspondant.
 - `POST /commandes` crée une commande simulée; `PATCH /commandes/{id}` change son statut.
+
+## Sprint 11
+
+- `POST /produits/publish` publie un produit rattaché à la ferme démo.
+- `GET /ventes/sprint-11` expose le suivi des ventes.
+- `PATCH /commandes/sprint-11/{id}` accepte ou contre-propose.
+- `GET /notifications` liste les quatre types d'alertes.

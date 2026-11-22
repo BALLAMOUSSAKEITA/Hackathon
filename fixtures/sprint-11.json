@@ -1,0 +1,50 @@
+{
+  "sprint": 11,
+  "ferme": {
+    "id": "ferme-ardi-demo",
+    "name": "Ferme pilote Ardi",
+    "owner_id": "usr-demo",
+    "label": "A"
+  },
+  "produit": {
+    "id": "produit-huile-011",
+    "name": "Huile d'olive Ardi",
+    "price_tnd": 18.5,
+    "stock_l": 120,
+    "photo": "fixture://huile-olive.jpg"
+  },
+  "devis": {
+    "id": "devis-011",
+    "buyer_name": "Amina Distribution",
+    "quantity_l": 40,
+    "proposed_price_tnd": 17,
+    "status": "en_attente"
+  },
+  "commande": {
+    "id": "commande-011",
+    "buyer_name": "Amina Distribution",
+    "product_id": "produit-huile-011",
+    "quantity_l": 40,
+    "price_tnd": 18.5,
+    "status": "nouvelle"
+  },
+  "vente": {
+    "month_total_tnd": 740,
+    "average_price_tnd": 18.5,
+    "typical_market_price_tnd": 17.8
+  },
+  "notifications": [
+    {"id":"notif-irrigation","type":"irrigation","message":"Irrigation prévue à 5 h 30.","date":"2026-11-22T05:30:00+01:00","read":false},
+    {"id":"notif-pompage","type":"pompage","message":"Pompage recommandé à 10 h 30.","date":"2026-11-22T10:30:00+01:00","read":false},
+    {"id":"notif-commande","type":"commande","message":"Amina Distribution demande 40 litres.","date":"2026-11-22T11:15:00+01:00","read":false,"command_id":"commande-011"},
+    {"id":"notif-label","type":"label","message":"Votre label A reste actif.","date":"2026-11-22T12:00:00+01:00","read":false}
+  ],
+  "translations": {
+    "fr": {
+      "sales":"Mes ventes","publish":"Publier un produit","accept":"Accepter",
+      "counter":"Contre-proposer","notifications":"Notifications","read":"Marquer comme lue"
+    },
+    "ar": {"sales":"مبيعاتي","publish":"نشر منتج","accept":"قبول","counter":"عرض آخر","notifications":"الإشعارات","read":"وضع علامة كمقروء"},
+    "darija": {"sales":"Mabia3ti","publish":"Nacher produit","accept":"Aqbel","counter":"Propose prix ekhor","notifications":"Notifications","read":"7otah qra"}
+  }
+}
