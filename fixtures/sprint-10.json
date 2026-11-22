@@ -1,0 +1,60 @@
+{
+  "sprint": 10,
+  "produits": [
+    {
+      "id": "produit-olive-001",
+      "name": "Huile d'olive extra vierge",
+      "category": "huiles",
+      "region": "Sidi Bouzid",
+      "label": "A",
+      "qr": "ARDI-PRODUCT-001",
+      "price_tnd": 18.5,
+      "unit": "750 ml",
+      "stock": 48,
+      "impact_eau_m3": 128,
+      "impact_energie_kwh": 42,
+      "ferme": "Ferme pilote Ardi",
+      "histoire": "Olive locale cultivée avec irrigation localisée."
+    },
+    {
+      "id": "produit-tomate-001",
+      "name": "Tomates fraîches",
+      "category": "legumes",
+      "region": "Kairouan",
+      "label": "C",
+      "qr": "ARDI-PRODUCT-002",
+      "price_tnd": 1.25,
+      "unit": "kg",
+      "stock": 240,
+      "impact_eau_m3": 62,
+      "impact_energie_kwh": 20,
+      "ferme": "Ferme El Amen",
+      "histoire": "Tomates de saison suivies avec un plan d'eau local."
+    },
+    {
+      "id": "produit-grenade-001",
+      "name": "Grenades",
+      "category": "fruits",
+      "region": "Gabès",
+      "label": "B",
+      "qr": "ARDI-PRODUCT-003",
+      "price_tnd": 3.2,
+      "unit": "kg",
+      "stock": 120,
+      "impact_eau_m3": 95,
+      "impact_energie_kwh": 31,
+      "ferme": "Ferme Oasis",
+      "histoire": "Grenades cultivées dans une ferme vérifiée du Sud tunisien."
+    }
+  ],
+  "paiements": [
+    {"id": "d17", "name": "D17"},
+    {"id": "carte", "name": "Carte"},
+    {"id": "livraison", "name": "Paiement à la livraison"}
+  ],
+  "hypotheses": {
+    "currency": "TND",
+    "payment_real": false,
+    "card_data_stored": false
+  }
+}

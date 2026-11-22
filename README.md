@@ -18,6 +18,7 @@ Socle technique du parcours agriculteur/acheteur pour le hackathon.
 - `fixtures/sprint-07.json` : répartition, situation actuelle et capacités du Sprint 7.
 - `fixtures/sprint-08.json` : accueil, label, vérifications et QR du Sprint 8.
 - `fixtures/sprint-09.json` : 20 questions darija, réponses chiffrées et actions du Sprint 9.
+- `fixtures/sprint-10.json` : marché acheteur, QR, panier et paiement simulé du Sprint 10.
 
 ## Démarrage rapide
 

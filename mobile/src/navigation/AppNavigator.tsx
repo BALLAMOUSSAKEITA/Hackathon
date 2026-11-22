@@ -12,11 +12,14 @@ import { SimulatorScreen } from "../screens/SimulatorScreen";
 import { FarmerHomeV2Screen } from "../screens/FarmerHomeV2Screen";
 import { FarmLabelScreen } from "../screens/FarmLabelScreen";
 import { AssistantScreen } from "../screens/AssistantScreen";
+import { BuyerMarketScreen } from "../screens/BuyerMarketScreen";
+import { ProductDetailScreen } from "../screens/ProductDetailScreen";
+import { BuyerScannerScreen } from "../screens/BuyerScannerScreen";
+import { BuyerCartScreen } from "../screens/BuyerCartScreen";
 
 export type RootStackParamList = {
   Welcome: undefined;
   FarmerHome: undefined;
-  BuyerMarket: undefined;
   Cultures: undefined;
   Parcel: undefined;
   Analysis: undefined;
@@ -25,7 +28,12 @@ export type RootStackParamList = {
   FarmerHomeV2: undefined;
   FarmLabel: undefined;
   Assistant: undefined;
-  [key: string]: undefined;
+  BuyerMarket: undefined;
+  ProductDetail: { productId: string };
+  BuyerScanner: undefined;
+  BuyerCart: undefined;
+  SolarEnergy: undefined;
+  [key: string]: object | undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -52,7 +60,7 @@ const emptyTitles: Record<number, string> = {
 export function AppNavigator() {
   return (
     <Stack.Navigator
-      initialRouteName="Assistant"
+      initialRouteName="BuyerMarket"
       screenOptions={{
         headerShown: false,
         contentStyle: { backgroundColor: "#f4f7ef" },
@@ -68,6 +76,10 @@ export function AppNavigator() {
       <Stack.Screen name="FarmerHomeV2" component={FarmerHomeV2Screen} />
       <Stack.Screen name="FarmLabel" component={FarmLabelScreen} />
       <Stack.Screen name="Assistant" component={AssistantScreen} />
+      <Stack.Screen name="BuyerMarket" component={BuyerMarketScreen} />
+      <Stack.Screen name="ProductDetail" component={ProductDetailScreen} />
+      <Stack.Screen name="BuyerScanner" component={BuyerScannerScreen} />
+      <Stack.Screen name="BuyerCart" component={BuyerCartScreen} />
       <Stack.Screen
         name="SolarEnergy"
         children={() => <EmptyStateScreen title="Pompe solaire · 60 m" />}
@@ -79,10 +91,6 @@ export function AppNavigator() {
           children={() => <EmptyStateScreen title={title} />}
         />
       ))}
-      <Stack.Screen
-        name="BuyerMarket"
-        children={() => <EmptyStateScreen title="Marché responsable" />}
-      />
     </Stack.Navigator>
   );
 }

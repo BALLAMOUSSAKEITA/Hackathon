@@ -267,3 +267,40 @@ def test_sprint_nine_out_of_scope_question_is_refused() -> None:
     payload = response.json()
     assert payload["in_scope"] is False
     assert payload["actions"] == []
+
+
+def test_sprint_ten_market_filters_and_qr() -> None:
+    market = client.get("/produits")
+    assert market.status_code == 200
+    assert market.json()["count"] == 3
+
+    filtered = client.get("/produits", params={"label": "A", "category": "huiles"})
+    assert filtered.status_code == 200
+    assert filtered.json()["count"] == 1
+
+    qr = client.get("/produits/qr/ARDI-PRODUCT-001")
+    assert qr.status_code == 200
+    assert qr.json()["name"] == "Huile d'olive extra vierge"
+
+
+def test_sprint_ten_order_simulation() -> None:
+    response = client.post(
+        "/commandes",
+        json={
+            "buyer_id": "acheteur-demo",
+            "product_id": "produit-olive-001",
+            "quantity": 2,
+            "payment_method": "d17",
+        },
+    )
+    assert response.status_code == 201
+    order = response.json()
+    assert order["total_tnd"] == 37.0
+    assert order["impact_eau_m3"] == 256.0
+
+    update = client.patch(
+        f"/commandes/{order['id']}",
+        json={"status": "acceptee"},
+    )
+    assert update.status_code == 200
+    assert update.json()["status"] == "acceptee"

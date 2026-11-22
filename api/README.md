@@ -69,3 +69,9 @@ PostGIS conformément à `api/alembic/README.md`.
 - `POST /assistant` répond depuis les 20 questions du Sprint 9.
 - Les questions hors périmètre sont refusées avec une proposition utile.
 - `GET /demo/sprint-09` sert les questions, actions et chiffres visibles.
+
+## Sprint 10
+
+- `GET /produits` filtre les produits par label, catégorie ou région.
+- `GET /produits/qr/{qr}` ouvre la fiche du produit correspondant.
+- `POST /commandes` crée une commande simulée; `PATCH /commandes/{id}` change son statut.

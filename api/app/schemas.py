@@ -51,3 +51,10 @@ class SimulationRequest(BaseModel):
 class AssistantRequest(BaseModel):
     question: str = Field(min_length=1)
     audio: bool = False
+
+
+class CommandeCreate(BaseModel):
+    buyer_id: str = Field(min_length=1)
+    product_id: str = Field(min_length=1)
+    quantity: float = Field(gt=0)
+    payment_method: str

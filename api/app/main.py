@@ -14,6 +14,7 @@ from .schemas import (
     AssistantRequest,
     OTPRequest,
     OTPVerify,
+    CommandeCreate,
     ParcelleCreate,
     ParcelleResponse,
     SimulationRequest,
@@ -29,10 +30,12 @@ SPRINT_6_FIXTURE_PATH = Path(__file__).resolve().parents[2] / "fixtures" / "spri
 SPRINT_7_FIXTURE_PATH = Path(__file__).resolve().parents[2] / "fixtures" / "sprint-07.json"
 SPRINT_8_FIXTURE_PATH = Path(__file__).resolve().parents[2] / "fixtures" / "sprint-08.json"
 SPRINT_9_FIXTURE_PATH = Path(__file__).resolve().parents[2] / "fixtures" / "sprint-09.json"
+SPRINT_10_FIXTURE_PATH = Path(__file__).resolve().parents[2] / "fixtures" / "sprint-10.json"
 ALLOWED_ROLES = {"agriculteur", "acheteur_particulier", "acheteur_professionnel"}
 DEMO_OTP = "123456"
 pending_profiles: dict[str, dict[str, str]] = {}
 adopted_plans: dict[str, dict[str, Any]] = {}
+orders: dict[str, dict[str, Any]] = {}
 
 app = FastAPI(
     title="Ardi API",
@@ -473,6 +476,86 @@ def assistant(payload: AssistantRequest) -> dict[str, Any]:
         "in_scope": True,
         "question_id": matched["id"],
     }
+
+
+@app.get("/demo/sprint-10")
+def demo_sprint_10() -> dict[str, Any]:
+    with SPRINT_10_FIXTURE_PATH.open("r", encoding="utf-8") as fixture_file:
+        return json.load(fixture_file)
+
+
+@app.get("/produits")
+def list_products(
+    label: str | None = None,
+    category: str | None = None,
+    region: str | None = None,
+) -> dict[str, Any]:
+    with SPRINT_10_FIXTURE_PATH.open("r", encoding="utf-8") as fixture_file:
+        fixture = json.load(fixture_file)
+
+    products = fixture["produits"]
+    if label:
+        products = [product for product in products if product["label"].upper() == label.upper()]
+    if category:
+        products = [product for product in products if product["category"] == category]
+    if region:
+        products = [product for product in products if product["region"].lower() == region.lower()]
+    return {"count": len(products), "produits": products}
+
+
+@app.get("/produits/qr/{qr}")
+def product_by_qr(qr: str) -> dict[str, Any]:
+    with SPRINT_10_FIXTURE_PATH.open("r", encoding="utf-8") as fixture_file:
+        fixture = json.load(fixture_file)
+
+    product = next((item for item in fixture["produits"] if item["qr"] == qr), None)
+    if product is None:
+        raise HTTPException(status_code=404, detail="Produit QR introuvable.")
+    return product
+
+
+@app.post("/commandes", status_code=201)
+def create_order(payload: CommandeCreate) -> dict[str, Any]:
+    with SPRINT_10_FIXTURE_PATH.open("r", encoding="utf-8") as fixture_file:
+        fixture = json.load(fixture_file)
+
+    product = next(
+        (item for item in fixture["produits"] if item["id"] == payload.product_id),
+        None,
+    )
+    if product is None:
+        raise HTTPException(status_code=404, detail="Produit introuvable.")
+    if payload.quantity > product["stock"]:
+        raise HTTPException(status_code=422, detail="Stock insuffisant.")
+    if payload.payment_method not in {"d17", "carte", "livraison"}:
+        raise HTTPException(status_code=422, detail="Moyen de paiement inconnu.")
+
+    order_id = f"commande-{uuid.uuid4().hex[:8]}"
+    order = {
+        "id": order_id,
+        "buyer_id": payload.buyer_id,
+        "product_id": payload.product_id,
+        "quantity": payload.quantity,
+        "payment_method": payload.payment_method,
+        "status": "en_attente",
+        "total_tnd": round(payload.quantity * product["price_tnd"], 2),
+        "impact_eau_m3": round(payload.quantity * product["impact_eau_m3"], 2),
+        "impact_energie_kwh": round(payload.quantity * product["impact_energie_kwh"], 2),
+    }
+    orders[order_id] = order
+    return order
+
+
+@app.patch("/commandes/{commande_id}")
+def update_order(commande_id: str, payload: dict[str, Any]) -> dict[str, Any]:
+    order = orders.get(commande_id)
+    if order is None:
+        raise HTTPException(status_code=404, detail="Commande introuvable.")
+    status = payload.get("status")
+    if status not in {"en_attente", "acceptee", "refusee", "livree"}:
+        raise HTTPException(status_code=422, detail="Statut de commande inconnu.")
+    order["status"] = status
+    return order
 
 
 @app.post("/auth/otp", status_code=200)
