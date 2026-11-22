@@ -1,4 +1,4 @@
-# Ardi API - Sprints 1 a 12
+# Ardi API - Sprints 1 a 13
 
 API FastAPI pour le socle technique Ardi.
 
@@ -29,11 +29,13 @@ Documentation interactive : `http://127.0.0.1:8000/docs`
 - Fixture sprint 10 : `GET /fixture/sprint-10`
 - Fixture sprint 11 : `GET /fixture/sprint-11`
 - Fixture sprint 12 : `GET /fixture/sprint-12`
+- Fixture sprint 13 : `GET /fixture/sprint-13`
 - Demander un code OTP simulé : `POST /auth/otp`
 - Vérifier le code et créer un utilisateur : `POST /auth/verify`
 - Utilisateurs : `GET /users`, `POST /users`
 - Parcelles : `GET /parcelles`, `POST /parcelles`, `GET /parcelles/{parcel_id}`
 - Analyse d'une parcelle : `POST /parcelles/{parcel_id}/analyse`
+- Dimensionnement solaire : `GET /parcelles/{parcel_id}/solaire`
 - Recommandations de cultures : `GET /parcelles/{parcel_id}/recommandations`
 - Simuler un plan : `POST /parcelles/{parcel_id}/simulation`
 - Adopter un plan : `POST /parcelles/{parcel_id}/plan`
@@ -50,7 +52,7 @@ Documentation interactive : `http://127.0.0.1:8000/docs`
 - Alertes : `GET /alertes`, `PATCH /alertes/{id}`
 
 Les données de démonstration sont chargées depuis les fixtures `sprint-01`
-à `sprint-12`. Le sprint 2 fournit les profils agriculteur,
+à `sprint-13`. Le sprint 2 fournit les profils agriculteur,
 acheteur particulier et acheteur professionnel. Le sprint 3 fournit 15 cultures
 avec Kc par stade, rendements, fourchettes de prix, coûts et compatibilité de sol.
 Les valeurs agronomiques et économiques sont indicatives; les sources de prix
@@ -141,6 +143,16 @@ Il contient dix parcelles et leurs analyses. Les calculs d'eau suivent
 `0.00272 * profondeur_m / eta`. La réponse ajoute, pour chaque parcelle, les
 cultures exclues et le temps mesuré du classement, ainsi que le classement de
 la parcelle principale.
+
+Le sprint 13 expose `GET /parcelles/{parcel_id}/solaire`. Le calcul utilise
+l'irradiation NASA POWER (instantané de fixture pour la parcelle de démo,
+dernière analyse disponible ou consultation NASA POWER pour les autres),
+le débit, la profondeur et des hypothèses affichées dans la réponse. Il estime
+la puissance et le nombre de panneaux, un réservoir pour une demi-journée,
+les coûts d'exploitation par saison comparés au gasoil et à la STEG, et le
+temps d'amortissement. Les prix et paramètres de dimensionnement de la fixture
+sont indicatifs, pas un devis. Une parcelle sans profondeur ou débit retourne
+`available: false`; les aides restent informatives, sans promesse d'éligibilité.
 
 Pour la démonstration, `POST /auth/otp` retourne le code fixe `123456`.
 `POST /auth/verify` reçoit `phone`, `code`, `name`, `role` (`farmer`, `buyer`

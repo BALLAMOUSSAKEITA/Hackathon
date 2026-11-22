@@ -1,9 +1,12 @@
+import json
 import os
 import re
 from uuid import uuid4
 
+import pytest
 os.environ["DATABASE_URL"] = "sqlite:///./test-ardi.db"
 
+from fastapi import HTTPException
 from fastapi.testclient import TestClient
 
 from app.database import Base, engine
@@ -455,6 +458,82 @@ def test_sprint_12_ten_parcels_use_formula_based_water_and_energy():
     excluded_ids = {row["id"] for row in data["ranking"]["excluded_crops"]}
     assert not ranked_ids & excluded_ids
     assert data["total_calculation_time_ms"] < 10_000
+
+
+def test_sprint_13_solar_sizing_compares_costs_and_changes_with_well_depth():
+    with TestClient(app) as client:
+        fixture = client.get("/fixture/sprint-13")
+        base_response = client.get("/parcelles/parcel-sprint-13/solaire")
+        base = base_response.json()
+
+        def set_parcel_values(depth, flow):
+            session_generator = main_module.get_db()
+            db = next(session_generator)
+            parcel = db.get(main_module.models.Parcelle, "parcel-sprint-13")
+            parcel.well_depth_m = depth
+            parcel.pump_flow_m3_h = flow
+            db.commit()
+            session_generator.close()
+
+        original_depth = base["well_depth_m"]
+        original_flow = base["pump_flow_m3_h"]
+        try:
+            set_parcel_values(90, original_flow)
+            deeper_well = client.get("/parcelles/parcel-sprint-13/solaire")
+            set_parcel_values(None, original_flow)
+            missing_depth = client.get("/parcelles/parcel-sprint-13/solaire")
+            set_parcel_values(original_depth, None)
+            missing_flow = client.get("/parcelles/parcel-sprint-13/solaire")
+            missing_parcel = client.get("/parcelles/unknown-parcel/solaire")
+        finally:
+            set_parcel_values(original_depth, original_flow)
+
+    assert fixture.status_code == 200
+    assert base_response.status_code == 200
+    assert base["available"] is True
+    assert base["solar_irradiance_kwh_m2_day"] == 5.4
+    assert base["sources"]["solar_irradiance"].startswith("NASA POWER")
+    assert base["energy_kwh_m3"] == round(
+        0.00272 * base["well_depth_m"] / fixture.json()["system"]["eta"],
+        4,
+    )
+    assert base["daily_water_m3"] == 108
+    assert base["panel_count"] == 20
+    assert base["tank_volume_liters"] == 54_000
+    assert set(base["annual_costs_tnd"]) == {"solar_maintenance", "diesel", "steg"}
+    assert base["payback_years"]["vs_diesel"] is not None
+    assert base["payback_years"]["vs_steg"] is not None
+    assert base["assistance_information"]
+    assert deeper_well.status_code == 200
+    assert (
+        deeper_well.json()["required_array_kwp"] > base["required_array_kwp"]
+    )
+    assert missing_depth.status_code == 200
+    assert missing_depth.json()["available"] is False
+    assert missing_depth.json()["reason"] == "well_depth_required"
+    assert missing_flow.status_code == 200
+    assert missing_flow.json()["available"] is False
+    assert missing_flow.json()["reason"] == "pump_flow_required"
+    assert missing_parcel.status_code == 404
+
+
+def test_sprint_13_solar_sizing_rejects_non_finite_inputs():
+    fixture_path = main_module.FIXTURES_DIR / "sprint-13.json"
+    settings = json.loads(fixture_path.read_text(encoding="utf-8"))["system"]
+    inputs = [60, 18, 5.4]
+
+    for index in range(len(inputs)):
+        invalid_inputs = inputs.copy()
+        invalid_inputs[index] = float("nan")
+        with pytest.raises(HTTPException) as error:
+            main_module.calculate_solar_sizing(*invalid_inputs, settings)
+        assert error.value.status_code == 422
+
+    invalid_settings = settings.copy()
+    invalid_settings["eta"] = float("nan")
+    with pytest.raises(HTTPException) as error:
+        main_module.calculate_solar_sizing(*inputs, invalid_settings)
+    assert error.value.status_code == 422
 
 
 def test_sprint_02_fixture_has_all_demo_roles():

@@ -331,6 +331,7 @@ async def lifespan(_: FastAPI):
             "sprint-10.json",
             "sprint-11.json",
             "sprint-12.json",
+            "sprint-13.json",
         ):
             fixture = FIXTURES_DIR / fixture_name
             data = json.loads(fixture.read_text(encoding="utf-8"))
@@ -381,7 +382,7 @@ async def lifespan(_: FastAPI):
 app = FastAPI(
     title="Ardi API",
     version="1.0.0",
-    description="API FastAPI Ardi, sprints de demonstration 1 a 12.",
+    description="API FastAPI Ardi, sprints de demonstration 1 a 13.",
     lifespan=lifespan,
 )
 app.add_middleware(
@@ -498,6 +499,11 @@ def sprint_12_fixture(db: Session = Depends(get_db)) -> dict[str, Any]:
         (perf_counter() - calculation_started) * 1000, 3
     )
     return data
+
+
+@app.get("/fixture/sprint-13")
+def sprint_13_fixture() -> dict[str, Any]:
+    return json.loads((FIXTURES_DIR / "sprint-13.json").read_text(encoding="utf-8"))
 
 
 def normalize_assistant_question(question: str) -> str:
@@ -767,6 +773,200 @@ def analyze_parcelle(
         "ndvi_monthly": detail.ndvi_monthly,
         "sources": detail.sources,
         "assumptions": detail.assumptions,
+    }
+
+
+def calculate_solar_sizing(
+    well_depth_m: float,
+    pump_flow_m3_h: float,
+    irradiance_kwh_m2_day: float,
+    settings: dict[str, Any],
+) -> dict[str, Any]:
+    numeric_inputs = (
+        well_depth_m,
+        pump_flow_m3_h,
+        irradiance_kwh_m2_day,
+    )
+    if any(
+        isinstance(value, bool)
+        or not isinstance(value, (int, float))
+        or not math.isfinite(value)
+        for value in numeric_inputs
+    ):
+        raise HTTPException(422, "Solar sizing inputs must be finite numbers")
+
+    numeric_settings = (
+        "pump_hours_per_day",
+        "season_days",
+        "eta",
+        "system_performance_ratio",
+        "panel_power_w",
+        "tank_autonomy_days",
+        "steg_price_tnd_kwh",
+        "diesel_price_tnd_liter",
+        "diesel_liter_per_kwh",
+        "solar_panel_cost_tnd_kwp",
+        "annual_maintenance_fraction",
+    )
+    if any(
+        isinstance(settings.get(key), bool)
+        or not isinstance(settings.get(key), (int, float))
+        or not math.isfinite(settings[key])
+        for key in numeric_settings
+    ):
+        raise HTTPException(422, "Solar sizing assumptions must be finite numbers")
+    if (
+        well_depth_m <= 0
+        or pump_flow_m3_h <= 0
+        or irradiance_kwh_m2_day <= 0
+        or settings["pump_hours_per_day"] <= 0
+        or settings["pump_hours_per_day"] > 24
+        or settings["season_days"] <= 0
+        or not 0 < settings["eta"] <= 1
+        or not 0 < settings["system_performance_ratio"] <= 1
+        or settings["panel_power_w"] <= 0
+        or settings["tank_autonomy_days"] < 0
+        or settings["steg_price_tnd_kwh"] < 0
+        or settings["diesel_price_tnd_liter"] < 0
+        or settings["diesel_liter_per_kwh"] < 0
+        or settings["solar_panel_cost_tnd_kwp"] <= 0
+        or settings["annual_maintenance_fraction"] < 0
+    ):
+        raise HTTPException(422, "Solar sizing assumptions are outside valid ranges")
+
+    energy_kwh_m3 = 0.00272 * well_depth_m / settings["eta"]
+    daily_water_m3 = pump_flow_m3_h * settings["pump_hours_per_day"]
+    daily_energy_kwh = energy_kwh_m3 * daily_water_m3
+    pump_power_kw = energy_kwh_m3 * pump_flow_m3_h
+    performance_ratio = settings["system_performance_ratio"]
+    required_array_kwp = max(
+        pump_power_kw / performance_ratio,
+        daily_energy_kwh / (irradiance_kwh_m2_day * performance_ratio),
+    )
+    panel_count = math.ceil(required_array_kwp * 1000 / settings["panel_power_w"])
+    installed_array_kwp = panel_count * settings["panel_power_w"] / 1000
+    tank_volume_liters = math.ceil(
+        daily_water_m3 * settings["tank_autonomy_days"] * 1000
+    )
+
+    annual_energy_kwh = daily_energy_kwh * settings["season_days"]
+    diesel_price_tnd_kwh = (
+        settings["diesel_price_tnd_liter"] * settings["diesel_liter_per_kwh"]
+    )
+    solar_capex_tnd = installed_array_kwp * settings["solar_panel_cost_tnd_kwp"]
+    solar_maintenance_tnd = (
+        solar_capex_tnd * settings["annual_maintenance_fraction"]
+    )
+    diesel_annual_cost_tnd = annual_energy_kwh * diesel_price_tnd_kwh
+    steg_annual_cost_tnd = annual_energy_kwh * settings["steg_price_tnd_kwh"]
+
+    def payback_years(annual_cost: float) -> float | None:
+        annual_saving = annual_cost - solar_maintenance_tnd
+        return (
+            round(solar_capex_tnd / annual_saving, 2)
+            if annual_saving > 0
+            else None
+        )
+
+    return {
+        "energy_kwh_m3": round(energy_kwh_m3, 4),
+        "daily_water_m3": round(daily_water_m3, 2),
+        "daily_energy_kwh": round(daily_energy_kwh, 2),
+        "pump_power_kw": round(pump_power_kw, 2),
+        "required_array_kwp": round(required_array_kwp, 2),
+        "installed_array_kwp": round(installed_array_kwp, 2),
+        "panel_count": panel_count,
+        "panel_power_w": settings["panel_power_w"],
+        "tank_volume_liters": tank_volume_liters,
+        "annual_water_m3": round(daily_water_m3 * settings["season_days"], 2),
+        "annual_energy_kwh": round(annual_energy_kwh, 2),
+        "solar_capex_tnd": round(solar_capex_tnd, 2),
+        "annual_costs_tnd": {
+            "solar_maintenance": round(solar_maintenance_tnd, 2),
+            "diesel": round(diesel_annual_cost_tnd, 2),
+            "steg": round(steg_annual_cost_tnd, 2),
+        },
+        "annual_savings_tnd": {
+            "vs_diesel": round(diesel_annual_cost_tnd - solar_maintenance_tnd, 2),
+            "vs_steg": round(steg_annual_cost_tnd - solar_maintenance_tnd, 2),
+        },
+        "payback_years": {
+            "vs_diesel": payback_years(diesel_annual_cost_tnd),
+            "vs_steg": payback_years(steg_annual_cost_tnd),
+        },
+    }
+
+
+@app.get("/parcelles/{parcel_id}/solaire")
+def solar_sizing(parcel_id: str, db: Session = Depends(get_db)):
+    parcel = db.get(models.Parcelle, parcel_id)
+    if parcel is None:
+        raise HTTPException(404, "Parcel not found")
+
+    fixture = json.loads(
+        (FIXTURES_DIR / "sprint-13.json").read_text(encoding="utf-8")
+    )
+    if parcel.well_depth_m is None or parcel.well_depth_m <= 0:
+        return {
+            "parcel_id": parcel_id,
+            "available": False,
+            "reason": "well_depth_required",
+            "message": "A well depth is required for solar pump sizing.",
+        }
+    if parcel.pump_flow_m3_h is None or parcel.pump_flow_m3_h <= 0:
+        return {
+            "parcel_id": parcel_id,
+            "available": False,
+            "reason": "pump_flow_required",
+            "message": "A pump flow is required for solar pump sizing.",
+        }
+
+    fixture_parcel_ids = {row["id"] for row in fixture["parcelles"]}
+    if parcel_id in fixture_parcel_ids:
+        solar_data = fixture["solar"]
+        solar_source = solar_data["source"]
+    else:
+        analysis = (
+            db.query(models.Analyse)
+            .filter(models.Analyse.parcel_id == parcel_id)
+            .first()
+        )
+        detail = db.get(models.AnalyseDetail, analysis.id) if analysis else None
+        if detail is not None:
+            solar_data = {
+                "irradiance_kwh_m2_day": detail.solar_irradiance_kwh_m2_day,
+            }
+            solar_source = detail.sources.get("solar", "NASA POWER")
+        else:
+            try:
+                centroid = shape(parcel.geometry).centroid
+            except (GEOSException, TypeError, ValueError, IndexError) as error:
+                raise HTTPException(
+                    422, "Parcel geometry is invalid for solar irradiance lookup"
+                ) from error
+            try:
+                solar_data = fetch_nasa_power(centroid.y, centroid.x)
+            except ExternalSourceError as error:
+                raise HTTPException(502, str(error)) from error
+            solar_source = solar_data["source"]
+
+    sizing = calculate_solar_sizing(
+        float(parcel.well_depth_m),
+        float(parcel.pump_flow_m3_h),
+        float(solar_data["irradiance_kwh_m2_day"]),
+        fixture["system"],
+    )
+    return {
+        "parcel_id": parcel_id,
+        "available": True,
+        "well_depth_m": parcel.well_depth_m,
+        "pump_flow_m3_h": parcel.pump_flow_m3_h,
+        "solar_irradiance_kwh_m2_day": solar_data["irradiance_kwh_m2_day"],
+        "sources": {"solar_irradiance": solar_source},
+        "recommended_pumping_window": fixture["recommended_pumping_window"],
+        "assistance_information": fixture["assistance_information"],
+        "assumptions": fixture["system"],
+        **sizing,
     }
 
 
