@@ -193,9 +193,9 @@ def test_sprint_10_market_filters_and_public_qr_fiche():
         scanned_label = client.get("/labels/ARDI-S10-DATES-001")
 
     assert fixture.status_code == 200
-    assert len(all_products.json()) == 2
-    assert len(label_a.json()) == 1
-    assert label_a.json()[0]["label"]["grade"] == "A"
+    assert len(all_products.json()) == 3
+    assert len(label_a.json()) == 2
+    assert all(product["label"]["grade"] == "A" for product in label_a.json())
     assert dates.json()[0]["id"] == "product-sprint-10-dates"
     assert kebili.json()[0]["farm"]["region"] == "Kebili"
     assert no_match.json() == []
@@ -262,6 +262,142 @@ def test_sprint_10_orders_simulate_payment_without_card_data():
     assert delivery_order.json()["payment_status"] == "due_on_delivery"
     assert card_data_order.status_code == 422
     assert empty_patch.status_code == 422
+
+
+def test_sprint_11_product_publication_and_farm_price_comparison():
+    created_product_id = None
+    try:
+        with TestClient(app) as client:
+            fixture = client.get("/fixture/sprint-11")
+            before = client.get("/fermes/farm-sprint-11/prix-moyens")
+            public_label = client.get("/labels/ARDI-S11-FARM-001")
+            published = client.post(
+                "/produits",
+                json={
+                    "name": "Huile nouvelle",
+                    "category": "huile_olive",
+                    "quantity_kg": 30,
+                    "price_tnd_kg": 28,
+                    "photo_url": "/assets/huile-nouvelle.jpg",
+                },
+            )
+            products = client.get("/produits")
+            after = client.get("/fermes/farm-sprint-11/prix-moyens")
+
+        assert fixture.status_code == 200
+        assert fixture.json()["quote_request"]["status"] == "pending"
+        assert before.status_code == 200
+        assert before.json()["farm_average_price_tnd_kg"] == 22
+        assert public_label.status_code == 200
+        assert (
+            public_label.json()["product"]["id"]
+            == "product-sprint-11-olive-oil"
+        )
+        assert published.status_code == 201
+        published_product = published.json()
+        created_product_id = published_product["id"]
+        assert published_product["farm_id"] == "farm-sprint-11"
+        assert published_product["label_id"] == "label-sprint-11"
+        assert published_product["photo_url"] == "/assets/huile-nouvelle.jpg"
+        assert any(
+            product["id"] == created_product_id for product in products.json()
+        )
+        assert after.status_code == 200
+        assert after.json()["product_count"] == before.json()["product_count"] + 1
+        assert after.json()["market_typical_price_tnd_kg"] == 20.5
+    finally:
+        if created_product_id is not None:
+            session_generator = main_module.get_db()
+            db = next(session_generator)
+            product = db.get(main_module.models.Produit, created_product_id)
+            if product is not None:
+                db.delete(product)
+                db.commit()
+            session_generator.close()
+
+
+def test_sprint_11_order_counteroffers_and_read_notifications_persist():
+    order_id = "order-sprint-11-received"
+    alert_id = "alert-sprint-11-order"
+    original_order = None
+    original_alert_read = None
+    try:
+        with TestClient(app) as client:
+            orders = client.get("/commandes")
+            original_order = next(
+                order for order in orders.json() if order["id"] == order_id
+            )
+            alerts = client.get("/alertes")
+            original_alert_read = next(
+                alert["read"]
+                for alert in alerts.json()
+                if alert["id"] == alert_id
+            )
+            fixture_alerts = client.get("/fixture/sprint-11").json()["alerts"]
+            counteroffer = client.patch(
+                f"/commandes/{order_id}",
+                json={"counteroffer_price_tnd_kg": 21.5},
+            )
+            accepted = client.patch(
+                f"/commandes/{order_id}",
+                json={"status": "accepted"},
+            )
+            marked_read = client.patch(
+                f"/alertes/{alert_id}",
+                json={"read": True},
+            )
+            mark_unread = client.patch(
+                f"/alertes/{alert_id}",
+                json={"read": False},
+            )
+            persisted_alert = next(
+                alert
+                for alert in client.get("/alertes").json()
+                if alert["id"] == alert_id
+            )
+            accepted_order = next(
+                order
+                for order in client.get("/commandes").json()
+                if order["id"] == order_id
+            )
+
+        assert len(fixture_alerts) == 4
+        assert {alert["type"] for alert in fixture_alerts} == {
+            "irrigation",
+            "pompage",
+            "commande",
+            "label",
+        }
+        assert all(alert["date"] and alert["read"] is False for alert in fixture_alerts)
+        assert counteroffer.status_code == 200
+        assert counteroffer.json()["status"] == "counteroffered"
+        assert counteroffer.json()["counteroffer_price_tnd_kg"] == 21.5
+        assert accepted.status_code == 200
+        assert accepted.json()["status"] == "accepted"
+        assert accepted.json()["total_tnd"] == 86
+        assert accepted_order["status"] == "accepted"
+        assert marked_read.status_code == 200
+        assert marked_read.json()["read"] is True
+        assert mark_unread.status_code == 422
+        assert persisted_alert["read"] is True
+    finally:
+        if original_order is not None or original_alert_read is not None:
+            session_generator = main_module.get_db()
+            db = next(session_generator)
+            if original_order is not None:
+                order = db.get(main_module.models.Commande, order_id)
+                if order is not None:
+                    order.status = original_order["status"]
+                    order.total_tnd = original_order["total_tnd"]
+                    order.counteroffer_price_tnd_kg = original_order[
+                        "counteroffer_price_tnd_kg"
+                    ]
+            if original_alert_read is not None:
+                alert = db.get(main_module.models.Alerte, alert_id)
+                if alert is not None:
+                    alert.read = original_alert_read
+            db.commit()
+            session_generator.close()
 
 
 def test_sprint_02_fixture_has_all_demo_roles():

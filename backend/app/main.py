@@ -27,6 +27,7 @@ from . import models
 from .schemas import (
     AnalyseRequest,
     AssistantRequest,
+    AlertReadRequest,
     OTPRequest,
     OTPResponse,
     OTPVerify,
@@ -34,6 +35,7 @@ from .schemas import (
     OrderPatch,
     ParcelleCreate,
     ParcelleOut,
+    ProductCreate,
     SimulationAllocation,
     SimulationRequest,
     UserCreate,
@@ -45,23 +47,32 @@ FIXTURES_DIR = Path(__file__).resolve().parents[1] / "fixtures"
 DEMO_OTP_CODE = "123456"
 pending_otp_phones: set[str] = set()
 GEOD = Geod(ellps="WGS84")
-ORDER_PAYMENT_COLUMNS = {
-    "payment_method": "VARCHAR",
-    "total_tnd": "FLOAT",
-    "payment_status": "VARCHAR",
+SPRINT_SCHEMA_COLUMNS = {
+    "commandes": {
+        "payment_method": "VARCHAR",
+        "total_tnd": "FLOAT",
+        "payment_status": "VARCHAR",
+        "counteroffer_price_tnd_kg": "FLOAT",
+    },
+    "produits": {"photo_url": "VARCHAR"},
+    "alertes": {"date": "VARCHAR", "read": "BOOLEAN"},
 }
 
 
-def ensure_order_payment_columns() -> None:
-    columns = {
-        column["name"] for column in inspect(engine).get_columns("commandes")
-    }
-    with engine.begin() as connection:
-        for column, column_type in ORDER_PAYMENT_COLUMNS.items():
-            if column not in columns:
-                connection.execute(
-                    text(f"ALTER TABLE commandes ADD COLUMN {column} {column_type}")
-                )
+def ensure_sprint_schema_columns() -> None:
+    for table, additions in SPRINT_SCHEMA_COLUMNS.items():
+        columns = {
+            column["name"] for column in inspect(engine).get_columns(table)
+        }
+        with engine.begin() as connection:
+            for column, column_type in additions.items():
+                if column not in columns:
+                    connection.execute(
+                        text(
+                            f"ALTER TABLE {table} ADD COLUMN {column} {column_type}"
+                        )
+                    )
+                    columns.add(column)
 
 
 def calculate_polygon_area_ha(geometry: dict[str, Any]) -> float:
@@ -303,7 +314,7 @@ def fetch_external_analysis(latitude: float, longitude: float) -> dict[str, dict
 @asynccontextmanager
 async def lifespan(_: FastAPI):
     Base.metadata.create_all(bind=engine)
-    ensure_order_payment_columns()
+    ensure_sprint_schema_columns()
     db = next(get_db())
     try:
         for fixture_name in (
@@ -317,6 +328,7 @@ async def lifespan(_: FastAPI):
             "sprint-08.json",
             "sprint-09.json",
             "sprint-10.json",
+            "sprint-11.json",
         ):
             fixture = FIXTURES_DIR / fixture_name
             data = json.loads(fixture.read_text(encoding="utf-8"))
@@ -365,7 +377,7 @@ async def lifespan(_: FastAPI):
 app = FastAPI(
     title="Ardi API",
     version="1.0.0",
-    description="API FastAPI Ardi, sprints de demonstration 1 a 10.",
+    description="API FastAPI Ardi, sprints de demonstration 1 a 11.",
     lifespan=lifespan,
 )
 app.add_middleware(
@@ -451,6 +463,11 @@ def sprint_09_fixture() -> dict[str, Any]:
 @app.get("/fixture/sprint-10")
 def sprint_10_fixture() -> dict[str, Any]:
     return json.loads((FIXTURES_DIR / "sprint-10.json").read_text(encoding="utf-8"))
+
+
+@app.get("/fixture/sprint-11")
+def sprint_11_fixture() -> dict[str, Any]:
+    return json.loads((FIXTURES_DIR / "sprint-11.json").read_text(encoding="utf-8"))
 
 
 def normalize_assistant_question(question: str) -> str:
@@ -1647,7 +1664,12 @@ def public_label(qr_code: str, db: Session = Depends(get_db)):
     parcel = db.get(models.Parcelle, label.parcel_id)
     owner = db.get(models.User, parcel.owner_id) if parcel is not None else None
     farm = None
-    for fixture_name in ("sprint-01.json", "sprint-08.json", "sprint-10.json"):
+    for fixture_name in (
+        "sprint-01.json",
+        "sprint-08.json",
+        "sprint-10.json",
+        "sprint-11.json",
+    ):
         fixture_data = json.loads(
             (FIXTURES_DIR / fixture_name).read_text(encoding="utf-8")
         )
@@ -1680,30 +1702,33 @@ def public_label(qr_code: str, db: Session = Depends(get_db)):
             "category": product.category,
             "quantity_kg": product.quantity_kg,
             "price_tnd_kg": product.price_tnd_kg,
+            "photo_url": product.photo_url,
         }
         if product is not None
         else None
     )
     if product_data is not None:
-        sprint10 = json.loads(
-            (FIXTURES_DIR / "sprint-10.json").read_text(encoding="utf-8")
-        )
-        public_details = next(
-            (
-                details
-                for details in sprint10.get("product_details", [])
-                if details["product_id"] == product.id
-            ),
-            None,
-        )
-        if public_details is not None:
-            product_data.update(
-                {
-                    key: value
-                    for key, value in public_details.items()
-                    if key != "product_id"
-                }
+        for fixture_name in ("sprint-10.json", "sprint-11.json"):
+            sprint_data = json.loads(
+                (FIXTURES_DIR / fixture_name).read_text(encoding="utf-8")
             )
+            public_details = next(
+                (
+                    details
+                    for details in sprint_data.get("product_details", [])
+                    if details["product_id"] == product.id
+                ),
+                None,
+            )
+            if public_details is not None:
+                product_data.update(
+                    {
+                        key: value
+                        for key, value in public_details.items()
+                        if key != "product_id"
+                    }
+                )
+                break
     verifications = (
         db.query(models.Verification)
         .filter(models.Verification.parcel_id == label.parcel_id)
@@ -1790,6 +1815,35 @@ def serialize_order(order: models.Commande) -> dict[str, Any]:
         "payment_method": order.payment_method,
         "payment_status": order.payment_status,
         "total_tnd": order.total_tnd,
+        "counteroffer_price_tnd_kg": order.counteroffer_price_tnd_kg,
+    }
+
+
+def serialize_product(
+    product: models.Produit,
+    farm: dict[str, Any],
+    label: models.Label | None,
+) -> dict[str, Any]:
+    return {
+        "id": product.id,
+        "farm_id": product.farm_id,
+        "label_id": product.label_id,
+        "name": product.name,
+        "category": product.category,
+        "quantity_kg": product.quantity_kg,
+        "price_tnd_kg": product.price_tnd_kg,
+        "photo_url": product.photo_url,
+        "farm": farm,
+        "label": (
+            {
+                "id": label.id,
+                "grade": label.grade,
+                "status": label.status,
+                "qr_code": label.qr_code,
+            }
+            if label is not None
+            else None
+        ),
     }
 
 
@@ -1798,8 +1852,25 @@ def list_products(
     label: str | None = Query(default=None, max_length=80),
     category: str | None = Query(default=None, max_length=80),
     region: str | None = Query(default=None, max_length=80),
+    db: Session = Depends(get_db),
 ):
     _, products = sprint_10_products()
+    sprint11 = json.loads(
+        (FIXTURES_DIR / "sprint-11.json").read_text(encoding="utf-8")
+    )
+    farm = sprint11["farm"]
+    for product in (
+        db.query(models.Produit)
+        .filter(models.Produit.farm_id == farm["id"])
+        .all()
+    ):
+        products.append(
+            serialize_product(
+                product,
+                farm,
+                db.get(models.Label, product.label_id),
+            )
+        )
     if label is not None:
         requested_label = label.strip().casefold()
         products = [
@@ -1829,6 +1900,76 @@ def list_products(
             and product["farm"]["region"].strip().casefold() == requested_region
         ]
     return products
+
+
+@app.post("/produits", status_code=201)
+def publish_product(payload: ProductCreate, db: Session = Depends(get_db)):
+    fixture = json.loads(
+        (FIXTURES_DIR / "sprint-11.json").read_text(encoding="utf-8")
+    )
+    farm = fixture["farm"]
+    active_label = next(
+        (item for item in fixture["labels"] if item["status"] == "active"),
+        None,
+    )
+    if active_label is None:
+        raise HTTPException(409, "The Sprint 11 farm has no active label")
+
+    farmer = db.get(models.User, farm["owner_id"])
+    if farmer is None:
+        raise HTTPException(404, "Sprint 11 farm owner not found")
+    if farmer.role != "farmer":
+        raise HTTPException(409, "Sprint 11 farm owner is not a farmer")
+
+    label = db.get(models.Label, active_label["id"])
+    if label is None or label.status != "active":
+        raise HTTPException(409, "Sprint 11 label is not active")
+
+    product = models.Produit(
+        id=f"product-sprint-11-{uuid4().hex}",
+        farm_id=farm["id"],
+        label_id=label.id,
+        name=payload.name,
+        category=payload.category,
+        quantity_kg=payload.quantity_kg,
+        price_tnd_kg=payload.price_tnd_kg,
+        photo_url=payload.photo_url,
+    )
+    db.add(product)
+    db.commit()
+    db.refresh(product)
+    return serialize_product(product, farm, label)
+
+
+@app.get("/fermes/{farm_id}/prix-moyens")
+def compare_farm_prices(farm_id: str, db: Session = Depends(get_db)):
+    fixture = json.loads(
+        (FIXTURES_DIR / "sprint-11.json").read_text(encoding="utf-8")
+    )
+    farm = fixture["farm"]
+    if farm_id != farm["id"]:
+        raise HTTPException(404, "Farm not found in Sprint 11")
+
+    prices = [
+        product.price_tnd_kg
+        for product in db.query(models.Produit)
+        .filter(models.Produit.farm_id == farm_id)
+        .all()
+        if (label := db.get(models.Label, product.label_id)) is not None
+        and label.status == "active"
+    ]
+    if not prices:
+        raise HTTPException(404, "No active labeled products found for this farm")
+
+    farm_average = round(mean(prices), 2)
+    market_average = fixture["market_benchmark"]["typical_price_tnd_kg"]
+    return {
+        "farm_id": farm_id,
+        "product_count": len(prices),
+        "farm_average_price_tnd_kg": farm_average,
+        "market_typical_price_tnd_kg": market_average,
+        "difference_tnd_kg": round(farm_average - market_average, 2),
+    }
 
 
 @app.post("/commandes", status_code=201)
@@ -1881,25 +2022,49 @@ def update_order(
     if order is None:
         raise HTTPException(404, "Order not found")
 
-    fixture, _ = sprint_10_products()
-    product = next(
-        (item for item in fixture["products"] if item["id"] == order.product_id),
-        None,
+    product = db.get(models.Produit, order.product_id)
+    sprint10 = json.loads(
+        (FIXTURES_DIR / "sprint-10.json").read_text(encoding="utf-8")
     )
-    if product is None:
-        raise HTTPException(404, "Order is outside the Sprint 10 catalog")
+    sprint10_product_ids = {
+        item["id"] for item in sprint10.get("products", [])
+    }
+    sprint11 = json.loads(
+        (FIXTURES_DIR / "sprint-11.json").read_text(encoding="utf-8")
+    )
+    if product is None or (
+        product.id not in sprint10_product_ids
+        and product.farm_id != sprint11["farm"]["id"]
+    ):
+        raise HTTPException(404, "Order is outside the demo catalogs")
     if payload.quantity_kg is not None:
-        if payload.quantity_kg > product["quantity_kg"]:
+        if payload.quantity_kg > product.quantity_kg:
             raise HTTPException(422, "Quantity exceeds available product stock")
         order.quantity_kg = payload.quantity_kg
         order.total_tnd = round(
-            payload.quantity_kg * product["price_tnd_kg"], 2
+            payload.quantity_kg * product.price_tnd_kg, 2
         )
     if payload.payment_method is not None:
         order.payment_method = payload.payment_method
         order.payment_status = order_payment_status(payload.payment_method)
     if payload.status is not None:
+        if (
+            payload.status == "counteroffered"
+            and order.counteroffer_price_tnd_kg is None
+            and payload.counteroffer_price_tnd_kg is None
+        ):
+            raise HTTPException(422, "A counteroffer price is required")
         order.status = payload.status
+        if (
+            payload.status == "accepted"
+            and order.counteroffer_price_tnd_kg is not None
+        ):
+            order.total_tnd = round(
+                order.quantity_kg * order.counteroffer_price_tnd_kg, 2
+            )
+    if payload.counteroffer_price_tnd_kg is not None:
+        order.counteroffer_price_tnd_kg = payload.counteroffer_price_tnd_kg
+        order.status = "counteroffered"
 
     db.commit()
     db.refresh(order)
@@ -1923,4 +2088,38 @@ def list_orders(db: Session = Depends(get_db)):
 
 @app.get("/alertes")
 def list_alerts(db: Session = Depends(get_db)):
-    return db.query(models.Alerte).all()
+    return [
+        {
+            "id": alert.id,
+            "parcel_id": alert.parcel_id,
+            "type": alert.type,
+            "message": alert.message,
+            "severity": alert.severity,
+            "date": alert.date,
+            "read": bool(alert.read),
+        }
+        for alert in db.query(models.Alerte).all()
+    ]
+
+
+@app.patch("/alertes/{alert_id}")
+def mark_alert_read(
+    alert_id: str,
+    payload: AlertReadRequest,
+    db: Session = Depends(get_db),
+):
+    alert = db.get(models.Alerte, alert_id)
+    if alert is None:
+        raise HTTPException(404, "Alert not found")
+    alert.read = True
+    db.commit()
+    db.refresh(alert)
+    return {
+        "id": alert.id,
+        "parcel_id": alert.parcel_id,
+        "type": alert.type,
+        "message": alert.message,
+        "severity": alert.severity,
+        "date": alert.date,
+        "read": bool(alert.read),
+    }

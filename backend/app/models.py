@@ -1,4 +1,4 @@
-from sqlalchemy import JSON, Float, ForeignKey, String
+from sqlalchemy import JSON, Boolean, Float, ForeignKey, String
 from sqlalchemy.orm import Mapped, mapped_column
 
 from .database import Base
@@ -115,6 +115,7 @@ class Produit(Base):
     category: Mapped[str] = mapped_column(String)
     quantity_kg: Mapped[float] = mapped_column(Float)
     price_tnd_kg: Mapped[float] = mapped_column(Float)
+    photo_url: Mapped[str | None] = mapped_column(String, nullable=True)
 
 
 class Commande(Base):
@@ -127,6 +128,9 @@ class Commande(Base):
     payment_method: Mapped[str | None] = mapped_column(String, nullable=True)
     total_tnd: Mapped[float | None] = mapped_column(Float, nullable=True)
     payment_status: Mapped[str | None] = mapped_column(String, nullable=True)
+    counteroffer_price_tnd_kg: Mapped[float | None] = mapped_column(
+        Float, nullable=True
+    )
 
 
 class Alerte(Base):
@@ -136,3 +140,5 @@ class Alerte(Base):
     type: Mapped[str] = mapped_column(String)
     message: Mapped[str] = mapped_column(String)
     severity: Mapped[str] = mapped_column(String)
+    date: Mapped[str | None] = mapped_column(String, nullable=True)
+    read: Mapped[bool | None] = mapped_column(Boolean, nullable=True)

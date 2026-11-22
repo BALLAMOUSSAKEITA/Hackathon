@@ -1,4 +1,4 @@
-# Ardi API - Sprints 1 a 10
+# Ardi API - Sprints 1 a 11
 
 API FastAPI pour le socle technique Ardi.
 
@@ -27,6 +27,7 @@ Documentation interactive : `http://127.0.0.1:8000/docs`
 - Fixture sprint 8 : `GET /fixture/sprint-08`
 - Fixture sprint 9 : `GET /fixture/sprint-09`
 - Fixture sprint 10 : `GET /fixture/sprint-10`
+- Fixture sprint 11 : `GET /fixture/sprint-11`
 - Demander un code OTP simulé : `POST /auth/otp`
 - Vérifier le code et créer un utilisateur : `POST /auth/verify`
 - Utilisateurs : `GET /users`, `POST /users`
@@ -40,14 +41,15 @@ Documentation interactive : `http://127.0.0.1:8000/docs`
 - Filtrer les cultures par sol : `GET /cultures?soil=sandy`
 - Analyses : `GET /analyses`
 - Labels : `GET /labels`, `GET /labels/{qr_code}`
-- Produits : `GET /produits?label=A&category=huile_olive&region=Sidi%20Bouzid`
+- Produits : `GET /produits?label=A&category=huile_olive&region=Sidi%20Bouzid`,
+  `POST /produits`
 - Plans : `GET /plans`
 - Vérifications : `GET /verifications`
 - Commandes : `GET /commandes`, `POST /commandes`, `PATCH /commandes/{id}`
-- Alertes : `GET /alertes`
+- Alertes : `GET /alertes`, `PATCH /alertes/{id}`
 
 Les données de démonstration sont chargées depuis les fixtures `sprint-01`
-à `sprint-10`. Le sprint 2 fournit les profils agriculteur,
+à `sprint-11`. Le sprint 2 fournit les profils agriculteur,
 acheteur particulier et acheteur professionnel. Le sprint 3 fournit 15 cultures
 avec Kc par stade, rendements, fourchettes de prix, coûts et compatibilité de sol.
 Les valeurs agronomiques et économiques sont indicatives; les sources de prix
@@ -120,6 +122,16 @@ Le paiement est simulé, le total est calculé par l'API, et aucune donnée de
 carte n'est acceptée ni stockée. `PATCH /commandes/{id}` peut modifier la
 quantité, le moyen de paiement ou le statut (`pending`, `confirmed`,
 `cancelled`).
+
+Le sprint 11 fournit dans `GET /fixture/sprint-11` une ferme, un label actif,
+un produit, une commande reçue, un devis et quatre alertes datées.
+`POST /produits` publie un produit de la ferme et du label actifs du fichier, avec
+nom, catégorie, prix, stock et URL de photo. `PATCH /commandes/{id}` accepte
+une commande (`status: accepted`) ou enregistre un
+`counteroffer_price_tnd_kg`; l'offre est alors visible avec le statut
+`counteroffered`. `GET /fermes/{farm_id}/prix-moyens` compare le prix moyen
+des produits labellisés de la ferme au prix typique du marché.
+`PATCH /alertes/{id}` avec `{"read": true}` marque durablement une alerte comme lue.
 
 Pour la démonstration, `POST /auth/otp` retourne le code fixe `123456`.
 `POST /auth/verify` reçoit `phone`, `code`, `name`, `role` (`farmer`, `buyer`

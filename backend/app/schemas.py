@@ -81,16 +81,42 @@ class OrderPatch(BaseModel):
 
     quantity_kg: float | None = Field(default=None, gt=0, allow_inf_nan=False)
     payment_method: Literal["D17", "card", "cash_on_delivery"] | None = None
-    status: Literal["pending", "confirmed", "cancelled"] | None = None
+    status: Literal[
+        "pending", "confirmed", "accepted", "counteroffered", "cancelled"
+    ] | None = None
+    counteroffer_price_tnd_kg: float | None = Field(
+        default=None, gt=0, allow_inf_nan=False
+    )
 
     @model_validator(mode="after")
     def require_order_update(self):
         if all(
             value is None
-            for value in (self.quantity_kg, self.payment_method, self.status)
+            for value in (
+                self.quantity_kg,
+                self.payment_method,
+                self.status,
+                self.counteroffer_price_tnd_kg,
+            )
         ):
             raise ValueError("Provide at least one order field to update")
         return self
+
+
+class ProductCreate(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    name: str = Field(min_length=1, max_length=160)
+    category: str = Field(min_length=1, max_length=80)
+    quantity_kg: float = Field(gt=0, allow_inf_nan=False)
+    price_tnd_kg: float = Field(gt=0, allow_inf_nan=False)
+    photo_url: str = Field(min_length=1, max_length=500)
+
+
+class AlertReadRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    read: Literal[True] = True
 
 
 class ParcelleCreate(ORMModel):
