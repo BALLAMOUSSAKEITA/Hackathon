@@ -182,3 +182,87 @@ def test_culture_detail_endpoint():
         response = client.get("/cultures/olive")
         assert response.status_code == 200
         assert response.json()["name"]["fr"] == "Olivier"
+
+
+def test_sprint_04_parcel_post_recalculates_area():
+    with TestClient(app) as client:
+        fixture = client.get("/fixture/sprint-04").json()
+        parcel = fixture["parcelles"][0]
+        parcel["id"] = f"parcel-test-{uuid4()}"
+        parcel["area_ha"] = 99
+
+        response = client.post("/parcelles", json=parcel)
+
+        assert response.status_code == 201
+        assert response.json()["area_ha"] == 2.4
+        assert response.json()["area_ha"] != 99
+
+
+def test_parcel_post_rejects_self_intersecting_polygon():
+    payload = {
+        "id": f"parcel-test-{uuid4()}",
+        "owner_id": "user-demo",
+        "name": "Invalid polygon",
+        "area_ha": 1,
+        "geometry": {
+            "type": "Polygon",
+            "coordinates": [
+                [
+                    [9.48, 35.0286],
+                    [9.482, 35.03],
+                    [9.48, 35.03],
+                    [9.482, 35.0286],
+                    [9.48, 35.0286],
+                ]
+            ],
+        },
+        "water_source": "well",
+        "well_depth_m": 60,
+        "pump_flow_m3_h": 18,
+        "energy_type": "solar",
+        "current_crop_id": "crop-wheat",
+    }
+    with TestClient(app) as client:
+        response = client.post("/parcelles", json=payload)
+        assert response.status_code == 422
+
+
+def test_parcel_post_rejects_non_polygon_geometry():
+    payload = {
+        "id": f"parcel-test-{uuid4()}",
+        "owner_id": "user-demo",
+        "name": "Not a polygon",
+        "area_ha": 1,
+        "geometry": {"type": "Point", "coordinates": [9.48, 35.0286]},
+        "water_source": "well",
+        "energy_type": "solar",
+    }
+    with TestClient(app) as client:
+        response = client.post("/parcelles", json=payload)
+        assert response.status_code == 422
+
+
+def test_parcel_post_requires_existing_owner():
+    payload = {
+        "id": f"parcel-test-{uuid4()}",
+        "owner_id": "unknown-user",
+        "name": "Unknown owner",
+        "area_ha": 1,
+        "geometry": {
+            "type": "Polygon",
+            "coordinates": [
+                [
+                    [9.48, 35.0286],
+                    [9.481, 35.0286],
+                    [9.481, 35.0296],
+                    [9.48, 35.0296],
+                    [9.48, 35.0286],
+                ]
+            ],
+        },
+        "water_source": "well",
+        "energy_type": "solar",
+    }
+    with TestClient(app) as client:
+        response = client.post("/parcelles", json=payload)
+        assert response.status_code == 404

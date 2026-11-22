@@ -1,4 +1,5 @@
 import json
+import math
 from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import Any
@@ -6,6 +7,11 @@ from uuid import uuid4
 
 from fastapi import Depends, FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
+from pyproj import Geod
+from shapely.errors import GEOSException
+from shapely.geometry import shape
+from shapely.geometry.polygon import orient
+from shapely.validation import explain_validity
 from sqlalchemy.orm import Session
 
 from .database import Base, engine, get_db
@@ -24,6 +30,59 @@ from .schemas import (
 FIXTURES_DIR = Path(__file__).resolve().parents[1] / "fixtures"
 DEMO_OTP_CODE = "123456"
 pending_otp_phones: set[str] = set()
+GEOD = Geod(ellps="WGS84")
+
+
+def calculate_polygon_area_ha(geometry: dict[str, Any]) -> float:
+    if geometry.get("type") != "Polygon":
+        raise HTTPException(422, "GeoJSON geometry must be a Polygon")
+
+    coordinates = geometry.get("coordinates")
+    if not isinstance(coordinates, list) or not coordinates:
+        raise HTTPException(422, "Polygon must contain at least one ring")
+
+    for ring in coordinates:
+        if not isinstance(ring, list) or len(ring) < 4 or ring[0] != ring[-1]:
+            raise HTTPException(
+                422, "Polygon rings must be closed and have at least four positions"
+            )
+        for position in ring:
+            if not isinstance(position, list) or len(position) not in (2, 3):
+                raise HTTPException(
+                    422, "Each GeoJSON position must contain two or three coordinates"
+                )
+            if any(
+                isinstance(coordinate, bool)
+                or not isinstance(coordinate, (int, float))
+                for coordinate in position
+            ):
+                raise HTTPException(422, "GeoJSON coordinates must be numeric")
+            longitude, latitude = position[:2]
+            try:
+                coordinates_are_finite = all(
+                    math.isfinite(coordinate) for coordinate in position
+                )
+            except OverflowError:
+                coordinates_are_finite = False
+            if not coordinates_are_finite:
+                raise HTTPException(422, "GeoJSON coordinates must be finite")
+            if not -180 <= longitude <= 180 or not -90 <= latitude <= 90:
+                raise HTTPException(
+                    422, "GeoJSON coordinates are outside longitude/latitude bounds"
+                )
+
+    try:
+        polygon = shape(geometry)
+    except (GEOSException, TypeError, ValueError, IndexError) as error:
+        raise HTTPException(422, "Invalid GeoJSON polygon coordinates") from error
+    if polygon.is_empty or not polygon.is_valid:
+        raise HTTPException(422, f"Invalid polygon: {explain_validity(polygon)}")
+
+    area_m2, _ = GEOD.geometry_area_perimeter(orient(polygon, sign=1.0))
+    area_ha = round(abs(area_m2) / 10_000, 4)
+    if not math.isfinite(area_ha) or area_ha <= 0:
+        raise HTTPException(422, "Polygon must enclose a positive area")
+    return area_ha
 
 
 @asynccontextmanager
@@ -31,7 +90,12 @@ async def lifespan(_: FastAPI):
     Base.metadata.create_all(bind=engine)
     db = next(get_db())
     try:
-        for fixture_name in ("sprint-01.json", "sprint-02.json", "sprint-03.json"):
+        for fixture_name in (
+            "sprint-01.json",
+            "sprint-02.json",
+            "sprint-03.json",
+            "sprint-04.json",
+        ):
             fixture = FIXTURES_DIR / fixture_name
             data = json.loads(fixture.read_text(encoding="utf-8"))
             for section, model in ENTITY_MODELS.items():
@@ -124,6 +188,11 @@ def sprint_03_fixture() -> dict[str, Any]:
     return json.loads((FIXTURES_DIR / "sprint-03.json").read_text(encoding="utf-8"))
 
 
+@app.get("/fixture/sprint-04")
+def sprint_04_fixture() -> dict[str, Any]:
+    return json.loads((FIXTURES_DIR / "sprint-04.json").read_text(encoding="utf-8"))
+
+
 @app.post("/auth/otp", response_model=OTPResponse)
 def request_otp(payload: OTPRequest) -> OTPResponse:
     pending_otp_phones.add(payload.phone)
@@ -184,13 +253,14 @@ def list_parcelles(owner_id: str | None = Query(default=None), db: Session = Dep
 
 @app.post("/parcelles", response_model=ParcelleOut, status_code=201)
 def create_parcelle(payload: ParcelleCreate, db: Session = Depends(get_db)):
-    if payload.geometry.get("type") != "Polygon":
-        raise HTTPException(422, "GeoJSON geometry must be a Polygon")
+    area_ha = calculate_polygon_area_ha(payload.geometry)
     if db.get(models.User, payload.owner_id) is None:
         raise HTTPException(404, "Owner not found")
     if db.get(models.Parcelle, payload.id):
         raise HTTPException(409, "Parcel already exists")
-    parcel = models.Parcelle(**payload.model_dump())
+    parcel_data = payload.model_dump()
+    parcel_data["area_ha"] = area_ha
+    parcel = models.Parcelle(**parcel_data)
     db.add(parcel)
     db.commit()
     db.refresh(parcel)
