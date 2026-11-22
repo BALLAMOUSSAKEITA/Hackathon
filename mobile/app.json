@@ -1,0 +1,18 @@
+{
+  "expo": {
+    "name": "Ardi",
+    "slug": "ardi",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "backgroundColor": "#166534"
+    },
+    "android": {
+      "package": "tn.esprit.ardi"
+    },
+    "ios": {
+      "supportsTablet": false
+    }
+  }
+}

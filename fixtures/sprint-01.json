@@ -1,0 +1,98 @@
+{
+  "sprint": 1,
+  "demo": {
+    "id": "ardi-demo",
+    "name": "Ferme pilote Ardi",
+    "name_ar": "مزرعة أردي التجريبية",
+    "name_darija": "Ferma pilote Ardi"
+  },
+  "user": {
+    "id": "usr-demo",
+    "phone": "+21600000000",
+    "name": "Fermer Christian",
+    "role": "agriculteur",
+    "language": "fr"
+  },
+  "parcelle": {
+    "id": "parcelle-demo",
+    "owner_id": "usr-demo",
+    "name": "Bloc nord",
+    "geometry": {
+      "type": "Polygon",
+      "coordinates": [
+        [
+          [10.165, 36.806],
+          [10.166, 36.806],
+          [10.166, 36.802277],
+          [10.165, 36.802277],
+          [10.165, 36.806]
+        ]
+      ]
+    },
+    "surface_hectares": 3.7,
+    "water_source": "puits",
+    "well_depth_m": 60,
+    "pump_flow_m3_h": 12,
+    "current_crop": "tomate",
+    "energy": "solaire",
+    "energy_formula_assumption": "E(kWh/m3) = 0.00272 * H / eta, eta = 0.5"
+  },
+  "culture_current": {
+    "id": "culture-tomate",
+    "names": {
+      "fr": "Tomate",
+      "ar": "طماطم",
+      "darija": "Maticha"
+    },
+    "water_need": "elevee",
+    "label": null
+  },
+  "well": {
+    "id": "puits-demo",
+    "depth_m": 60,
+    "flow_m3_h": 12,
+    "pump_efficiency": 0.5,
+    "energy_kwh_per_m3": 0.3264
+  },
+  "product": {
+    "id": "produit-demo",
+    "name": "Tomates Ardi",
+    "name_ar": "طماطم أردي",
+    "name_darija": "Maticha Ardi",
+    "category": "legumes",
+    "label": "B",
+    "qr": "ARDI-DEMO-001",
+    "price_tnd": 1.25,
+    "stock_kg": 240
+  },
+  "translations": {
+    "fr": {
+      "welcome": "Bienvenue sur Ardi",
+      "demo": "Ferme de démonstration",
+      "open_demo": "Ouvrir la ferme",
+      "farmer": "Agriculteur",
+      "buyer": "Acheteur"
+    },
+    "ar": {
+      "welcome": "مرحبا بك في أردي",
+      "demo": "مزرعة العرض",
+      "open_demo": "فتح المزرعة",
+      "farmer": "فلاح",
+      "buyer": "مشتري"
+    },
+    "darija": {
+      "welcome": "Marhbe bik fi Ardi",
+      "demo": "Ferma demo",
+      "open_demo": "Hel el-ferma",
+      "farmer": "Fellah",
+      "buyer": "Mochteri"
+    }
+  },
+  "hypotheses": {
+    "currency": "TND",
+    "unit_area": "ha",
+    "unit_energy": "kWh/m3",
+    "pump_efficiency": 0.5,
+    "depth_m": 60
+  }
+}
