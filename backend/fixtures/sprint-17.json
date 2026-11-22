@@ -1,0 +1,164 @@
+{
+  "farmer_id": "user-sprint-17",
+  "profile": {
+    "id": "user-sprint-17",
+    "name": "Productrice demo Sprint 17",
+    "language": "fr",
+    "selected_parcel_id": "parcel-sprint-17-live",
+    "notification_preferences": {
+      "irrigation": true,
+      "market_prices": true,
+      "parcel_health": false
+    }
+  },
+  "users": [
+    {
+      "id": "user-sprint-17",
+      "phone": "+21600000072",
+      "name": "Productrice demo Sprint 17",
+      "role": "farmer",
+      "language": "fr"
+    }
+  ],
+  "parcelles": [
+    {
+      "id": "parcel-sprint-17-frozen",
+      "owner_id": "user-sprint-17",
+      "name": "Parcelle avec plan fige",
+      "area_ha": 1.5,
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [9.48, 35.0286],
+            [9.481, 35.0286],
+            [9.481, 35.0296],
+            [9.48, 35.0296],
+            [9.48, 35.0286]
+          ]
+        ]
+      },
+      "location_consent": true,
+      "water_source": "well",
+      "well_depth_m": 60,
+      "pump_flow_m3_h": 20,
+      "energy_type": "solar",
+      "current_crop_id": "olive"
+    },
+    {
+      "id": "parcel-sprint-17-live",
+      "owner_id": "user-sprint-17",
+      "name": "Parcelle au classement dynamique",
+      "area_ha": 1.5,
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [9.482, 35.0286],
+            [9.483, 35.0286],
+            [9.483, 35.0296],
+            [9.482, 35.0296],
+            [9.482, 35.0286]
+          ]
+        ]
+      },
+      "location_consent": true,
+      "water_source": "well",
+      "well_depth_m": 60,
+      "pump_flow_m3_h": 20,
+      "energy_type": "solar",
+      "current_crop_id": "olive"
+    }
+  ],
+  "water": {
+    "pump_hours_per_day": 5,
+    "season_days": 180,
+    "eta": 0.5
+  },
+  "analysis_context": {
+    "et0_daily_mm": 4.8,
+    "effective_rain_mm": 56,
+    "stage_weights": {
+      "initial": 0.15,
+      "development": 0.25,
+      "mid_season": 0.4,
+      "late_season": 0.2
+    },
+    "soil_texture": "loam",
+    "soil_salinity_dS_m": 2.5,
+    "maximum_temperature_c": 38,
+    "rain_uncertainty_fraction": 0.1,
+    "irrigation_method": "drip",
+    "irrigation_efficiency": 0.9,
+    "energy_price_tnd_kwh": 0.25,
+    "safe_well_utilization": 0.8,
+    "risk_weights": {
+      "well": 0.65,
+      "rain": 0.35
+    }
+  },
+  "ranking_culture_ids": ["olive", "pomegranate"],
+  "parcel_conditions": [
+    {
+      "parcel_id": "parcel-sprint-17-frozen",
+      "current_crop_id": "olive",
+      "analysis_context": {}
+    },
+    {
+      "parcel_id": "parcel-sprint-17-live",
+      "current_crop_id": "olive",
+      "analysis_context": {}
+    }
+  ],
+  "prices": [
+    {
+      "culture_id": "olive",
+      "min_tnd_t": 1800,
+      "typical_tnd_t": 2800,
+      "max_tnd_t": 4200,
+      "source": "ONAGRI - snapshot de demonstration",
+      "effective_date": "2026-11-01"
+    },
+    {
+      "culture_id": "pomegranate",
+      "min_tnd_t": 1400,
+      "typical_tnd_t": 2200,
+      "max_tnd_t": 3200,
+      "source": "ONAGRI - snapshot de demonstration",
+      "effective_date": "2026-11-01"
+    }
+  ],
+  "plans": [
+    {
+      "id": "plan-sprint-17-frozen",
+      "parcel_id": "parcel-sprint-17-frozen",
+      "data": {
+        "sprint": "sprint-17",
+        "frozen": true,
+        "allocations": [
+          {
+            "crop_id": "pomegranate",
+            "area_ha": 1.5
+          }
+        ],
+        "price_snapshot": {
+          "pomegranate": {
+            "price_tnd_t": 2200,
+            "price_range_tnd_t": {
+              "min": 1400,
+              "typical": 2200,
+              "max": 3200
+            },
+            "source": "ONAGRI - snapshot de demonstration",
+            "effective_date": "2026-11-01"
+          }
+        },
+        "simulation": {
+          "label": "B",
+          "label_grade": "B",
+          "status": "adopted"
+        }
+      }
+    }
+  ]
+}

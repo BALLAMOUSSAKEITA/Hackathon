@@ -1,3 +1,4 @@
+from datetime import date
 from typing import Literal
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
@@ -143,3 +144,21 @@ class ParcelleCreate(ORMModel):
 
 class ParcelleOut(ParcelleCreate):
     pass
+
+
+class CulturePriceUpdate(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    min_tnd_t: float = Field(gt=0, allow_inf_nan=False)
+    typical_tnd_t: float = Field(gt=0, allow_inf_nan=False)
+    max_tnd_t: float = Field(gt=0, allow_inf_nan=False)
+    source: str = Field(min_length=1, max_length=250)
+    effective_date: date
+
+    @model_validator(mode="after")
+    def validate_price_range(self):
+        if not self.source.strip():
+            raise ValueError("Price source must not be blank")
+        if not self.min_tnd_t <= self.typical_tnd_t <= self.max_tnd_t:
+            raise ValueError("Price range must satisfy min <= typical <= max")
+        return self

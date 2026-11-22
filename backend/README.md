@@ -33,10 +33,12 @@ Documentation interactive : `http://127.0.0.1:8000/docs`
 - Fixture sprint 14 : `GET /fixture/sprint-14`
 - Fixture sprint 15 : `GET /fixture/sprint-15`
 - Fixture sprint 16 : `GET /fixture/sprint-16`
+- Fixture sprint 17 : `GET /fixture/sprint-17`
 - Demander un code OTP simulé : `POST /auth/otp`
 - Vérifier le code et créer un utilisateur : `POST /auth/verify`
 - Utilisateurs : `GET /users`, `POST /users`
-- Parcelles : `GET /parcelles`, `POST /parcelles`, `GET /parcelles/{parcel_id}`
+- Parcelles : `GET /parcelles?owner_id={owner_id}`, `POST /parcelles`,
+  `GET /parcelles/{parcel_id}?owner_id={owner_id}`
 - Analyse d'une parcelle : `POST /parcelles/{parcel_id}/analyse`
 - Dimensionnement solaire : `GET /parcelles/{parcel_id}/solaire`
 - Suivi satellite : `GET /parcelles/{parcel_id}/suivi`
@@ -47,7 +49,8 @@ Documentation interactive : `http://127.0.0.1:8000/docs`
 - Simuler un plan : `POST /parcelles/{parcel_id}/simulation`
 - Adopter un plan : `POST /parcelles/{parcel_id}/plan`
 - Assistant vocal : `POST /assistant`
-- Cultures : `GET /cultures`, `GET /cultures/{culture_id}`
+- Cultures : `GET /cultures`, `GET /cultures/{culture_id}`,
+  `PUT /cultures/{culture_id}/price`
 - Filtrer les cultures par sol : `GET /cultures?soil=sandy`
 - Analyses : `GET /analyses`
 - Labels : `GET /labels`, `GET /labels/{qr_code}`
@@ -59,7 +62,7 @@ Documentation interactive : `http://127.0.0.1:8000/docs`
 - Alertes : `GET /alertes`, `PATCH /alertes/{id}`
 
 Les données de démonstration sont chargées depuis les fixtures `sprint-01`
-à `sprint-16`. Le sprint 2 fournit les profils agriculteur,
+à `sprint-17`. Le sprint 2 fournit les profils agriculteur,
 acheteur particulier et acheteur professionnel. Le sprint 3 fournit 15 cultures
 avec Kc par stade, rendements, fourchettes de prix, coûts et compatibilité de sol.
 Les valeurs agronomiques et économiques sont indicatives; les sources de prix
@@ -194,6 +197,15 @@ Pour la démonstration, `POST /auth/otp` retourne le code fixe `123456`.
 `POST /auth/verify` reçoit `phone`, `code`, `name`, `role` (`farmer`, `buyer`
 ou `professional`) et `language` (`fr`, `ar` ou `darija`). Le code fixe est
 réservé à la démo et ne doit pas être utilisé en production.
+
+Le sprint 17 rend le filtre `owner_id` obligatoire pour lister ou lire une
+parcelle; seuls les comptes de rôle `farmer` sont acceptés. Ce paramètre sert
+au filtrage et ne remplace pas une authentification. `PUT /cultures/{culture_id}/price`
+reçoit `min_tnd_t`, `typical_tnd_t`,
+`max_tnd_t`, `source` et `effective_date` (format ISO `YYYY-MM-DD`). La mise à
+jour alimente le classement des parcelles Sprint 17 et reste en base au
+redémarrage; chaque plan adopté conserve un instantané du prix, de sa source
+et de sa date, sans être modifié lors des mises à jour ultérieures.
 
 ## PostgreSQL + PostGIS
 

@@ -75,6 +75,7 @@ class CultureDetail(Base):
     yield_range_t_ha: Mapped[dict] = mapped_column(JSON)
     price_range_tnd_t: Mapped[dict] = mapped_column(JSON)
     price_source: Mapped[str] = mapped_column(String)
+    price_updated_at: Mapped[str | None] = mapped_column(String, nullable=True)
     costs_tnd_ha: Mapped[dict] = mapped_column(JSON)
     compatible_soils: Mapped[list[str]] = mapped_column(JSON)
     salt_tolerance_dS_m: Mapped[float] = mapped_column(Float)

@@ -34,6 +34,7 @@ from .schemas import (
     AnalyseRequest,
     AssistantRequest,
     AlertReadRequest,
+    CulturePriceUpdate,
     OTPRequest,
     OTPResponse,
     OTPVerify,
@@ -64,6 +65,7 @@ SPRINT_SCHEMA_COLUMNS = {
     },
     "produits": {"photo_url": "VARCHAR"},
     "alertes": {"date": "VARCHAR", "read": "BOOLEAN"},
+    "culture_details": {"price_updated_at": "VARCHAR"},
 }
 
 
@@ -347,6 +349,7 @@ async def lifespan(_: FastAPI):
             "sprint-14.json",
             "sprint-15.json",
             "sprint-16.json",
+            "sprint-17.json",
         ):
             fixture = FIXTURES_DIR / fixture_name
             data = json.loads(fixture.read_text(encoding="utf-8"))
@@ -370,14 +373,19 @@ async def lifespan(_: FastAPI):
                     if section == "cultures":
                         culture_values = {key: value for key, value in row.items() if key != "details"}
                         culture = db.get(model, row["id"])
+                        detail = db.get(models.CultureDetail, row["id"])
+                        preserve_price = (
+                            detail is not None and detail.price_updated_at is not None
+                        )
                         if culture is None:
                             culture = model(**culture_values)
                             db.add(culture)
                         else:
                             for key, value in culture_values.items():
+                                if preserve_price and key == "price_tnd_t":
+                                    continue
                                 setattr(culture, key, value)
                         if "details" in row:
-                            detail = db.get(models.CultureDetail, row["id"])
                             if detail is None:
                                 db.add(
                                     models.CultureDetail(
@@ -386,11 +394,34 @@ async def lifespan(_: FastAPI):
                                 )
                             else:
                                 for key, value in row["details"].items():
+                                    if preserve_price and key in (
+                                        "price_range_tnd_t",
+                                        "price_source",
+                                    ):
+                                        continue
                                     setattr(detail, key, value)
                         continue
                     if db.get(model, row["id"]) is None:
                         db.add(model(**row))
             db.flush()
+            if fixture_name == "sprint-17.json":
+                for price in data.get("prices", []):
+                    culture = db.get(models.Culture, price["culture_id"])
+                    detail = db.get(models.CultureDetail, price["culture_id"])
+                    if culture is None or detail is None:
+                        raise ValueError(
+                            f"Price fixture references unknown culture {price['culture_id']}"
+                        )
+                    if detail.price_updated_at is None:
+                        culture.price_tnd_t = price["typical_tnd_t"]
+                        detail.price_range_tnd_t = {
+                            "min": price["min_tnd_t"],
+                            "typical": price["typical_tnd_t"],
+                            "max": price["max_tnd_t"],
+                        }
+                        detail.price_source = price["source"]
+                        detail.price_updated_at = price["effective_date"]
+                db.flush()
         db.commit()
     finally:
         db.close()
@@ -400,7 +431,7 @@ async def lifespan(_: FastAPI):
 app = FastAPI(
     title="Ardi API",
     version="1.0.0",
-    description="API FastAPI Ardi, sprints de demonstration 1 a 16.",
+    description="API FastAPI Ardi, sprints de demonstration 1 a 17.",
     lifespan=lifespan,
 )
 app.add_middleware(
@@ -549,6 +580,11 @@ def sprint_16_fixture() -> dict[str, Any]:
     return load_sprint_16_fixture()
 
 
+@app.get("/fixture/sprint-17")
+def sprint_17_fixture() -> dict[str, Any]:
+    return json.loads((FIXTURES_DIR / "sprint-17.json").read_text(encoding="utf-8"))
+
+
 def normalize_assistant_question(question: str) -> str:
     normalized = unicodedata.normalize("NFKD", question.casefold())
     normalized = "".join(
@@ -676,12 +712,29 @@ def create_user(payload: UserCreate, db: Session = Depends(get_db)):
     return user
 
 
+def require_farmer_owner(owner_id: str, db: Session) -> models.User:
+    normalized_owner_id = owner_id.strip()
+    if not normalized_owner_id:
+        raise HTTPException(422, "owner_id must not be blank")
+    owner = db.get(models.User, normalized_owner_id)
+    if owner is None:
+        raise HTTPException(404, "Parcel owner not found")
+    if owner.role != "farmer":
+        raise HTTPException(403, "Parcel owner must be a farmer")
+    return owner
+
+
 @app.get("/parcelles", response_model=list[ParcelleOut])
-def list_parcelles(owner_id: str | None = Query(default=None), db: Session = Depends(get_db)):
-    query = db.query(models.Parcelle)
-    if owner_id:
-        query = query.filter(models.Parcelle.owner_id == owner_id)
-    return query.all()
+def list_parcelles(
+    owner_id: str = Query(min_length=1),
+    db: Session = Depends(get_db),
+):
+    require_farmer_owner(owner_id, db)
+    return (
+        db.query(models.Parcelle)
+        .filter(models.Parcelle.owner_id == owner_id.strip())
+        .all()
+    )
 
 
 @app.post("/parcelles", response_model=ParcelleOut, status_code=201)
@@ -705,9 +758,14 @@ def create_parcelle(payload: ParcelleCreate, db: Session = Depends(get_db)):
 
 
 @app.get("/parcelles/{parcel_id}")
-def get_parcelle(parcel_id: str, db: Session = Depends(get_db)):
+def get_parcelle(
+    parcel_id: str,
+    owner_id: str = Query(min_length=1),
+    db: Session = Depends(get_db),
+):
+    require_farmer_owner(owner_id, db)
     parcel = db.get(models.Parcelle, parcel_id)
-    if not parcel:
+    if parcel is None or parcel.owner_id != owner_id.strip():
         raise HTTPException(404, "Parcel not found")
     return parcel
 
@@ -1296,6 +1354,33 @@ def get_culture(culture_id: str, db: Session = Depends(get_db)):
     return culture_payload(culture, detail)
 
 
+@app.put("/cultures/{culture_id}/price")
+def update_culture_price(
+    culture_id: str,
+    payload: CulturePriceUpdate,
+    db: Session = Depends(get_db),
+) -> dict[str, Any]:
+    culture = db.get(models.Culture, culture_id)
+    if culture is None:
+        raise HTTPException(404, "Culture not found")
+    detail = db.get(models.CultureDetail, culture_id)
+    if detail is None:
+        raise HTTPException(404, "Culture details not found")
+
+    culture.price_tnd_t = payload.typical_tnd_t
+    detail.price_range_tnd_t = {
+        "min": payload.min_tnd_t,
+        "typical": payload.typical_tnd_t,
+        "max": payload.max_tnd_t,
+    }
+    detail.price_source = payload.source.strip()
+    detail.price_updated_at = payload.effective_date.isoformat()
+    db.commit()
+    db.refresh(culture)
+    db.refresh(detail)
+    return culture_payload(culture, detail)
+
+
 @app.get("/parcelles/{parcel_id}/recommandations")
 def recommend_crops(
     parcel_id: str,
@@ -1558,6 +1643,31 @@ def adopt_parcel_plan(
     plan_data = {
         "sprint": "sprint-07",
         "allocations": [allocation.model_dump() for allocation in payload.allocations],
+        "price_snapshot": {
+            allocation.crop_id: {
+                "price_tnd_t": next(
+                    crop["price_tnd_t"]
+                    for crop in crops
+                    if crop["id"] == allocation.crop_id
+                ),
+                "price_range_tnd_t": next(
+                    crop.get("price_range_tnd_t")
+                    for crop in crops
+                    if crop["id"] == allocation.crop_id
+                ),
+                "source": next(
+                    crop.get("price_source")
+                    for crop in crops
+                    if crop["id"] == allocation.crop_id
+                ),
+                "effective_date": next(
+                    crop.get("price_updated_at")
+                    for crop in crops
+                    if crop["id"] == allocation.crop_id
+                ),
+            }
+            for allocation in payload.allocations
+        },
         "simulation": simulation,
     }
     plan = db.get(models.Plan, plan_id)
@@ -1588,6 +1698,7 @@ def culture_payload(culture: models.Culture, detail: models.CultureDetail | None
                 "yield_range_t_ha": detail.yield_range_t_ha,
                 "price_range_tnd_t": detail.price_range_tnd_t,
                 "price_source": detail.price_source,
+                "price_updated_at": detail.price_updated_at,
                 "costs_tnd_ha": detail.costs_tnd_ha,
                 "compatible_soils": detail.compatible_soils,
                 "salt_tolerance_dS_m": detail.salt_tolerance_dS_m,
@@ -1637,6 +1748,59 @@ def crop_water_requirement(
 def recommendation_inputs(
     parcel: models.Parcelle, db: Session
 ) -> tuple[dict[str, Any], list[dict[str, Any]], list[dict[str, Any]], str | None]:
+    sprint17 = json.loads(
+        (FIXTURES_DIR / "sprint-17.json").read_text(encoding="utf-8")
+    )
+    scenario = next(
+        (
+            item
+            for item in sprint17["parcel_conditions"]
+            if item["parcel_id"] == parcel.id
+        ),
+        None,
+    )
+    if scenario is not None:
+        if parcel.pump_flow_m3_h is None or parcel.well_depth_m is None:
+            raise HTTPException(
+                422, "Parcel needs well flow and depth for recommendations"
+            )
+        context = {
+            **sprint17["analysis_context"],
+            **scenario["analysis_context"],
+        }
+        water = sprint17["water"]
+        context.update(
+            {
+                "season_days": water["season_days"],
+                "pump_hours_per_day": water["pump_hours_per_day"],
+                "available_water_m3": round(
+                    parcel.pump_flow_m3_h
+                    * water["pump_hours_per_day"]
+                    * water["season_days"],
+                    2,
+                ),
+                "energy_efficiency": water["eta"],
+                "water_capacity_source": (
+                    "pump_flow_m3_h * pump_hours_per_day * season_days"
+                ),
+            }
+        )
+        crops = []
+        for culture_id in sprint17["ranking_culture_ids"]:
+            culture = db.get(models.Culture, culture_id)
+            detail = db.get(models.CultureDetail, culture_id)
+            if culture is None or detail is None:
+                raise HTTPException(
+                    500, f"Sprint 17 ranking references unknown culture {culture_id}"
+                )
+            crops.append(culture_payload(culture, detail))
+        return (
+            context,
+            crops,
+            sprint17.get("intercrops", []),
+            scenario.get("current_crop_id"),
+        )
+
     sprint12 = json.loads(
         (FIXTURES_DIR / "sprint-12.json").read_text(encoding="utf-8")
     )
@@ -1889,6 +2053,21 @@ def calculate_recommendation(
 def simulation_inputs(
     parcel: models.Parcelle, db: Session
 ) -> tuple[dict[str, Any], list[dict[str, Any]], list[dict[str, Any]]]:
+    sprint17 = json.loads(
+        (FIXTURES_DIR / "sprint-17.json").read_text(encoding="utf-8")
+    )
+    if any(
+        row["parcel_id"] == parcel.id
+        for row in sprint17["parcel_conditions"]
+    ):
+        context, crops, _, current_crop_id = recommendation_inputs(parcel, db)
+        current_allocations = (
+            [{"crop_id": current_crop_id, "area_ha": parcel.area_ha}]
+            if current_crop_id
+            else []
+        )
+        return context, crops, current_allocations
+
     fixture = json.loads((FIXTURES_DIR / "sprint-07.json").read_text(encoding="utf-8"))
     fixture_parcel_ids = {row["id"] for row in fixture["parcelles"]}
     if parcel.id in fixture_parcel_ids:

@@ -66,10 +66,188 @@ def test_sprint_16_production_redirects_http_to_https(monkeypatch):
 
 def test_fixture_demo_loaded():
     with TestClient(app) as client:
-        response = client.get("/parcelles")
+        response = client.get("/parcelles?owner_id=user-demo")
         assert response.status_code == 200
         assert any(p["id"] == "parcel-demo" for p in response.json())
 
+
+def test_sprint_17_parcels_are_scoped_to_the_requested_farmer():
+    with TestClient(app) as client:
+        fixture = client.get("/fixture/sprint-17")
+        owned = client.get("/parcelles?owner_id=user-sprint-17")
+        other_owner = client.get("/parcelles?owner_id=user-sprint-16")
+        missing_owner = client.get("/parcelles")
+        foreign_parcel = client.get(
+            "/parcelles/parcel-sprint-17-live?owner_id=user-sprint-16"
+        )
+
+    assert fixture.status_code == 200
+    assert owned.status_code == 200
+    assert {parcel["id"] for parcel in owned.json()} == {
+        "parcel-sprint-17-frozen",
+        "parcel-sprint-17-live",
+    }
+    assert other_owner.status_code == 200
+    assert "parcel-sprint-17-live" not in {
+        parcel["id"] for parcel in other_owner.json()
+    }
+    assert missing_owner.status_code == 422
+    assert foreign_parcel.status_code == 404
+
+
+def test_sprint_17_price_updates_change_live_ranking_but_not_frozen_plan():
+    originals = None
+    try:
+        with TestClient(app) as client:
+            db_generator = main_module.get_db()
+            db = next(db_generator)
+            pomegranate = db.get(main_module.models.Culture, "pomegranate")
+            detail = db.get(main_module.models.CultureDetail, "pomegranate")
+            frozen_plan = db.get(main_module.models.Plan, "plan-sprint-17-frozen")
+            adopted_plan_id = "plan-sprint-07-parcel-sprint-17-live"
+            existing_adopted_plan = db.get(
+                main_module.models.Plan, adopted_plan_id
+            )
+            original_plan_data = json.loads(json.dumps(frozen_plan.data))
+            originals = (
+                pomegranate.price_tnd_t,
+                detail.price_range_tnd_t,
+                detail.price_source,
+                detail.price_updated_at,
+                (
+                    json.loads(json.dumps(existing_adopted_plan.data))
+                    if existing_adopted_plan is not None
+                    else None
+                ),
+            )
+            fixture_price = next(
+                price
+                for price in client.get("/fixture/sprint-17").json()["prices"]
+                if price["culture_id"] == "pomegranate"
+            )
+            pomegranate.price_tnd_t = fixture_price["typical_tnd_t"]
+            detail.price_range_tnd_t = {
+                "min": fixture_price["min_tnd_t"],
+                "typical": fixture_price["typical_tnd_t"],
+                "max": fixture_price["max_tnd_t"],
+            }
+            detail.price_source = fixture_price["source"]
+            detail.price_updated_at = fixture_price["effective_date"]
+            db.commit()
+            db.close()
+            db_generator.close()
+
+            adopted = client.post(
+                "/parcelles/parcel-sprint-17-live/plan",
+                json={
+                    "allocations": [
+                        {"crop_id": "pomegranate", "area_ha": 1.5}
+                    ]
+                },
+            )
+            assert adopted.status_code == 200
+            adopted_plan = next(
+                row
+                for row in client.get("/plans").json()
+                if row["id"] == adopted_plan_id
+            )
+            assert adopted_plan["data"]["price_snapshot"]["pomegranate"] == {
+                "price_tnd_t": 2200,
+                "price_range_tnd_t": {
+                    "min": 1400,
+                    "typical": 2200,
+                    "max": 3200,
+                },
+                "source": "ONAGRI - snapshot de demonstration",
+                "effective_date": "2026-11-01",
+            }
+
+            before = client.get(
+                "/parcelles/parcel-sprint-17-live/recommandations"
+            ).json()
+            updated = client.put(
+                "/cultures/pomegranate/price",
+                json={
+                    "min_tnd_t": 500,
+                    "typical_tnd_t": 900,
+                    "max_tnd_t": 1300,
+                    "source": "Marche de gros - mise a jour de demonstration",
+                    "effective_date": "2026-11-22",
+                },
+            )
+            after = client.get(
+                "/parcelles/parcel-sprint-17-live/recommandations"
+            ).json()
+            invalid_range = client.put(
+                "/cultures/pomegranate/price",
+                json={
+                    "min_tnd_t": 1000,
+                    "typical_tnd_t": 900,
+                    "max_tnd_t": 1300,
+                    "source": "source test",
+                    "effective_date": "2026-11-22",
+                },
+            )
+
+            assert before["recommendations"][0]["id"] == "pomegranate"
+            assert updated.status_code == 200
+            assert updated.json()["price_tnd_t"] == 900
+            assert updated.json()["price_updated_at"] == "2026-11-22"
+            assert updated.json()["price_source"] == (
+                "Marche de gros - mise a jour de demonstration"
+            )
+            assert after["recommendations"][0]["id"] == "olive"
+            assert invalid_range.status_code == 422
+
+        with TestClient(app) as client:
+            persisted_price = client.get("/cultures/pomegranate").json()
+            plan = next(
+                row
+                for row in client.get("/plans").json()
+                if row["id"] == "plan-sprint-17-frozen"
+            )
+            adopted_plan = next(
+                row
+                for row in client.get("/plans").json()
+                if row["id"] == "plan-sprint-07-parcel-sprint-17-live"
+            )
+            assert persisted_price["price_tnd_t"] == 900
+            assert persisted_price["price_updated_at"] == "2026-11-22"
+            assert plan["data"] == original_plan_data
+            assert (
+                adopted_plan["data"]["price_snapshot"]["pomegranate"][
+                    "price_tnd_t"
+                ]
+                == 2200
+            )
+    finally:
+        if originals is not None:
+            (
+                price,
+                price_range,
+                source,
+                effective_date,
+                original_adopted_plan_data,
+            ) = originals
+            db_generator = main_module.get_db()
+            db = next(db_generator)
+            pomegranate = db.get(main_module.models.Culture, "pomegranate")
+            detail = db.get(main_module.models.CultureDetail, "pomegranate")
+            adopted_plan = db.get(
+                main_module.models.Plan, "plan-sprint-07-parcel-sprint-17-live"
+            )
+            pomegranate.price_tnd_t = price
+            detail.price_range_tnd_t = price_range
+            detail.price_source = source
+            detail.price_updated_at = effective_date
+            if original_adopted_plan_data is None:
+                if adopted_plan is not None:
+                    db.delete(adopted_plan)
+            elif adopted_plan is not None:
+                adopted_plan.data = original_adopted_plan_data
+            db.commit()
+            db.close()
+            db_generator.close()
 
 def test_public_active_label():
     with TestClient(app) as client:
