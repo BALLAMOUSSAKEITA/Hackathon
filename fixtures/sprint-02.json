@@ -1,0 +1,72 @@
+{
+  "sprint": 2,
+  "demo_otp": "123456",
+  "profiles": [
+    {
+      "id": "profil-agriculteur",
+      "role": "agriculteur",
+      "name": "Fermer Christian",
+      "phone": "+21600000001"
+    },
+    {
+      "id": "profil-acheteur",
+      "role": "acheteur_particulier",
+      "name": "Amina Acheteuse",
+      "phone": "+21600000002"
+    },
+    {
+      "id": "profil-pro",
+      "role": "acheteur_professionnel",
+      "name": "Horizon Distribution",
+      "phone": "+21600000003"
+    }
+  ],
+  "translations": {
+    "fr": {
+      "welcome": "Bienvenue sur Ardi",
+      "demo": "Compte de démonstration",
+      "open_demo": "Créer le compte démo",
+      "language": "Choisir la langue",
+      "profile": "Choisir votre profil",
+      "farmer": "Agriculteur",
+      "buyer": "Acheteur particulier",
+      "pro": "Acheteur professionnel",
+      "continue": "Continuer",
+      "phone": "Téléphone",
+      "otp": "Code de démonstration",
+      "create_account": "Créer le compte démo"
+    },
+    "ar": {
+      "welcome": "مرحبا بك في أردي",
+      "demo": "حساب تجريبي",
+      "open_demo": "إنشاء حساب تجريبي",
+      "language": "اختر اللغة",
+      "profile": "اختر ملفك",
+      "farmer": "فلاح",
+      "buyer": "مشتري",
+      "pro": "مشتري محترف",
+      "continue": "متابعة",
+      "phone": "الهاتف",
+      "otp": "رمز العرض",
+      "create_account": "إنشاء حساب تجريبي"
+    },
+    "darija": {
+      "welcome": "Marhbe bik fi Ardi",
+      "demo": "Compte demo",
+      "open_demo": "A3mel compte demo",
+      "language": "Khtar el lugha",
+      "profile": "Khtar profilek",
+      "farmer": "Fellah",
+      "buyer": "Mochteri 3adi",
+      "pro": "Mochteri pro",
+      "continue": "Kammel",
+      "phone": "Tilifun",
+      "otp": "Code demo",
+      "create_account": "A3mel compte demo"
+    }
+  },
+  "hypotheses": {
+    "demo_otp": "123456",
+    "allowed_roles": ["agriculteur", "acheteur_particulier", "acheteur_professionnel"]
+  }
+}

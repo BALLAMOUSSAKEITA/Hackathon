@@ -39,3 +39,47 @@ def test_rejects_open_polygon() -> None:
         },
     )
     assert response.status_code == 422
+
+
+def test_sprint_two_demo_has_three_profiles() -> None:
+    response = client.get("/demo/sprint-02")
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["sprint"] == 2
+    assert len(payload["profiles"]) == 3
+    assert payload["demo_otp"] == "123456"
+
+
+def test_demo_otp_accepts_known_role_and_creates_account() -> None:
+    otp = client.post(
+        "/auth/otp",
+        json={
+            "phone": "+21600000010",
+            "role": "agriculteur",
+            "name": "Test Ardi",
+            "language": "darija",
+        },
+    )
+    assert otp.status_code == 200
+    assert otp.json()["code"] == "123456"
+
+    verify = client.post(
+        "/auth/verify",
+        json={"phone": "+21600000010", "code": "123456"},
+    )
+    assert verify.status_code == 200
+    assert verify.json()["role"] == "agriculteur"
+    assert verify.json()["language"] == "darija"
+
+
+def test_unknown_role_is_rejected() -> None:
+    response = client.post(
+        "/auth/otp",
+        json={
+            "phone": "+21600000011",
+            "role": "administrateur",
+            "name": "Test",
+            "language": "fr",
+        },
+    )
+    assert response.status_code == 422

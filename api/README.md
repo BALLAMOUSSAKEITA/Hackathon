@@ -19,3 +19,10 @@ Ferme démo : `GET http://127.0.0.1:8000/demo`
 La base locale SQLite est créée automatiquement. Pour PostgreSQL/PostGIS,
 copier `api/.env.example`, définir `DATABASE_URL` et créer l'extension
 PostGIS conformément à `api/alembic/README.md`.
+
+## Sprint 2
+
+- `POST /auth/otp` accepte les rôles `agriculteur`,
+  `acheteur_particulier` et `acheteur_professionnel`.
+- `POST /auth/verify` accepte le code fixe de démonstration `123456`.
+- `GET /demo/sprint-02` sert les trois profils et les traductions du Sprint 2.

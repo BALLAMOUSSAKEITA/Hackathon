@@ -10,6 +10,7 @@ Socle technique du parcours agriculteur/acheteur pour le hackathon.
 - `fixtures/sprint-01.json` : ferme de démonstration partagée.
 - `docs/api-contract.md` : contrat partagé.
 - `docs/scenario-demo.md` : scénario de pitch en huit étapes.
+- `fixtures/sprint-02.json` : profils, OTP démo et traductions du Sprint 2.
 
 ## Démarrage rapide
 

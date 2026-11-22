@@ -10,10 +10,14 @@ from sqlalchemy.orm import Session
 
 from .database import Base, SessionLocal, engine, get_db
 from .models import Parcelle, Utilisateur
-from .schemas import ParcelleCreate, ParcelleResponse
+from .schemas import OTPRequest, OTPVerify, ParcelleCreate, ParcelleResponse
 
 
 FIXTURE_PATH = Path(__file__).resolve().parents[2] / "fixtures" / "sprint-01.json"
+SPRINT_2_FIXTURE_PATH = Path(__file__).resolve().parents[2] / "fixtures" / "sprint-02.json"
+ALLOWED_ROLES = {"agriculteur", "acheteur_particulier", "acheteur_professionnel"}
+DEMO_OTP = "123456"
+pending_profiles: dict[str, dict[str, str]] = {}
 
 app = FastAPI(
     title="Ardi API",
@@ -107,6 +111,57 @@ def health() -> dict[str, object]:
 @app.get("/demo")
 def demo() -> dict[str, Any]:
     return load_fixture()
+
+
+@app.get("/demo/sprint-02")
+def demo_sprint_2() -> dict[str, Any]:
+    with SPRINT_2_FIXTURE_PATH.open("r", encoding="utf-8") as fixture_file:
+        return json.load(fixture_file)
+
+
+@app.post("/auth/otp", status_code=200)
+def request_otp(payload: OTPRequest) -> dict[str, str]:
+    if payload.role not in ALLOWED_ROLES:
+        raise HTTPException(status_code=422, detail="Rôle inconnu.")
+
+    pending_profiles[payload.phone] = {
+        "phone": payload.phone,
+        "role": payload.role,
+        "name": payload.name,
+        "language": payload.language,
+    }
+    return {"status": "envoye", "code": DEMO_OTP}
+
+
+@app.post("/auth/verify", status_code=200)
+def verify_otp(payload: OTPVerify, db: Session = Depends(get_db)) -> dict[str, object]:
+    profile = pending_profiles.get(payload.phone)
+    if profile is None:
+        raise HTTPException(status_code=404, detail="Demande OTP introuvable.")
+    if payload.code != DEMO_OTP:
+        raise HTTPException(status_code=401, detail="Code OTP invalide.")
+
+    existing = db.query(Utilisateur).filter(Utilisateur.phone == payload.phone).first()
+    if existing is None:
+        existing = Utilisateur(
+            id=f"usr-{uuid.uuid4().hex[:8]}",
+            phone=profile["phone"],
+            name=profile["name"],
+            role=profile["role"],
+            language=profile["language"],
+        )
+        db.add(existing)
+        db.commit()
+        db.refresh(existing)
+
+    pending_profiles.pop(payload.phone, None)
+    return {
+        "id": existing.id,
+        "phone": existing.phone,
+        "name": existing.name,
+        "role": existing.role,
+        "language": existing.language,
+    }
 
 
 @app.post("/parcelles", response_model=ParcelleResponse, status_code=201)

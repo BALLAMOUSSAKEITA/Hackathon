@@ -30,3 +30,15 @@ class ParcelleResponse(BaseModel):
     pump_flow_m3_h: float
     current_crop: str
     energy: str
+
+
+class OTPRequest(BaseModel):
+    phone: str = Field(min_length=8)
+    role: str
+    name: str = Field(min_length=1)
+    language: str = Field(pattern="^(fr|ar|darija)$")
+
+
+class OTPVerify(BaseModel):
+    phone: str = Field(min_length=8)
+    code: str = Field(min_length=6, max_length=6)

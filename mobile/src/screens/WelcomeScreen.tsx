@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   I18nManager,
   Pressable,
@@ -6,23 +6,59 @@ import {
   Text,
   View,
 } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useNavigation } from "@react-navigation/native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import fixture from "../../../fixtures/sprint-01.json";
+import sprint2 from "../../../fixtures/sprint-02.json";
 import { colors, spacing, touchTarget } from "../theme";
 
 type Language = "fr" | "ar" | "darija";
+type ProfileRole = "agriculteur" | "acheteur_particulier" | "acheteur_professionnel";
 
 export function WelcomeScreen() {
   const navigation = useNavigation<any>();
   const [language, setLanguage] = useState<Language>("fr");
-  const strings = fixture.translations[language];
+  const [role, setRole] = useState<ProfileRole>("agriculteur");
+  const strings = sprint2.translations[language];
   const isArabic = language === "ar";
 
-  function chooseLanguage(nextLanguage: Language) {
+  useEffect(() => {
+    AsyncStorage.multiGet(["ardi.language", "ardi.profile"]).then((entries) => {
+      const savedLanguage = entries.find(([key]) => key === "ardi.language")?.[1];
+      const savedRole = entries.find(([key]) => key === "ardi.profile")?.[1];
+      if (savedLanguage === "fr" || savedLanguage === "ar" || savedLanguage === "darija") {
+        setLanguage(savedLanguage);
+        I18nManager.forceRTL(savedLanguage === "ar");
+      }
+      if (
+        savedRole === "agriculteur" ||
+        savedRole === "acheteur_particulier" ||
+        savedRole === "acheteur_professionnel"
+      ) {
+        setRole(savedRole);
+      }
+    });
+  }, []);
+
+  async function chooseLanguage(nextLanguage: Language) {
     setLanguage(nextLanguage);
     I18nManager.forceRTL(nextLanguage === "ar");
+    await AsyncStorage.setItem("ardi.language", nextLanguage);
+  }
+
+  async function chooseProfile(nextRole: ProfileRole) {
+    setRole(nextRole);
+    await AsyncStorage.setItem("ardi.profile", nextRole);
+  }
+
+  function continueToDemo() {
+    if (role === "acheteur_particulier" || role === "acheteur_professionnel") {
+      navigation.navigate("BuyerMarket");
+    } else {
+      navigation.navigate("FarmerHome");
+    }
   }
 
   return (
@@ -47,11 +83,31 @@ export function WelcomeScreen() {
           ))}
         </View>
 
+        <Text style={styles.profileLabel}>{strings.profile}</Text>
+        <View style={styles.profileRow}>
+          {([
+            ["agriculteur", strings.farmer],
+            ["acheteur_particulier", strings.buyer],
+            ["acheteur_professionnel", strings.pro],
+          ] as [ProfileRole, string][]).map(([item, label]) => (
+            <Pressable
+              key={item}
+              accessibilityRole="button"
+              onPress={() => chooseProfile(item)}
+              style={[styles.profileButton, role === item && styles.profileSelected]}
+            >
+              <Text style={[styles.profileText, role === item && styles.selectedText]}>
+                {label}
+              </Text>
+            </Pressable>
+          ))}
+        </View>
+
         <Text style={styles.sectionLabel}>{fixture.demo.name}</Text>
         <Pressable
           accessibilityRole="button"
           style={styles.primaryButton}
-          onPress={() => navigation.navigate("FarmerHome")}
+          onPress={continueToDemo}
         >
           <Text style={styles.primaryButtonText}>{strings.open_demo}</Text>
         </Pressable>
@@ -92,6 +148,26 @@ const styles = StyleSheet.create({
   languageText: { color: colors.text, fontWeight: "700" },
   selectedText: { color: "#ffffff" },
   sectionLabel: { marginTop: spacing.xl, color: colors.muted, marginBottom: spacing.sm },
+  profileLabel: {
+    marginTop: spacing.lg,
+    marginBottom: spacing.sm,
+    color: colors.text,
+    fontWeight: "700",
+  },
+  profileRow: { flexDirection: "row", flexWrap: "wrap", gap: spacing.sm },
+  profileButton: {
+    minHeight: touchTarget,
+    minWidth: 110,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: 12,
+    backgroundColor: colors.surface,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: spacing.sm,
+  },
+  profileSelected: { backgroundColor: colors.secondary, borderColor: colors.secondary },
+  profileText: { color: colors.text, fontWeight: "700", textAlign: "center" },
   primaryButton: {
     minHeight: touchTarget,
     borderRadius: 12,
