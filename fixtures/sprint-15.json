@@ -1,0 +1,33 @@
+{
+  "sprint": 15,
+  "acheteur": {
+    "id": "acheteur-pro-demo",
+    "name": "Horizon Distribution",
+    "role": "acheteur_professionnel",
+    "professional": true
+  },
+  "achats": [
+    {"id":"achat-1","produit":"Huile d'olive extra vierge","ferme":"Ferme pilote Ardi","label":"A","quantite":10,"unite":"bouteilles","eau_m3":1280,"energie_kwh":420},
+    {"id":"achat-2","produit":"Grenades","ferme":"Ferme Oasis","label":"B","quantite":50,"unite":"kg","eau_m3":4750,"energie_kwh":1550},
+    {"id":"achat-3","produit":"Tomates fraîches","ferme":"Ferme El Amen","label":"C","quantite":20,"unite":"kg","eau_m3":1240,"energie_kwh":400}
+  ],
+  "commandes_gros": [
+    {"id":"gros-1","produit":"Huile d'olive extra vierge","quantite":300,"unite":"bouteilles","status":"en_attente","eau_m3":3840,"energie_kwh":1260}
+  ],
+  "totaux": {
+    "eau_m3": 7270,
+    "energie_kwh": 2370,
+    "nombre_fermes": 3,
+    "part_produits_label_a_pct": 33.33
+  },
+  "rapport": {
+    "title": "Rapport d'impact Horizon Distribution",
+    "format": "CSV",
+    "columns": ["achat","produit","ferme","label","quantite","eau_m3","energie_kwh"]
+  },
+  "hypotheses": {
+    "currency": "TND",
+    "calculation": "Somme des impacts des lignes d'achat",
+    "professional_payment": false
+  }
+}

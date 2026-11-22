@@ -428,3 +428,27 @@ def test_sprint_fourteen_contestation_requires_location() -> None:
     )
     assert response.status_code == 200
     assert response.json()["status"] == "contestee"
+
+
+def test_sprint_fifteen_buyer_impact_totals_match_purchases() -> None:
+    response = client.get("/acheteurs/acheteur-pro-demo/impact")
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["eau_m3"] == sum(item["eau_m3"] for item in payload["achats"])
+    assert payload["energie_kwh"] == sum(item["energie_kwh"] for item in payload["achats"])
+    assert payload["nombre_fermes"] == 3
+    assert payload["part_produits_label_a_pct"] == 33.33
+
+
+def test_sprint_fifteen_professional_report_and_bulk_order() -> None:
+    report = client.get("/acheteurs/acheteur-pro-demo/rapport")
+    assert report.status_code == 200
+    assert "achat,produit,ferme,label,quantite,eau_m3,energie_kwh" in report.json()["content"]
+
+    bulk = client.post(
+        "/acheteurs/acheteur-pro-demo/commandes-gros",
+        json={"produit": "Huile d'olive extra vierge", "quantite": 300},
+    )
+    assert bulk.status_code == 200
+    assert bulk.json()["status"] == "en_attente"
+    assert bulk.json()["paiement_reel"] is False

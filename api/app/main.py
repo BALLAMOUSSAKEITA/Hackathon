@@ -35,6 +35,7 @@ SPRINT_11_FIXTURE_PATH = Path(__file__).resolve().parents[2] / "fixtures" / "spr
 SPRINT_12_FIXTURE_PATH = Path(__file__).resolve().parents[2] / "fixtures" / "sprint-12.json"
 SPRINT_13_FIXTURE_PATH = Path(__file__).resolve().parents[2] / "fixtures" / "sprint-13.json"
 SPRINT_14_FIXTURE_PATH = Path(__file__).resolve().parents[2] / "fixtures" / "sprint-14.json"
+SPRINT_15_FIXTURE_PATH = Path(__file__).resolve().parents[2] / "fixtures" / "sprint-15.json"
 ALLOWED_ROLES = {"agriculteur", "acheteur_particulier", "acheteur_professionnel"}
 DEMO_OTP = "123456"
 pending_profiles: dict[str, dict[str, str]] = {}
@@ -731,6 +732,94 @@ def contest_alert(parcelle_id: str, payload: dict[str, Any]) -> dict[str, Any]:
         "latitude": latitude,
         "longitude": longitude,
     }
+
+
+@app.get("/demo/sprint-15")
+def demo_sprint_15() -> dict[str, Any]:
+    with SPRINT_15_FIXTURE_PATH.open("r", encoding="utf-8") as fixture_file:
+        return json.load(fixture_file)
+
+
+@app.get("/acheteurs/{acheteur_id}/impact")
+def buyer_impact(acheteur_id: str) -> dict[str, Any]:
+    with SPRINT_15_FIXTURE_PATH.open("r", encoding="utf-8") as fixture_file:
+        fixture = json.load(fixture_file)
+
+    if acheteur_id != fixture["acheteur"]["id"]:
+        raise HTTPException(status_code=404, detail="Acheteur introuvable.")
+
+    purchases = fixture["achats"]
+    water = sum(purchase["eau_m3"] for purchase in purchases)
+    energy = sum(purchase["energie_kwh"] for purchase in purchases)
+    farms = sorted({purchase["ferme"] for purchase in purchases})
+    label_a = sum(1 for purchase in purchases if purchase["label"] == "A")
+    label_a_pct = round((label_a / len(purchases)) * 100, 2) if purchases else 0
+
+    return {
+        "acheteur": fixture["acheteur"],
+        "eau_m3": water,
+        "energie_kwh": energy,
+        "nombre_fermes": len(farms),
+        "fermes": farms,
+        "part_produits_label_a_pct": label_a_pct,
+        "achats": purchases,
+        "totaux_fixture": fixture["totaux"],
+    }
+
+
+@app.get("/acheteurs/{acheteur_id}/rapport")
+def buyer_report(acheteur_id: str) -> dict[str, str]:
+    with SPRINT_15_FIXTURE_PATH.open("r", encoding="utf-8") as fixture_file:
+        fixture = json.load(fixture_file)
+
+    if acheteur_id != fixture["acheteur"]["id"]:
+        raise HTTPException(status_code=404, detail="Acheteur introuvable.")
+
+    lines = ["achat,produit,ferme,label,quantite,eau_m3,energie_kwh"]
+    for purchase in fixture["achats"]:
+        lines.append(
+            f"{purchase['id']},{purchase['produit']},{purchase['ferme']},"
+            f"{purchase['label']},{purchase['quantite']},{purchase['eau_m3']},"
+            f"{purchase['energie_kwh']}"
+        )
+    return {
+        "title": fixture["rapport"]["title"],
+        "filename": "rapport-impact-horizon.csv",
+        "content": "\n".join(lines),
+    }
+
+
+@app.post("/acheteurs/{acheteur_id}/commandes-gros")
+def create_bulk_order(acheteur_id: str, payload: dict[str, Any]) -> dict[str, Any]:
+    with SPRINT_15_FIXTURE_PATH.open("r", encoding="utf-8") as fixture_file:
+        fixture = json.load(fixture_file)
+
+    if acheteur_id != fixture["acheteur"]["id"]:
+        raise HTTPException(status_code=404, detail="Acheteur introuvable.")
+    quantity = float(payload.get("quantite", 0))
+    product = str(payload.get("produit", "")).strip()
+    if quantity <= 0 or not product:
+        raise HTTPException(status_code=422, detail="Produit ou quantité invalide.")
+    if not fixture["acheteur"]["professional"]:
+        raise HTTPException(status_code=422, detail="Compte professionnel requis.")
+
+    return {
+        "id": f"gros-{uuid.uuid4().hex[:8]}",
+        "acheteur_id": acheteur_id,
+        "produit": product,
+        "quantite": quantity,
+        "status": "en_attente",
+        "paiement_reel": False,
+    }
+
+
+@app.get("/acheteurs/{acheteur_id}/commandes-gros")
+def list_bulk_orders(acheteur_id: str) -> dict[str, Any]:
+    with SPRINT_15_FIXTURE_PATH.open("r", encoding="utf-8") as fixture_file:
+        fixture = json.load(fixture_file)
+    if acheteur_id != fixture["acheteur"]["id"]:
+        raise HTTPException(status_code=404, detail="Acheteur introuvable.")
+    return {"commandes": fixture["commandes_gros"]}
 
 
 @app.post("/produits/publish")

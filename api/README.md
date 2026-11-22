@@ -100,3 +100,9 @@ PostGIS conformément à `api/alembic/README.md`.
 - `GET /parcelles/{id}/suivi` expose zones, NDVI, consommation d'eau et alertes.
 - `POST /parcelles/{id}/suivi/alerte` confirme un écart après deux images concordantes.
 - `POST /parcelles/{id}/suivi/contestation` reçoit une photo géolocalisée.
+
+## Sprint 15
+
+- `GET /acheteurs/{id}/impact` agrège eau, énergie, fermes et produits label A.
+- `GET /acheteurs/{id}/rapport` exporte les lignes nécessaires au rapport.
+- `POST /acheteurs/{id}/commandes-gros` crée une commande professionnelle simulée.
