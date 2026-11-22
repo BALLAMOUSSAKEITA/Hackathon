@@ -52,6 +52,23 @@ class Culture(Base):
     water_demand: Mapped[str] = mapped_column(String)
 
 
+class CultureDetail(Base):
+    __tablename__ = "culture_details"
+    culture_id: Mapped[str] = mapped_column(
+        String, ForeignKey("cultures.id"), primary_key=True
+    )
+    kc_by_stage: Mapped[dict] = mapped_column(JSON)
+    yield_range_t_ha: Mapped[dict] = mapped_column(JSON)
+    price_range_tnd_t: Mapped[dict] = mapped_column(JSON)
+    price_source: Mapped[str] = mapped_column(String)
+    costs_tnd_ha: Mapped[dict] = mapped_column(JSON)
+    compatible_soils: Mapped[list[str]] = mapped_column(JSON)
+    salt_tolerance_dS_m: Mapped[float] = mapped_column(Float)
+    heat_tolerance_c: Mapped[float] = mapped_column(Float)
+    first_production_days: Mapped[int] = mapped_column()
+    kc_source: Mapped[str] = mapped_column(String)
+
+
 class Plan(Base):
     __tablename__ = "plans"
     id: Mapped[str] = mapped_column(String, primary_key=True)

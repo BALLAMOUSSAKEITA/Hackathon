@@ -118,3 +118,67 @@ def test_otp_verification_rejects_unknown_role():
             },
         )
         assert response.status_code == 422
+
+
+def test_sprint_03_has_complete_culture_records():
+    required_crops = {
+        "olive",
+        "pistachio",
+        "pomegranate",
+        "prickly-pear",
+        "date-palm",
+        "onion",
+        "tomato",
+        "watermelon",
+        "barley",
+        "capers",
+        "crop-wheat",
+        "chickpea",
+        "pepper",
+        "grape",
+        "fig",
+    }
+    with TestClient(app) as client:
+        fixture = client.get("/fixture/sprint-03")
+        response = client.get("/cultures")
+        assert fixture.status_code == 200
+        assert response.status_code == 200
+        cultures = response.json()
+        assert {culture["id"] for culture in cultures} == required_crops
+        for culture in cultures:
+            assert {"fr", "ar", "darija"} <= culture["name"].keys()
+            assert culture["water_need_mm"] > 0
+            assert culture["first_production_days"] > 0
+            assert culture["salt_tolerance_dS_m"] > 0
+            assert culture["heat_tolerance_c"] > 0
+            assert {"initial", "development", "mid_season", "late_season"} <= culture[
+                "kc_by_stage"
+            ].keys()
+            for ranges in (
+                culture["yield_range_t_ha"],
+                culture["price_range_tnd_t"],
+                culture["costs_tnd_ha"],
+            ):
+                assert ranges["min"] <= ranges["typical"] <= ranges["max"]
+            assert culture["yield_range_t_ha"]["typical"] == culture["yield_t_ha"]
+            assert culture["price_range_tnd_t"]["typical"] == culture["price_tnd_t"]
+            assert culture["compatible_soils"]
+            assert culture["price_source"]
+            assert culture["kc_source"]
+
+
+def test_cultures_can_be_filtered_by_compatible_soil():
+    with TestClient(app) as client:
+        response = client.get("/cultures?soil=sandy")
+        assert response.status_code == 200
+        cultures = response.json()
+        assert cultures
+        assert all("sandy" in culture["compatible_soils"] for culture in cultures)
+        assert len(cultures) < len(client.get("/cultures").json())
+
+
+def test_culture_detail_endpoint():
+    with TestClient(app) as client:
+        response = client.get("/cultures/olive")
+        assert response.status_code == 200
+        assert response.json()["name"]["fr"] == "Olivier"

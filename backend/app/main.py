@@ -31,7 +31,7 @@ async def lifespan(_: FastAPI):
     Base.metadata.create_all(bind=engine)
     db = next(get_db())
     try:
-        for fixture_name in ("sprint-01.json", "sprint-02.json"):
+        for fixture_name in ("sprint-01.json", "sprint-02.json", "sprint-03.json"):
             fixture = FIXTURES_DIR / fixture_name
             data = json.loads(fixture.read_text(encoding="utf-8"))
             for section, model in ENTITY_MODELS.items():
@@ -46,8 +46,30 @@ async def lifespan(_: FastAPI):
                 else:
                     rows = data.get(section, [])
                 for row in rows:
+                    if section == "cultures":
+                        culture_values = {key: value for key, value in row.items() if key != "details"}
+                        culture = db.get(model, row["id"])
+                        if culture is None:
+                            culture = model(**culture_values)
+                            db.add(culture)
+                        else:
+                            for key, value in culture_values.items():
+                                setattr(culture, key, value)
+                        if "details" in row:
+                            detail = db.get(models.CultureDetail, row["id"])
+                            if detail is None:
+                                db.add(
+                                    models.CultureDetail(
+                                        culture_id=row["id"], **row["details"]
+                                    )
+                                )
+                            else:
+                                for key, value in row["details"].items():
+                                    setattr(detail, key, value)
+                        continue
                     if db.get(model, row["id"]) is None:
                         db.add(model(**row))
+            db.flush()
         db.commit()
     finally:
         db.close()
@@ -57,7 +79,7 @@ async def lifespan(_: FastAPI):
 app = FastAPI(
     title="Ardi API",
     version="1.0.0",
-    description="API FastAPI du socle technique Ardi, sprint 1.",
+    description="API FastAPI Ardi, sprints de demonstration 1 a 3.",
     lifespan=lifespan,
 )
 app.add_middleware(
@@ -95,6 +117,11 @@ def sprint_fixture() -> dict[str, Any]:
 @app.get("/fixture/sprint-02")
 def sprint_02_fixture() -> dict[str, Any]:
     return json.loads((FIXTURES_DIR / "sprint-02.json").read_text(encoding="utf-8"))
+
+
+@app.get("/fixture/sprint-03")
+def sprint_03_fixture() -> dict[str, Any]:
+    return json.loads((FIXTURES_DIR / "sprint-03.json").read_text(encoding="utf-8"))
 
 
 @app.post("/auth/otp", response_model=OTPResponse)
@@ -179,13 +206,63 @@ def get_parcelle(parcel_id: str, db: Session = Depends(get_db)):
 
 
 @app.get("/cultures")
-def list_cultures(db: Session = Depends(get_db)):
-    return db.query(models.Culture).all()
+def list_cultures(
+    soil: str | None = Query(default=None, min_length=1),
+    db: Session = Depends(get_db),
+):
+    cultures = db.query(models.Culture).order_by(models.Culture.id).all()
+    soil_filter = soil.strip().lower().replace("-", "_") if soil else None
+    result = []
+    for culture in cultures:
+        detail = db.get(models.CultureDetail, culture.id)
+        if soil_filter and (detail is None or soil_filter not in detail.compatible_soils):
+            continue
+        result.append(culture_payload(culture, detail))
+    return result
+
+
+@app.get("/cultures/{culture_id}")
+def get_culture(culture_id: str, db: Session = Depends(get_db)):
+    culture = db.get(models.Culture, culture_id)
+    if culture is None:
+        raise HTTPException(404, "Culture not found")
+    detail = db.get(models.CultureDetail, culture_id)
+    if detail is None:
+        raise HTTPException(404, "Culture details not found")
+    return culture_payload(culture, detail)
 
 
 @app.get("/analyses")
 def list_analyses(db: Session = Depends(get_db)):
     return db.query(models.Analyse).all()
+
+
+def culture_payload(culture: models.Culture, detail: models.CultureDetail | None) -> dict[str, Any]:
+    item = {
+        "id": culture.id,
+        "name": culture.name,
+        "water_need_mm": culture.water_need_mm,
+        "yield_t_ha": culture.yield_t_ha,
+        "price_tnd_t": culture.price_tnd_t,
+        "duration_days": culture.duration_days,
+        "water_demand": culture.water_demand,
+    }
+    if detail is not None:
+        item.update(
+            {
+                "kc_by_stage": detail.kc_by_stage,
+                "yield_range_t_ha": detail.yield_range_t_ha,
+                "price_range_tnd_t": detail.price_range_tnd_t,
+                "price_source": detail.price_source,
+                "costs_tnd_ha": detail.costs_tnd_ha,
+                "compatible_soils": detail.compatible_soils,
+                "salt_tolerance_dS_m": detail.salt_tolerance_dS_m,
+                "heat_tolerance_c": detail.heat_tolerance_c,
+                "first_production_days": detail.first_production_days,
+                "kc_source": detail.kc_source,
+            }
+        )
+    return item
 
 
 @app.get("/labels")
