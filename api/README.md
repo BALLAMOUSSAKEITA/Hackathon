@@ -50,3 +50,10 @@ PostGIS conformément à `api/alembic/README.md`.
 - `GET /parcelles/{id}/recommandations?tri=revenu`
 - Tri disponible : `revenu`, `eau`, `rapidite`.
 - Les cultures incompatibles sont exclues du classement.
+
+## Sprint 7
+
+- `POST /parcelles/{id}/simulation` recalcule surface, revenu, eau, énergie,
+  écart et label à chaque jeu d'allocation.
+- `POST /parcelles/{id}/plan` adopte uniquement un plan sans dépassement
+  de la parcelle ou du puits.

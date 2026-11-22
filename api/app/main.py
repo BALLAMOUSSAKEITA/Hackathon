@@ -10,7 +10,7 @@ from sqlalchemy.orm import Session
 
 from .database import Base, SessionLocal, engine, get_db
 from .models import Parcelle, Utilisateur
-from .schemas import OTPRequest, OTPVerify, ParcelleCreate, ParcelleResponse
+from .schemas import OTPRequest, OTPVerify, ParcelleCreate, ParcelleResponse, SimulationRequest
 
 
 FIXTURE_PATH = Path(__file__).resolve().parents[2] / "fixtures" / "sprint-01.json"
@@ -19,9 +19,11 @@ SPRINT_3_FIXTURE_PATH = Path(__file__).resolve().parents[2] / "fixtures" / "spri
 SPRINT_4_FIXTURE_PATH = Path(__file__).resolve().parents[2] / "fixtures" / "sprint-04.json"
 SPRINT_5_FIXTURE_PATH = Path(__file__).resolve().parents[2] / "fixtures" / "sprint-05.json"
 SPRINT_6_FIXTURE_PATH = Path(__file__).resolve().parents[2] / "fixtures" / "sprint-06.json"
+SPRINT_7_FIXTURE_PATH = Path(__file__).resolve().parents[2] / "fixtures" / "sprint-07.json"
 ALLOWED_ROLES = {"agriculteur", "acheteur_particulier", "acheteur_professionnel"}
 DEMO_OTP = "123456"
 pending_profiles: dict[str, dict[str, str]] = {}
+adopted_plans: dict[str, dict[str, Any]] = {}
 
 app = FastAPI(
     title="Ardi API",
@@ -229,6 +231,115 @@ def analyse_parcelle(parcelle_id: str) -> dict[str, Any]:
             **fixture["energie"],
             "kwh_m3": round(kwh_per_m3, 4),
         },
+    }
+
+
+@app.get("/demo/sprint-07")
+def demo_sprint_7() -> dict[str, Any]:
+    with SPRINT_7_FIXTURE_PATH.open("r", encoding="utf-8") as fixture_file:
+        return json.load(fixture_file)
+
+
+def label_from_dt_m3(dt_m3: float) -> str:
+    if dt_m3 >= 2.2:
+        return "A"
+    if dt_m3 >= 1.5:
+        return "B"
+    if dt_m3 >= 1.1:
+        return "C"
+    if dt_m3 >= 0.8:
+        return "D"
+    return "E"
+
+
+@app.post("/parcelles/{parcelle_id}/simulation")
+def simulate_plan(parcelle_id: str, payload: SimulationRequest) -> dict[str, Any]:
+    with SPRINT_7_FIXTURE_PATH.open("r", encoding="utf-8") as fixture_file:
+        fixture = json.load(fixture_file)
+
+    if parcelle_id != fixture["parcelle"]["id"]:
+        raise HTTPException(status_code=404, detail="Parcelle introuvable.")
+
+    known = {culture["id"]: culture for culture in fixture["cultures_proposees"]}
+    unknown = set(payload.allocations) - set(known)
+    if unknown:
+        raise HTTPException(status_code=422, detail="Culture inconnue dans le simulateur.")
+
+    total_surface = sum(payload.allocations.values())
+    parcelle_surface = fixture["parcelle"]["surface_hectares"]
+    if total_surface > parcelle_surface + 0.001:
+        raise HTTPException(
+            status_code=422,
+            detail=f"Surface dépassée : {total_surface:.2f} ha pour {parcelle_surface:.2f} ha.",
+        )
+
+    total_water = sum(
+        hectares * known[culture_id]["m3_ha"]
+        for culture_id, hectares in payload.allocations.items()
+        if hectares > 0
+    )
+    total_energy = sum(
+        hectares * known[culture_id]["m3_ha"] * known[culture_id]["kwh_m3"]
+        for culture_id, hectares in payload.allocations.items()
+        if hectares > 0
+    )
+    weighted_revenue = sum(
+        hectares
+        * known[culture_id]["rendement_t_ha"]
+        * known[culture_id]["prix_tnd_kg"]
+        * 1000
+        for culture_id, hectares in payload.allocations.items()
+        if hectares > 0
+    )
+    total_costs = sum(
+        hectares * known[culture_id]["couts_tnd_ha"]
+        for culture_id, hectares in payload.allocations.items()
+        if hectares > 0
+    )
+    dt_m3 = (
+        (weighted_revenue - total_costs) / total_water
+        if total_water > 0
+        else 0
+    )
+    water_limit = fixture["parcelle"]["capacity_puit_m3"]
+    label = label_from_dt_m3(dt_m3)
+    current = fixture["situation_actuelle"]
+
+    return {
+        "allocations": payload.allocations,
+        "surface_totale_ha": round(total_surface, 3),
+        "surface_max_ha": parcelle_surface,
+        "surface_depassee": total_surface > parcelle_surface,
+        "revenu_tnd": round(weighted_revenue - total_costs, 2),
+        "eau_m3": round(total_water, 2),
+        "energie_kwh": round(total_energy, 2),
+        "puits_max_m3": water_limit,
+        "puits_depasse": total_water > water_limit,
+        "dt_m3": round(dt_m3, 2),
+        "label": label,
+        "ecarts": {
+            "eau_m3_economisees": round(current["eau_m3"] - total_water, 2),
+            "energie_kwh_economisees": round(current["energie_kwh"] - total_energy, 2),
+            "revenu_tnd": round(weighted_revenue - total_costs - current["revenu_tnd"], 2),
+            "dt_m3": round(dt_m3 - current["dt_m3"], 2),
+        },
+        "hypotheses": fixture["hypotheses"],
+    }
+
+
+@app.post("/parcelles/{parcelle_id}/plan")
+def adopt_plan(parcelle_id: str, payload: SimulationRequest) -> dict[str, Any]:
+    simulation = simulate_plan(parcelle_id, payload)
+    if simulation["surface_depassee"]:
+        raise HTTPException(status_code=422, detail="Surface de parcelle dépassée.")
+    if simulation["puits_depasse"]:
+        raise HTTPException(status_code=422, detail="Capacité du puits dépassée.")
+
+    adopted_plans[parcelle_id] = simulation
+    return {
+        "status": "adopte",
+        "parcelle_id": parcelle_id,
+        "plan": simulation,
     }
 
 

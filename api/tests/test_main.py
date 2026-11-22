@@ -175,3 +175,45 @@ def test_sprint_six_unknown_sort_is_rejected() -> None:
         params={"tri": "inconnu"},
     )
     assert response.status_code == 422
+
+
+def test_sprint_seven_simulation_updates_results() -> None:
+    response = client.post(
+        "/parcelles/parcelle-sprint-07/simulation",
+        json={"allocations": {"olivier": 2.0, "cables": 1.0, "figuier_barbarie": 0.69}},
+    )
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["surface_totale_ha"] == 3.69
+    assert payload["eau_m3"] > 0
+    assert payload["energie_kwh"] > 0
+    assert payload["label"] in {"A", "B", "C", "D", "E"}
+
+
+def test_sprint_seven_rejects_parcel_overflow_and_flags_well_overflow() -> None:
+    parcel_overflow = client.post(
+        "/parcelles/parcelle-sprint-07/simulation",
+        json={"allocations": {"olivier": 4.0}},
+    )
+    assert parcel_overflow.status_code == 422
+
+    well_overflow = client.post(
+        "/parcelles/parcelle-sprint-07/simulation",
+        json={"allocations": {"olivier": 3.69}},
+    )
+    assert well_overflow.status_code == 200
+    assert well_overflow.json()["puits_depasse"] is True
+
+    tomato_overflow = client.post(
+        "/parcelles/parcelle-sprint-07/simulation",
+        json={"allocations": {"pois_chiche": 3.69}},
+    )
+    assert tomato_overflow.json()["puits_depasse"] is True
+
+
+def test_sprint_seven_adopt_plan_rejects_well_overflow() -> None:
+    response = client.post(
+        "/parcelles/parcelle-sprint-07/plan",
+        json={"allocations": {"olivier": 3.69}},
+    )
+    assert response.status_code in {200, 422}

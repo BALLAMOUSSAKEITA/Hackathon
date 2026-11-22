@@ -1,0 +1,28 @@
+{
+  "sprint": 7,
+  "parcelle": {
+    "id": "parcelle-sprint-07",
+    "surface_hectares": 3.69,
+    "capacity_puit_m3": 3840
+  },
+  "situation_actuelle": {
+    "tomate_ha": 3.69,
+    "revenu_tnd": 16500,
+    "eau_m3": 22878,
+    "energie_kwh": 7462,
+    "dt_m3": 0.72,
+    "label": "E"
+  },
+  "cultures_proposees": [
+    {"id":"olivier","name":"Olivier","max_ha":3.69,"m3_ha":1800,"kwh_m3":0.3264,"rendement_t_ha":3.5,"prix_tnd_kg":2.2,"couts_tnd_ha":1800,"dt_m3":2.42,"label":"A"},
+    {"id":"cables","name":"Câpres","max_ha":3.69,"m3_ha":2100,"kwh_m3":0.3264,"rendement_t_ha":2,"prix_tnd_kg":4,"couts_tnd_ha":2200,"dt_m3":1.54,"label":"C"},
+    {"id":"figuier_barbarie","name":"Figuier de Barbarie","max_ha":3.69,"m3_ha":1600,"kwh_m3":0.3264,"rendement_t_ha":8,"prix_tnd_kg":1.2,"couts_tnd_ha":1500,"dt_m3":1.32,"label":"C"},
+    {"id":"pois_chiche","name":"Pois chiche","max_ha":3.69,"m3_ha":1900,"kwh_m3":0.3264,"rendement_t_ha":1.8,"prix_tnd_kg":2.2,"couts_tnd_ha":1300,"dt_m3":1.22,"label":"C"}
+  ],
+  "hypotheses": {
+    "efficience": 0.9,
+    "eta": 0.5,
+    "currency": "TND",
+    "kwh_m3_formula": "0.00272 × 60 / 0.5"
+  }
+}

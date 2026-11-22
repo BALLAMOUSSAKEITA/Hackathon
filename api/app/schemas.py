@@ -42,3 +42,7 @@ class OTPRequest(BaseModel):
 class OTPVerify(BaseModel):
     phone: str = Field(min_length=8)
     code: str = Field(min_length=6, max_length=6)
+
+
+class SimulationRequest(BaseModel):
+    allocations: dict[str, float]
