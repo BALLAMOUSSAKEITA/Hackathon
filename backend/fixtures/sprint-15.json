@@ -1,0 +1,181 @@
+{
+  "farms": [
+    {
+      "id": "farm-sprint-15-olive",
+      "name": "Ferme El Baraka",
+      "region": "Sidi Bouzid",
+      "owner_id": "user-sprint-15-farmer-olive"
+    },
+    {
+      "id": "farm-sprint-15-dates",
+      "name": "Ferme Deglet Nour",
+      "region": "Kebili",
+      "owner_id": "user-sprint-15-farmer-dates"
+    }
+  ],
+  "users": [
+    {
+      "id": "user-sprint-15-buyer",
+      "phone": "+21600000061",
+      "name": "Acheteur demo",
+      "role": "buyer",
+      "language": "fr"
+    },
+    {
+      "id": "user-sprint-15-professional",
+      "phone": "+21600000062",
+      "name": "Acheteur professionnel demo",
+      "role": "professional",
+      "language": "fr"
+    },
+    {
+      "id": "user-sprint-15-farmer-olive",
+      "phone": "+21600000063",
+      "name": "Producteur Sidi Bouzid",
+      "role": "farmer",
+      "language": "fr"
+    },
+    {
+      "id": "user-sprint-15-farmer-dates",
+      "phone": "+21600000064",
+      "name": "Producteur Kebili",
+      "role": "farmer",
+      "language": "fr"
+    }
+  ],
+  "parcelles": [
+    {
+      "id": "parcel-sprint-15-olive",
+      "owner_id": "user-sprint-15-farmer-olive",
+      "name": "Oliveraie El Baraka",
+      "area_ha": 3.2,
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [9.48, 35.03],
+            [9.49, 35.03],
+            [9.49, 35.02],
+            [9.48, 35.02],
+            [9.48, 35.03]
+          ]
+        ]
+      },
+      "water_source": "well",
+      "well_depth_m": 48,
+      "pump_flow_m3_h": 12,
+      "energy_type": "solar",
+      "current_crop_id": "olive"
+    },
+    {
+      "id": "parcel-sprint-15-dates",
+      "owner_id": "user-sprint-15-farmer-dates",
+      "name": "Dattiers Deglet Nour",
+      "area_ha": 2.1,
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [8.97, 33.71],
+            [8.98, 33.71],
+            [8.98, 33.70],
+            [8.97, 33.70],
+            [8.97, 33.71]
+          ]
+        ]
+      },
+      "water_source": "well",
+      "well_depth_m": 35,
+      "pump_flow_m3_h": 10,
+      "energy_type": "steg",
+      "current_crop_id": "dates"
+    }
+  ],
+  "labels": [
+    {
+      "id": "label-sprint-15-olive",
+      "farm_id": "farm-sprint-15-olive",
+      "parcel_id": "parcel-sprint-15-olive",
+      "grade": "A",
+      "qr_code": "ARDI-S15-OLIVE-001",
+      "status": "active"
+    },
+    {
+      "id": "label-sprint-15-dates",
+      "farm_id": "farm-sprint-15-dates",
+      "parcel_id": "parcel-sprint-15-dates",
+      "grade": "B",
+      "qr_code": "ARDI-S15-DATES-001",
+      "status": "active"
+    }
+  ],
+  "products": [
+    {
+      "id": "product-sprint-15-olive-oil",
+      "farm_id": "farm-sprint-15-olive",
+      "label_id": "label-sprint-15-olive",
+      "name": "Huile d'olive extra vierge",
+      "category": "huile_olive",
+      "quantity_kg": 200,
+      "price_tnd_kg": 24,
+      "photo_url": "/assets/huile-sprint-15.jpg"
+    },
+    {
+      "id": "product-sprint-15-dates",
+      "farm_id": "farm-sprint-15-dates",
+      "label_id": "label-sprint-15-dates",
+      "name": "Dattes Deglet Nour",
+      "category": "dattes",
+      "quantity_kg": 300,
+      "price_tnd_kg": 12.5,
+      "photo_url": "/assets/dattes-sprint-15.jpg"
+    }
+  ],
+  "impact_factors": [
+    {
+      "product_id": "product-sprint-15-olive-oil",
+      "water_supported_m3_per_kg": 2.5,
+      "energy_supported_kwh_per_kg": 0.8
+    },
+    {
+      "product_id": "product-sprint-15-dates",
+      "water_supported_m3_per_kg": 1.5,
+      "energy_supported_kwh_per_kg": 0.45
+    }
+  ],
+  "orders": [
+    {
+      "id": "order-sprint-15-buyer-olive",
+      "buyer_id": "user-sprint-15-buyer",
+      "product_id": "product-sprint-15-olive-oil",
+      "quantity_kg": 4,
+      "status": "accepted",
+      "payment_method": "D17",
+      "payment_status": "simulated",
+      "total_tnd": 96,
+      "counteroffer_price_tnd_kg": null
+    },
+    {
+      "id": "order-sprint-15-buyer-dates",
+      "buyer_id": "user-sprint-15-buyer",
+      "product_id": "product-sprint-15-dates",
+      "quantity_kg": 12,
+      "status": "accepted",
+      "payment_method": "cash_on_delivery",
+      "payment_status": "due_on_delivery",
+      "total_tnd": 150,
+      "counteroffer_price_tnd_kg": null
+    },
+    {
+      "id": "order-sprint-15-wholesale-demo",
+      "buyer_id": "user-sprint-15-professional",
+      "product_id": "product-sprint-15-dates",
+      "quantity_kg": 50,
+      "status": "wholesale_pending",
+      "payment_method": null,
+      "payment_status": null,
+      "total_tnd": null,
+      "counteroffer_price_tnd_kg": null
+    }
+  ]
+}

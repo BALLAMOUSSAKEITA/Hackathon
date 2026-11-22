@@ -76,6 +76,14 @@ class OrderCreate(BaseModel):
     payment_method: Literal["D17", "card", "cash_on_delivery"]
 
 
+class WholesaleOrderCreate(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    buyer_id: str = Field(min_length=1)
+    product_id: str = Field(min_length=1)
+    quantity_kg: float = Field(gt=0, allow_inf_nan=False)
+
+
 class OrderPatch(BaseModel):
     model_config = ConfigDict(extra="forbid")
 

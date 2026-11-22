@@ -1,3 +1,5 @@
+import csv
+import io
 import json
 import math
 import re
@@ -14,6 +16,7 @@ from uuid import uuid4
 
 from fastapi import BackgroundTasks, Depends, FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import Response
 import httpx
 from pyproj import Geod
 from shapely.errors import GEOSException
@@ -41,6 +44,7 @@ from .schemas import (
     SimulationRequest,
     UserCreate,
     UserOut,
+    WholesaleOrderCreate,
 )
 
 
@@ -333,6 +337,7 @@ async def lifespan(_: FastAPI):
             "sprint-12.json",
             "sprint-13.json",
             "sprint-14.json",
+            "sprint-15.json",
         ):
             fixture = FIXTURES_DIR / fixture_name
             data = json.loads(fixture.read_text(encoding="utf-8"))
@@ -386,7 +391,7 @@ async def lifespan(_: FastAPI):
 app = FastAPI(
     title="Ardi API",
     version="1.0.0",
-    description="API FastAPI Ardi, sprints de demonstration 1 a 14.",
+    description="API FastAPI Ardi, sprints de demonstration 1 a 15.",
     lifespan=lifespan,
 )
 app.add_middleware(
@@ -513,6 +518,15 @@ def sprint_13_fixture() -> dict[str, Any]:
 @app.get("/fixture/sprint-14")
 def sprint_14_fixture() -> dict[str, Any]:
     return json.loads((FIXTURES_DIR / "sprint-14.json").read_text(encoding="utf-8"))
+
+
+def load_sprint_15_fixture() -> dict[str, Any]:
+    return json.loads((FIXTURES_DIR / "sprint-15.json").read_text(encoding="utf-8"))
+
+
+@app.get("/fixture/sprint-15")
+def sprint_15_fixture() -> dict[str, Any]:
+    return load_sprint_15_fixture()
 
 
 def normalize_assistant_question(question: str) -> str:
@@ -2511,6 +2525,191 @@ def compare_farm_prices(farm_id: str, db: Session = Depends(get_db)):
         "market_typical_price_tnd_kg": market_average,
         "difference_tnd_kg": round(farm_average - market_average, 2),
     }
+
+
+def build_buyer_impact_report(buyer_id: str, db: Session) -> dict[str, Any]:
+    buyer = db.get(models.User, buyer_id)
+    if buyer is None:
+        raise HTTPException(404, "Buyer not found")
+    if buyer.role not in {"buyer", "professional"}:
+        raise HTTPException(403, "Only buyer accounts can view purchase impact")
+
+    fixture = load_sprint_15_fixture()
+    farms = {farm["id"]: farm for farm in fixture["farms"]}
+    factors = {
+        row["product_id"]: row for row in fixture["impact_factors"]
+    }
+    product_ids = set(factors)
+    orders = (
+        db.query(models.Commande)
+        .filter(
+            models.Commande.buyer_id == buyer_id,
+            models.Commande.product_id.in_(product_ids),
+            models.Commande.status != "cancelled",
+        )
+        .order_by(models.Commande.id)
+        .all()
+    )
+
+    lines = []
+    for order in orders:
+        product = db.get(models.Produit, order.product_id)
+        if product is None:
+            raise HTTPException(409, "An impact order references a missing product")
+        label = db.get(models.Label, product.label_id)
+        farm = farms.get(product.farm_id)
+        factor = factors.get(product.id)
+        if label is None or farm is None or factor is None:
+            raise HTTPException(409, "Sprint 15 purchase data is incomplete")
+
+        quantity_kg = order.quantity_kg
+        lines.append(
+            {
+                "order_id": order.id,
+                "buyer_id": buyer_id,
+                "product_id": product.id,
+                "product_name": product.name,
+                "quantity_kg": quantity_kg,
+                "order_status": order.status,
+                "order_type": (
+                    "wholesale" if order.status.startswith("wholesale_") else "retail"
+                ),
+                "farm_id": farm["id"],
+                "farm_name": farm["name"],
+                "label_id": label.id,
+                "label_grade": label.grade,
+                "label_status": label.status,
+                "water_supported_m3": round(
+                    quantity_kg * factor["water_supported_m3_per_kg"], 2
+                ),
+                "energy_supported_kwh": round(
+                    quantity_kg * factor["energy_supported_kwh_per_kg"], 2
+                ),
+            }
+        )
+
+    total_quantity = sum(line["quantity_kg"] for line in lines)
+    label_a_quantity = sum(
+        line["quantity_kg"]
+        for line in lines
+        if line["label_grade"] == "A" and line["label_status"] == "active"
+    )
+    return {
+        "buyer_id": buyer.id,
+        "buyer_name": buyer.name,
+        "buyer_role": buyer.role,
+        "order_count": len(lines),
+        "wholesale_order_count": sum(
+            line["order_type"] == "wholesale" for line in lines
+        ),
+        "total_quantity_kg": round(total_quantity, 2),
+        "water_supported_m3": round(
+            sum(line["water_supported_m3"] for line in lines), 2
+        ),
+        "energy_supported_kwh": round(
+            sum(line["energy_supported_kwh"] for line in lines), 2
+        ),
+        "farms_count": len({line["farm_id"] for line in lines}),
+        "label_a_share_percent": round(
+            label_a_quantity / total_quantity * 100 if total_quantity else 0, 2
+        ),
+        "lines": lines,
+    }
+
+
+@app.get("/acheteurs/{buyer_id}/impact")
+def buyer_impact(buyer_id: str, db: Session = Depends(get_db)):
+    return build_buyer_impact_report(buyer_id, db)
+
+
+@app.get("/acheteurs/{buyer_id}/impact/export")
+def export_buyer_impact(buyer_id: str, db: Session = Depends(get_db)):
+    report = build_buyer_impact_report(buyer_id, db)
+    fieldnames = (
+        "order_id",
+        "buyer_id",
+        "product_id",
+        "product_name",
+        "quantity_kg",
+        "order_status",
+        "order_type",
+        "farm_id",
+        "farm_name",
+        "label_id",
+        "label_grade",
+        "label_status",
+        "water_supported_m3",
+        "energy_supported_kwh",
+    )
+    output = io.StringIO()
+    writer = csv.DictWriter(output, fieldnames=fieldnames)
+    writer.writeheader()
+    writer.writerows(report["lines"])
+    return Response(
+        content=output.getvalue(),
+        media_type="text/csv",
+        headers={"Content-Disposition": 'attachment; filename="impact-achats.csv"'},
+    )
+
+
+def serialize_wholesale_order(order: models.Commande) -> dict[str, Any]:
+    return {**serialize_order(order), "order_type": "wholesale"}
+
+
+@app.get("/commandes/gros")
+def list_wholesale_orders(db: Session = Depends(get_db)):
+    orders = (
+        db.query(models.Commande)
+        .filter(models.Commande.status.like("wholesale_%"))
+        .order_by(models.Commande.id)
+        .all()
+    )
+    return [serialize_wholesale_order(order) for order in orders]
+
+
+@app.post("/commandes/gros", status_code=201)
+def create_wholesale_order(
+    payload: WholesaleOrderCreate, db: Session = Depends(get_db)
+):
+    fixture = load_sprint_15_fixture()
+    product_data = next(
+        (
+            product
+            for product in fixture["products"]
+            if product["id"] == payload.product_id
+        ),
+        None,
+    )
+    if product_data is None:
+        raise HTTPException(404, "Product not found in Sprint 15")
+
+    buyer = db.get(models.User, payload.buyer_id)
+    if buyer is None:
+        raise HTTPException(404, "Buyer not found")
+    if buyer.role != "professional":
+        raise HTTPException(403, "Only professional accounts can place wholesale orders")
+
+    product = db.get(models.Produit, payload.product_id)
+    label = db.get(models.Label, product.label_id) if product is not None else None
+    if product is None or label is None or label.status != "active":
+        raise HTTPException(409, "Wholesale product must have an active label")
+    if payload.quantity_kg > product.quantity_kg:
+        raise HTTPException(422, "Quantity exceeds available product stock")
+
+    order = models.Commande(
+        id=f"order-sprint-15-wholesale-{uuid4().hex}",
+        buyer_id=buyer.id,
+        product_id=product.id,
+        quantity_kg=payload.quantity_kg,
+        status="wholesale_pending",
+        payment_method=None,
+        payment_status=None,
+        total_tnd=None,
+    )
+    db.add(order)
+    db.commit()
+    db.refresh(order)
+    return serialize_wholesale_order(order)
 
 
 @app.post("/commandes", status_code=201)

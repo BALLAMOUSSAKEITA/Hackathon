@@ -621,6 +621,116 @@ def test_sprint_14_satellite_tracking_processes_images_and_calculates_alerts():
         clear_sprint_14_state()
 
 
+def test_sprint_15_buyer_impact_aggregates_and_exports_purchase_lines():
+    with TestClient(app) as client:
+        fixture = client.get("/fixture/sprint-15")
+        retail_impact = client.get(
+            "/acheteurs/user-sprint-15-buyer/impact"
+        )
+        professional_impact = client.get(
+            "/acheteurs/user-sprint-15-professional/impact"
+        )
+        export = client.get(
+            "/acheteurs/user-sprint-15-buyer/impact/export"
+        )
+        missing_buyer = client.get("/acheteurs/unknown-buyer/impact")
+
+    retail = retail_impact.json()
+    professional = professional_impact.json()
+    assert fixture.status_code == 200
+    assert fixture.json()["orders"][-1]["status"] == "wholesale_pending"
+    assert retail_impact.status_code == 200
+    assert retail["buyer_role"] == "buyer"
+    assert retail["order_count"] == 2
+    assert retail["total_quantity_kg"] == 16
+    assert retail["water_supported_m3"] == 28
+    assert retail["energy_supported_kwh"] == 8.6
+    assert retail["farms_count"] == 2
+    assert retail["label_a_share_percent"] == 25
+    assert professional_impact.status_code == 200
+    assert professional["buyer_role"] == "professional"
+    assert professional["wholesale_order_count"] == 1
+    assert professional["water_supported_m3"] == 75
+    assert professional["energy_supported_kwh"] == 22.5
+    assert export.status_code == 200
+    assert export.headers["content-type"].startswith("text/csv")
+    assert "water_supported_m3" in export.text
+    assert "order-sprint-15-buyer-olive" in export.text
+    assert any(
+        product["id"] == "product-sprint-15-olive-oil"
+        for product in fixture.json()["products"]
+    )
+    assert missing_buyer.status_code == 404
+
+
+def test_sprint_15_wholesale_orders_are_professional_and_unpaid():
+    def clear_created_orders():
+        session_generator = main_module.get_db()
+        db = next(session_generator)
+        try:
+            orders = (
+                db.query(main_module.models.Commande)
+                .filter(
+                    main_module.models.Commande.buyer_id
+                    == "user-sprint-15-professional",
+                    main_module.models.Commande.id.like(
+                        "order-sprint-15-wholesale-%"
+                    ),
+                    main_module.models.Commande.id
+                    != "order-sprint-15-wholesale-demo",
+                )
+                .all()
+            )
+            for order in orders:
+                db.delete(order)
+            db.commit()
+        finally:
+            session_generator.close()
+
+    clear_created_orders()
+    try:
+        with TestClient(app) as client:
+            created = client.post(
+                "/commandes/gros",
+                json={
+                    "buyer_id": "user-sprint-15-professional",
+                    "product_id": "product-sprint-15-dates",
+                    "quantity_kg": 25,
+                },
+            )
+            retail_rejected = client.post(
+                "/commandes/gros",
+                json={
+                    "buyer_id": "user-sprint-15-buyer",
+                    "product_id": "product-sprint-15-dates",
+                    "quantity_kg": 25,
+                },
+            )
+            payment_rejected = client.post(
+                "/commandes/gros",
+                json={
+                    "buyer_id": "user-sprint-15-professional",
+                    "product_id": "product-sprint-15-dates",
+                    "quantity_kg": 25,
+                    "payment_method": "card",
+                },
+            )
+            listed = client.get("/commandes/gros")
+
+        assert created.status_code == 201
+        order = created.json()
+        assert order["order_type"] == "wholesale"
+        assert order["status"] == "wholesale_pending"
+        assert order["payment_method"] is None
+        assert order["payment_status"] is None
+        assert order["total_tnd"] is None
+        assert retail_rejected.status_code == 403
+        assert payment_rejected.status_code == 422
+        assert order["id"] in {row["id"] for row in listed.json()}
+    finally:
+        clear_created_orders()
+
+
 def test_sprint_02_fixture_has_all_demo_roles():
     with TestClient(app) as client:
         response = client.get("/fixture/sprint-02")

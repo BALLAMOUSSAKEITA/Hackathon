@@ -1,4 +1,4 @@
-# Ardi API - Sprints 1 a 14
+# Ardi API - Sprints 1 a 15
 
 API FastAPI pour le socle technique Ardi.
 
@@ -31,6 +31,7 @@ Documentation interactive : `http://127.0.0.1:8000/docs`
 - Fixture sprint 12 : `GET /fixture/sprint-12`
 - Fixture sprint 13 : `GET /fixture/sprint-13`
 - Fixture sprint 14 : `GET /fixture/sprint-14`
+- Fixture sprint 15 : `GET /fixture/sprint-15`
 - Demander un code OTP simulé : `POST /auth/otp`
 - Vérifier le code et créer un utilisateur : `POST /auth/verify`
 - Utilisateurs : `GET /users`, `POST /users`
@@ -38,6 +39,9 @@ Documentation interactive : `http://127.0.0.1:8000/docs`
 - Analyse d'une parcelle : `POST /parcelles/{parcel_id}/analyse`
 - Dimensionnement solaire : `GET /parcelles/{parcel_id}/solaire`
 - Suivi satellite : `GET /parcelles/{parcel_id}/suivi`
+- Impact acheteur : `GET /acheteurs/{buyer_id}/impact`
+- Export des achats : `GET /acheteurs/{buyer_id}/impact/export`
+- Commandes en gros : `GET /commandes/gros`, `POST /commandes/gros`
 - Recommandations de cultures : `GET /parcelles/{parcel_id}/recommandations`
 - Simuler un plan : `POST /parcelles/{parcel_id}/simulation`
 - Adopter un plan : `POST /parcelles/{parcel_id}/plan`
@@ -54,7 +58,7 @@ Documentation interactive : `http://127.0.0.1:8000/docs`
 - Alertes : `GET /alertes`, `PATCH /alertes/{id}`
 
 Les données de démonstration sont chargées depuis les fixtures `sprint-01`
-à `sprint-14`. Le sprint 2 fournit les profils agriculteur,
+à `sprint-15`. Le sprint 2 fournit les profils agriculteur,
 acheteur particulier et acheteur professionnel. Le sprint 3 fournit 15 cultures
 avec Kc par stade, rendements, fourchettes de prix, coûts et compatibilité de sol.
 Les valeurs agronomiques et économiques sont indicatives; les sources de prix
@@ -165,6 +169,14 @@ non traitées sont mises à jour en tâche de fond et une seule alerte d'irrigat
 est conservée par parcelle. Un seul signal d'image reste « à confirmer »; deux
 images concordantes passent à « écart confirmé ». Les images et seuils sont des
 instantanés indicatifs, pas une connexion à un flux satellite temps réel.
+
+Le sprint 15 calcule l'impact acheteur depuis les commandes non annulées du
+fichier : eau et énergie soutenues par la quantité achetée, fermes distinctes,
+et part du label A pondérée par les kilogrammes. Les facteurs d'impact au kg
+sont indicatifs et présents dans la fixture. L'export retourne les lignes CSV
+avec commandes, labels, fermes, eau et énergie. `POST /commandes/gros` est
+réservé aux profils `professional`; il crée un statut `wholesale_pending` sans
+moyen de paiement ni montant facturé.
 
 Pour la démonstration, `POST /auth/otp` retourne le code fixe `123456`.
 `POST /auth/verify` reçoit `phone`, `code`, `name`, `role` (`farmer`, `buyer`
