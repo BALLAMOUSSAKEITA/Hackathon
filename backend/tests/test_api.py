@@ -400,6 +400,63 @@ def test_sprint_11_order_counteroffers_and_read_notifications_persist():
             session_generator.close()
 
 
+def test_sprint_12_ten_parcels_use_formula_based_water_and_energy():
+    with TestClient(app) as client:
+        response = client.get("/fixture/sprint-12")
+        public_label = client.get("/labels/ARDI-S12-FARM-001")
+
+    assert response.status_code == 200
+    assert public_label.status_code == 200
+    assert (
+        public_label.json()["product"]["id"]
+        == "product-sprint-12-olive-oil"
+    )
+    data = response.json()
+    parcels = data["parcelles"]
+    assert len(parcels) == 10
+    assert len(data["analyses"]) == 10
+    assert [card["id"] for card in data["demo_cards"]] == [
+        "language",
+        "parcel",
+        "analysis",
+        "ranking",
+        "simulator",
+        "label",
+        "assistant",
+        "purchase",
+    ]
+    assert data["assistant"]["question_darija"]
+    assert data["qr"]["value"] == data["label"]["qr_code"]
+
+    water_settings = data["water"]
+    analyses = {item["parcel_id"]: item for item in data["analyses"]}
+    results = {item["parcel_id"]: item for item in data["parcel_calculations"]}
+    assert set(results) == {parcel["id"] for parcel in parcels}
+    for parcel in parcels:
+        expected_water = round(
+            parcel["pump_flow_m3_h"]
+            * water_settings["pump_hours_per_day"]
+            * water_settings["season_days"],
+            2,
+        )
+        expected_energy = round(
+            0.00272 * parcel["well_depth_m"] / water_settings["eta"],
+            4,
+        )
+        assert analyses[parcel["id"]]["available_water_m3"] == expected_water
+        assert analyses[parcel["id"]]["pumping_energy_kwh_m3"] == expected_energy
+        result = results[parcel["id"]]
+        assert result["available_water_m3"] == expected_water
+        assert result["energy_kwh_m3"] == expected_energy
+        assert isinstance(result["excluded_crops"], list)
+        assert result["calculation_time_ms"] < 10_000
+
+    ranked_ids = {row["id"] for row in data["ranking"]["recommendations"]}
+    excluded_ids = {row["id"] for row in data["ranking"]["excluded_crops"]}
+    assert not ranked_ids & excluded_ids
+    assert data["total_calculation_time_ms"] < 10_000
+
+
 def test_sprint_02_fixture_has_all_demo_roles():
     with TestClient(app) as client:
         response = client.get("/fixture/sprint-02")

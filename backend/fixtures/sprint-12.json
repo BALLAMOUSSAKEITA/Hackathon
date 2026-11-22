@@ -1,0 +1,426 @@
+{
+  "farm": {
+    "id": "farm-sprint-12",
+    "name": "Ferme demo Sidi Bouzid",
+    "region": "Sidi Bouzid",
+    "owner_id": "user-sprint-12-farmer"
+  },
+  "users": [
+    {
+      "id": "user-sprint-12-farmer",
+      "phone": "+21600000031",
+      "name": "Producteur demo Sprint 12",
+      "role": "farmer",
+      "language": "darija"
+    },
+    {
+      "id": "user-sprint-12-buyer",
+      "phone": "+21600000032",
+      "name": "Acheteur demo Sprint 12",
+      "role": "buyer",
+      "language": "fr"
+    }
+  ],
+  "demo_cards": [
+    {"id": "language", "title": "Darija", "value": "darija"},
+    {"id": "parcel", "title": "Parcelle", "value": "parcel-sprint-12-01"},
+    {"id": "analysis", "title": "Analyse", "value": "soil, water, energy"},
+    {"id": "ranking", "title": "Que planter ?", "value": "recommendations"},
+    {"id": "simulator", "title": "Simulateur", "value": "plan"},
+    {"id": "label", "title": "Label", "value": "ARDI-S12-FARM-001"},
+    {"id": "assistant", "title": "Assistant vocal", "value": "question-darija"},
+    {"id": "purchase", "title": "Achat", "value": "basket"}
+  ],
+  "water": {
+    "pump_hours_per_day": 5,
+    "season_days": 180,
+    "eta": 0.5,
+    "available_water_formula": "pump_flow_m3_h * pump_hours_per_day * season_days",
+    "energy_formula": "0.00272 * well_depth_m / eta"
+  },
+  "analysis_context": {
+    "soil_texture": "loam",
+    "soil_salinity_dS_m": 2.5,
+    "maximum_temperature_c": 38,
+    "et0_daily_mm": 4.8,
+    "effective_rain_mm": 56,
+    "rain_uncertainty_fraction": 0.25,
+    "irrigation_method": "drip",
+    "irrigation_efficiency": 0.9,
+    "energy_efficiency": 0.5,
+    "energy_price_tnd_kwh": 0.3,
+    "stage_weights": {
+      "initial": 0.15,
+      "development": 0.25,
+      "mid_season": 0.4,
+      "late_season": 0.2
+    },
+    "safe_well_utilization": 0.8,
+    "risk_weights": {
+      "well": 0.65,
+      "rain": 0.35
+    }
+  },
+  "parcelles": [
+    {
+      "id": "parcel-sprint-12-01",
+      "owner_id": "user-sprint-12-farmer",
+      "name": "Parcelle demo 01",
+      "area_ha": 2,
+      "geometry": {"type": "Polygon", "coordinates": [[[9.470, 35.040], [9.472, 35.040], [9.472, 35.038], [9.470, 35.038], [9.470, 35.040]]]},
+      "water_source": "well",
+      "well_depth_m": 60,
+      "pump_flow_m3_h": 10,
+      "energy_type": "solar",
+      "current_crop_id": "crop-s12-wheat"
+    },
+    {
+      "id": "parcel-sprint-12-02",
+      "owner_id": "user-sprint-12-farmer",
+      "name": "Parcelle demo 02",
+      "area_ha": 1.5,
+      "geometry": {"type": "Polygon", "coordinates": [[[9.473, 35.040], [9.475, 35.040], [9.475, 35.038], [9.473, 35.038], [9.473, 35.040]]]},
+      "water_source": "well",
+      "well_depth_m": 45,
+      "pump_flow_m3_h": 8,
+      "energy_type": "steg",
+      "current_crop_id": "crop-s12-olive"
+    },
+    {
+      "id": "parcel-sprint-12-03",
+      "owner_id": "user-sprint-12-farmer",
+      "name": "Parcelle demo 03",
+      "area_ha": 3,
+      "geometry": {"type": "Polygon", "coordinates": [[[9.476, 35.040], [9.478, 35.040], [9.478, 35.038], [9.476, 35.038], [9.476, 35.040]]]},
+      "water_source": "well",
+      "well_depth_m": 35,
+      "pump_flow_m3_h": 15,
+      "energy_type": "solar",
+      "current_crop_id": "crop-s12-wheat"
+    },
+    {
+      "id": "parcel-sprint-12-04",
+      "owner_id": "user-sprint-12-farmer",
+      "name": "Parcelle demo 04",
+      "area_ha": 1.2,
+      "geometry": {"type": "Polygon", "coordinates": [[[9.479, 35.040], [9.481, 35.040], [9.481, 35.038], [9.479, 35.038], [9.479, 35.040]]]},
+      "water_source": "well",
+      "well_depth_m": 50,
+      "pump_flow_m3_h": 6.5,
+      "energy_type": "diesel",
+      "current_crop_id": "crop-s12-tomato"
+    },
+    {
+      "id": "parcel-sprint-12-05",
+      "owner_id": "user-sprint-12-farmer",
+      "name": "Parcelle demo 05",
+      "area_ha": 2.5,
+      "geometry": {"type": "Polygon", "coordinates": [[[9.482, 35.040], [9.484, 35.040], [9.484, 35.038], [9.482, 35.038], [9.482, 35.040]]]},
+      "water_source": "well",
+      "well_depth_m": 25,
+      "pump_flow_m3_h": 12,
+      "energy_type": "solar",
+      "current_crop_id": "crop-s12-olive"
+    },
+    {
+      "id": "parcel-sprint-12-06",
+      "owner_id": "user-sprint-12-farmer",
+      "name": "Parcelle demo 06",
+      "area_ha": 1,
+      "geometry": {"type": "Polygon", "coordinates": [[[9.470, 35.035], [9.472, 35.035], [9.472, 35.033], [9.470, 35.033], [9.470, 35.035]]]},
+      "water_source": "well",
+      "well_depth_m": 55,
+      "pump_flow_m3_h": 7,
+      "energy_type": "steg",
+      "current_crop_id": "crop-s12-wheat"
+    },
+    {
+      "id": "parcel-sprint-12-07",
+      "owner_id": "user-sprint-12-farmer",
+      "name": "Parcelle demo 07",
+      "area_ha": 2,
+      "geometry": {"type": "Polygon", "coordinates": [[[9.473, 35.035], [9.475, 35.035], [9.475, 35.033], [9.473, 35.033], [9.473, 35.035]]]},
+      "water_source": "well",
+      "well_depth_m": 40,
+      "pump_flow_m3_h": 11,
+      "energy_type": "solar",
+      "current_crop_id": "crop-s12-olive"
+    },
+    {
+      "id": "parcel-sprint-12-08",
+      "owner_id": "user-sprint-12-farmer",
+      "name": "Parcelle demo 08",
+      "area_ha": 1.8,
+      "geometry": {"type": "Polygon", "coordinates": [[[9.476, 35.035], [9.478, 35.035], [9.478, 35.033], [9.476, 35.033], [9.476, 35.035]]]},
+      "water_source": "well",
+      "well_depth_m": 30,
+      "pump_flow_m3_h": 9,
+      "energy_type": "solar",
+      "current_crop_id": "crop-s12-tomato"
+    },
+    {
+      "id": "parcel-sprint-12-09",
+      "owner_id": "user-sprint-12-farmer",
+      "name": "Parcelle demo 09",
+      "area_ha": 3.2,
+      "geometry": {"type": "Polygon", "coordinates": [[[9.479, 35.035], [9.481, 35.035], [9.481, 35.033], [9.479, 35.033], [9.479, 35.035]]]},
+      "water_source": "well",
+      "well_depth_m": 65,
+      "pump_flow_m3_h": 16,
+      "energy_type": "solar",
+      "current_crop_id": "crop-s12-date-palm"
+    },
+    {
+      "id": "parcel-sprint-12-10",
+      "owner_id": "user-sprint-12-farmer",
+      "name": "Parcelle demo 10",
+      "area_ha": 1.4,
+      "geometry": {"type": "Polygon", "coordinates": [[[9.482, 35.035], [9.484, 35.035], [9.484, 35.033], [9.482, 35.033], [9.482, 35.035]]]},
+      "water_source": "well",
+      "well_depth_m": 20,
+      "pump_flow_m3_h": 5.5,
+      "energy_type": "steg",
+      "current_crop_id": "crop-s12-wheat"
+    }
+  ],
+  "parcel_conditions": [
+    {"parcel_id": "parcel-sprint-12-01", "analysis_context": {"soil_texture": "loam", "soil_salinity_dS_m": 2.5, "maximum_temperature_c": 38}},
+    {"parcel_id": "parcel-sprint-12-02", "analysis_context": {"soil_texture": "sandy", "soil_salinity_dS_m": 5.5, "maximum_temperature_c": 40}},
+    {"parcel_id": "parcel-sprint-12-03", "analysis_context": {"soil_texture": "loam", "soil_salinity_dS_m": 3, "maximum_temperature_c": 34}},
+    {"parcel_id": "parcel-sprint-12-04", "analysis_context": {"soil_texture": "sandy_loam", "soil_salinity_dS_m": 1, "maximum_temperature_c": 42}},
+    {"parcel_id": "parcel-sprint-12-05", "analysis_context": {"soil_texture": "clay", "soil_salinity_dS_m": 4.5, "maximum_temperature_c": 39}},
+    {"parcel_id": "parcel-sprint-12-06", "analysis_context": {"soil_texture": "loam", "soil_salinity_dS_m": 6, "maximum_temperature_c": 40}},
+    {"parcel_id": "parcel-sprint-12-07", "analysis_context": {"soil_texture": "sandy_loam", "soil_salinity_dS_m": 2, "maximum_temperature_c": 36}},
+    {"parcel_id": "parcel-sprint-12-08", "analysis_context": {"soil_texture": "clay", "soil_salinity_dS_m": 3, "maximum_temperature_c": 37}},
+    {"parcel_id": "parcel-sprint-12-09", "analysis_context": {"soil_texture": "loam", "soil_salinity_dS_m": 8, "maximum_temperature_c": 44}},
+    {"parcel_id": "parcel-sprint-12-10", "analysis_context": {"soil_texture": "sandy", "soil_salinity_dS_m": 1, "maximum_temperature_c": 30}}
+  ],
+  "analyses": [
+    {"id": "analysis-sprint-12-01", "parcel_id": "parcel-sprint-12-01", "soil_texture": "loam", "ph": 7.3, "organic_matter_percent": 1.8, "rain_mm": 56, "temperature_c": 38, "et0_mm": 4.8, "available_water_m3": 9000, "pumping_energy_kwh_m3": 0.3264},
+    {"id": "analysis-sprint-12-02", "parcel_id": "parcel-sprint-12-02", "soil_texture": "sandy", "ph": 7.3, "organic_matter_percent": 1.8, "rain_mm": 56, "temperature_c": 40, "et0_mm": 4.8, "available_water_m3": 7200, "pumping_energy_kwh_m3": 0.2448},
+    {"id": "analysis-sprint-12-03", "parcel_id": "parcel-sprint-12-03", "soil_texture": "loam", "ph": 7.3, "organic_matter_percent": 1.8, "rain_mm": 56, "temperature_c": 34, "et0_mm": 4.8, "available_water_m3": 13500, "pumping_energy_kwh_m3": 0.1904},
+    {"id": "analysis-sprint-12-04", "parcel_id": "parcel-sprint-12-04", "soil_texture": "sandy_loam", "ph": 7.3, "organic_matter_percent": 1.8, "rain_mm": 56, "temperature_c": 42, "et0_mm": 4.8, "available_water_m3": 5850, "pumping_energy_kwh_m3": 0.272},
+    {"id": "analysis-sprint-12-05", "parcel_id": "parcel-sprint-12-05", "soil_texture": "clay", "ph": 7.3, "organic_matter_percent": 1.8, "rain_mm": 56, "temperature_c": 39, "et0_mm": 4.8, "available_water_m3": 10800, "pumping_energy_kwh_m3": 0.136},
+    {"id": "analysis-sprint-12-06", "parcel_id": "parcel-sprint-12-06", "soil_texture": "loam", "ph": 7.3, "organic_matter_percent": 1.8, "rain_mm": 56, "temperature_c": 40, "et0_mm": 4.8, "available_water_m3": 6300, "pumping_energy_kwh_m3": 0.2992},
+    {"id": "analysis-sprint-12-07", "parcel_id": "parcel-sprint-12-07", "soil_texture": "sandy_loam", "ph": 7.3, "organic_matter_percent": 1.8, "rain_mm": 56, "temperature_c": 36, "et0_mm": 4.8, "available_water_m3": 9900, "pumping_energy_kwh_m3": 0.2176},
+    {"id": "analysis-sprint-12-08", "parcel_id": "parcel-sprint-12-08", "soil_texture": "clay", "ph": 7.3, "organic_matter_percent": 1.8, "rain_mm": 56, "temperature_c": 37, "et0_mm": 4.8, "available_water_m3": 8100, "pumping_energy_kwh_m3": 0.1632},
+    {"id": "analysis-sprint-12-09", "parcel_id": "parcel-sprint-12-09", "soil_texture": "loam", "ph": 7.3, "organic_matter_percent": 1.8, "rain_mm": 56, "temperature_c": 44, "et0_mm": 4.8, "available_water_m3": 14400, "pumping_energy_kwh_m3": 0.3536},
+    {"id": "analysis-sprint-12-10", "parcel_id": "parcel-sprint-12-10", "soil_texture": "sandy", "ph": 7.3, "organic_matter_percent": 1.8, "rain_mm": 56, "temperature_c": 30, "et0_mm": 4.8, "available_water_m3": 4950, "pumping_energy_kwh_m3": 0.1088}
+  ],
+  "cultures": [
+    {
+      "id": "crop-s12-wheat",
+      "name": {"fr": "Ble dur", "ar": "قمح صلب", "darija": "l-qmah s-sleb"},
+      "water_need_mm": 500,
+      "duration_days": 180,
+      "yield_t_ha": 2.5,
+      "price_tnd_t": 1100,
+      "water_demand": "medium",
+      "details": {
+        "kc_by_stage": {"initial": 0.3, "development": 0.7, "mid_season": 1.15, "late_season": 0.4},
+        "yield_range_t_ha": {"min": 1.5, "typical": 2.5, "max": 4},
+        "price_range_tnd_t": {"min": 800, "typical": 1100, "max": 1500},
+        "price_source": "Valeur indicative de demo a confirmer.",
+        "costs_tnd_ha": {"typical": 950},
+        "compatible_soils": ["loam", "clay", "sandy_loam"],
+        "salt_tolerance_dS_m": 4,
+        "heat_tolerance_c": 36,
+        "first_production_days": 120,
+        "kc_source": "FAO-56, valeur indicative."
+      }
+    },
+    {
+      "id": "crop-s12-olive",
+      "name": {"fr": "Olivier", "ar": "زيتون", "darija": "zitoun"},
+      "water_need_mm": 450,
+      "duration_days": 365,
+      "yield_t_ha": 3.2,
+      "price_tnd_t": 2800,
+      "water_demand": "low",
+      "details": {
+        "kc_by_stage": {"initial": 0.65, "development": 0.7, "mid_season": 0.7, "late_season": 0.7},
+        "yield_range_t_ha": {"min": 1.5, "typical": 3.2, "max": 6},
+        "price_range_tnd_t": {"min": 1800, "typical": 2800, "max": 4200},
+        "price_source": "Valeur indicative de demo a confirmer.",
+        "costs_tnd_ha": {"typical": 3200},
+        "compatible_soils": ["loam", "clay", "sandy_loam"],
+        "salt_tolerance_dS_m": 6,
+        "heat_tolerance_c": 40,
+        "first_production_days": 1095,
+        "kc_source": "FAO-56, valeur indicative."
+      }
+    },
+    {
+      "id": "crop-s12-date-palm",
+      "name": {"fr": "Palmier dattier", "ar": "نخيل التمر", "darija": "nakhl"},
+      "water_need_mm": 1100,
+      "duration_days": 365,
+      "yield_t_ha": 7,
+      "price_tnd_t": 5500,
+      "water_demand": "high",
+      "details": {
+        "kc_by_stage": {"initial": 0.9, "development": 0.95, "mid_season": 0.95, "late_season": 0.95},
+        "yield_range_t_ha": {"min": 5, "typical": 7, "max": 10},
+        "price_range_tnd_t": {"min": 3500, "typical": 5500, "max": 8500},
+        "price_source": "Valeur indicative de demo a confirmer.",
+        "costs_tnd_ha": {"typical": 6500},
+        "compatible_soils": ["sandy", "sandy_loam", "loam"],
+        "salt_tolerance_dS_m": 7,
+        "heat_tolerance_c": 45,
+        "first_production_days": 1825,
+        "kc_source": "FAO-56, valeur indicative."
+      }
+    },
+    {
+      "id": "crop-s12-tomato",
+      "name": {"fr": "Tomate", "ar": "طماطم", "darija": "tomatem"},
+      "water_need_mm": 700,
+      "duration_days": 150,
+      "yield_t_ha": 30,
+      "price_tnd_t": 1500,
+      "water_demand": "high",
+      "details": {
+        "kc_by_stage": {"initial": 0.6, "development": 0.9, "mid_season": 1.15, "late_season": 0.8},
+        "yield_range_t_ha": {"min": 20, "typical": 30, "max": 45},
+        "price_range_tnd_t": {"min": 900, "typical": 1500, "max": 2200},
+        "price_source": "Valeur indicative de demo a confirmer.",
+        "costs_tnd_ha": {"typical": 12000},
+        "compatible_soils": ["loam", "sandy_loam"],
+        "salt_tolerance_dS_m": 2.5,
+        "heat_tolerance_c": 32,
+        "first_production_days": 70,
+        "kc_source": "FAO-56, valeur indicative."
+      }
+    },
+    {
+      "id": "crop-s12-watermelon",
+      "name": {"fr": "Pasteque", "ar": "بطيخ", "darija": "delle3"},
+      "water_need_mm": 500,
+      "duration_days": 120,
+      "yield_t_ha": 25,
+      "price_tnd_t": 700,
+      "water_demand": "medium",
+      "details": {
+        "kc_by_stage": {"initial": 0.4, "development": 0.8, "mid_season": 1, "late_season": 0.75},
+        "yield_range_t_ha": {"min": 18, "typical": 25, "max": 35},
+        "price_range_tnd_t": {"min": 400, "typical": 700, "max": 1100},
+        "price_source": "Valeur indicative de demo a confirmer.",
+        "costs_tnd_ha": {"typical": 8500},
+        "compatible_soils": ["sandy", "sandy_loam"],
+        "salt_tolerance_dS_m": 1.5,
+        "heat_tolerance_c": 38,
+        "first_production_days": 75,
+        "kc_source": "FAO-56, valeur indicative."
+      }
+    },
+    {
+      "id": "crop-s12-prickly-pear",
+      "name": {"fr": "Figuier de Barbarie", "ar": "تين شوكي", "darija": "hendi"},
+      "water_need_mm": 200,
+      "duration_days": 365,
+      "yield_t_ha": 8,
+      "price_tnd_t": 700,
+      "water_demand": "very_low",
+      "details": {
+        "kc_by_stage": {"initial": 0.15, "development": 0.3, "mid_season": 0.45, "late_season": 0.3},
+        "yield_range_t_ha": {"min": 5, "typical": 8, "max": 15},
+        "price_range_tnd_t": {"min": 400, "typical": 700, "max": 1100},
+        "price_source": "Valeur indicative de demo a confirmer.",
+        "costs_tnd_ha": {"typical": 2200},
+        "compatible_soils": ["sandy", "sandy_loam"],
+        "salt_tolerance_dS_m": 8,
+        "heat_tolerance_c": 45,
+        "first_production_days": 730,
+        "kc_source": "FAO-56, valeur indicative."
+      }
+    }
+  ],
+  "intercrops": [],
+  "current_crop_id": "crop-s12-wheat",
+  "analysis": {
+    "soil_texture": "loam",
+    "ph": 7.3,
+    "organic_matter_percent": 1.8,
+    "rain_mm": 56,
+    "temperature_c": 38,
+    "et0_mm": 4.8,
+    "available_water_m3": 9000,
+    "pumping_energy_kwh_m3": 0.3264,
+    "sources": {
+      "soil": "SoilGrids demo fixture",
+      "climate": "Open-Meteo demo fixture",
+      "solar": "NASA POWER demo fixture"
+    }
+  },
+  "plan": {
+    "current": {
+      "culture_id": "crop-s12-wheat",
+      "area_ha": 2,
+      "water_demand_m3": 13347.56,
+      "available_water_m3": 9000,
+      "energy_kwh": 4356.64
+    },
+    "potential": {
+      "culture_id": "crop-s12-olive",
+      "area_ha": 1.2,
+      "water_demand_m3": 7230.93,
+      "available_water_m3": 9000,
+      "energy_kwh": 2360.18
+    }
+  },
+  "label": {
+    "id": "label-sprint-12",
+    "grade": "A",
+    "status": "active",
+    "qr_code": "ARDI-S12-FARM-001"
+  },
+  "labels": [
+    {
+      "id": "label-sprint-12",
+      "farm_id": "farm-sprint-12",
+      "parcel_id": "parcel-sprint-12-01",
+      "grade": "A",
+      "qr_code": "ARDI-S12-FARM-001",
+      "status": "active"
+    }
+  ],
+  "verifications": [
+    {
+      "id": "verification-sprint-12",
+      "parcel_id": "parcel-sprint-12-01",
+      "kind": "crop_conformity",
+      "status": "conforme",
+      "evidence": {"source": "verification demo"}
+    }
+  ],
+  "assistant": {
+    "question_darija": "qadech el ma disponible lel parcelle?",
+    "answer_darija": "El ma el disponible howa 9000 m3.",
+    "translation_fr": "L'eau disponible pour la parcelle est de 9000 m3."
+  },
+  "products": [
+    {
+      "id": "product-sprint-12-olive-oil",
+      "farm_id": "farm-sprint-12",
+      "label_id": "label-sprint-12",
+      "name": "Huile d'olive de la ferme demo",
+      "category": "huile_olive",
+      "quantity_kg": 100,
+      "price_tnd_kg": 22,
+      "photo_url": "/assets/huile-olive-sprint-12.jpg"
+    }
+  ],
+  "qr": {
+    "value": "ARDI-S12-FARM-001",
+    "label_id": "label-sprint-12",
+    "product_id": "product-sprint-12-olive-oil"
+  },
+  "basket": {
+    "buyer_id": "user-sprint-12-buyer",
+    "items": [
+      {"product_id": "product-sprint-12-olive-oil", "quantity_kg": 2}
+    ],
+    "payment_method": "card",
+    "payment_status": "simulated"
+  }
+}

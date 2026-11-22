@@ -8,6 +8,7 @@ from datetime import datetime, timedelta, timezone
 from functools import lru_cache
 from pathlib import Path
 from statistics import mean
+from time import perf_counter
 from typing import Any, Literal
 from uuid import uuid4
 
@@ -329,10 +330,13 @@ async def lifespan(_: FastAPI):
             "sprint-09.json",
             "sprint-10.json",
             "sprint-11.json",
+            "sprint-12.json",
         ):
             fixture = FIXTURES_DIR / fixture_name
             data = json.loads(fixture.read_text(encoding="utf-8"))
             for section, model in ENTITY_MODELS.items():
+                if fixture_name == "sprint-12.json" and section == "cultures":
+                    continue
                 if section == "users":
                     rows = data.get("users", data.get("profiles", []))
                 elif section == "produits":
@@ -377,7 +381,7 @@ async def lifespan(_: FastAPI):
 app = FastAPI(
     title="Ardi API",
     version="1.0.0",
-    description="API FastAPI Ardi, sprints de demonstration 1 a 11.",
+    description="API FastAPI Ardi, sprints de demonstration 1 a 12.",
     lifespan=lifespan,
 )
 app.add_middleware(
@@ -468,6 +472,32 @@ def sprint_10_fixture() -> dict[str, Any]:
 @app.get("/fixture/sprint-11")
 def sprint_11_fixture() -> dict[str, Any]:
     return json.loads((FIXTURES_DIR / "sprint-11.json").read_text(encoding="utf-8"))
+
+
+@app.get("/fixture/sprint-12")
+def sprint_12_fixture(db: Session = Depends(get_db)) -> dict[str, Any]:
+    calculation_started = perf_counter()
+    data = json.loads((FIXTURES_DIR / "sprint-12.json").read_text(encoding="utf-8"))
+    parcel_calculations = []
+    for parcel in data["parcelles"]:
+        result = recommend_crops(parcel["id"], tri="revenu_m3", db=db)
+        parcel_calculations.append(
+            {
+                "parcel_id": result["parcel_id"],
+                "available_water_m3": result["available_water_m3"],
+                "energy_kwh_m3": result["energy_kwh_m3"],
+                "excluded_crops": result["excluded_crops"],
+                "calculation_time_ms": result["calculation_time_ms"],
+            }
+        )
+    data["parcel_calculations"] = parcel_calculations
+    data["ranking"] = recommend_crops(
+        data["parcelles"][0]["id"], tri="revenu_m3", db=db
+    )
+    data["total_calculation_time_ms"] = round(
+        (perf_counter() - calculation_started) * 1000, 3
+    )
+    return data
 
 
 def normalize_assistant_question(question: str) -> str:
@@ -773,6 +803,7 @@ def recommend_crops(
     tri: Literal["revenu_m3", "eau", "rapidite"] = Query(default="revenu_m3"),
     db: Session = Depends(get_db),
 ) -> dict[str, Any]:
+    calculation_started = perf_counter()
     parcel = db.get(models.Parcelle, parcel_id)
     if parcel is None:
         raise HTTPException(404, "Parcel not found")
@@ -925,6 +956,13 @@ def recommend_crops(
         "parcel_id": parcel_id,
         "sort": tri,
         "available_water_m3": round(context["available_water_m3"], 2),
+        "energy_kwh_m3": round(
+            0.00272 * float(parcel.well_depth_m) / float(context["energy_efficiency"]),
+            4,
+        ),
+        "calculation_time_ms": round(
+            (perf_counter() - calculation_started) * 1000, 3
+        ),
         "current_crop": current_crop,
         "best_crop_id": best_revenue_crop["id"] if best_revenue_crop else None,
         "top_crop_id": recommendations[0]["id"] if recommendations else None,
@@ -1100,6 +1138,47 @@ def crop_water_requirement(
 def recommendation_inputs(
     parcel: models.Parcelle, db: Session
 ) -> tuple[dict[str, Any], list[dict[str, Any]], list[dict[str, Any]], str | None]:
+    sprint12 = json.loads(
+        (FIXTURES_DIR / "sprint-12.json").read_text(encoding="utf-8")
+    )
+    scenario = next(
+        (
+            item
+            for item in sprint12["parcel_conditions"]
+            if item["parcel_id"] == parcel.id
+        ),
+        None,
+    )
+    if scenario is not None:
+        if parcel.pump_flow_m3_h is None or parcel.well_depth_m is None:
+            raise HTTPException(
+                422, "Parcel needs well flow and depth for recommendations"
+            )
+        context = {
+            **sprint12["analysis_context"],
+            **scenario["analysis_context"],
+        }
+        water = sprint12["water"]
+        context.update(
+            {
+                "season_days": water["season_days"],
+                "pump_hours_per_day": water["pump_hours_per_day"],
+                "available_water_m3": round(
+                    parcel.pump_flow_m3_h
+                    * water["pump_hours_per_day"]
+                    * water["season_days"],
+                    2,
+                ),
+                "energy_efficiency": water["eta"],
+            }
+        )
+        return (
+            context,
+            sprint12["cultures"],
+            sprint12.get("intercrops", []),
+            scenario.get("current_crop_id", sprint12.get("current_crop_id")),
+        )
+
     fixture = json.loads((FIXTURES_DIR / "sprint-06.json").read_text(encoding="utf-8"))
     fixture_parcel_ids = {row["id"] for row in fixture["parcelles"]}
     if parcel.id in fixture_parcel_ids:
@@ -1669,6 +1748,7 @@ def public_label(qr_code: str, db: Session = Depends(get_db)):
         "sprint-08.json",
         "sprint-10.json",
         "sprint-11.json",
+        "sprint-12.json",
     ):
         fixture_data = json.loads(
             (FIXTURES_DIR / fixture_name).read_text(encoding="utf-8")
