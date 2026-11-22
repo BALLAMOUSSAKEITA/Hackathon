@@ -1,4 +1,4 @@
-# Ardi API - Sprints 1 a 6
+# Ardi API - Sprints 1 a 7
 
 API FastAPI pour le socle technique Ardi.
 
@@ -23,12 +23,15 @@ Documentation interactive : `http://127.0.0.1:8000/docs`
 - Fixture sprint 4 : `GET /fixture/sprint-04`
 - Fixture sprint 5 : `GET /fixture/sprint-05`
 - Fixture sprint 6 : `GET /fixture/sprint-06`
+- Fixture sprint 7 : `GET /fixture/sprint-07`
 - Demander un code OTP simulé : `POST /auth/otp`
 - Vérifier le code et créer un utilisateur : `POST /auth/verify`
 - Utilisateurs : `GET /users`, `POST /users`
 - Parcelles : `GET /parcelles`, `POST /parcelles`, `GET /parcelles/{parcel_id}`
 - Analyse d'une parcelle : `POST /parcelles/{parcel_id}/analyse`
 - Recommandations de cultures : `GET /parcelles/{parcel_id}/recommandations`
+- Simuler un plan : `POST /parcelles/{parcel_id}/simulation`
+- Adopter un plan : `POST /parcelles/{parcel_id}/plan`
 - Cultures : `GET /cultures`, `GET /cultures/{culture_id}`
 - Filtrer les cultures par sol : `GET /cultures?soil=sandy`
 - Analyses : `GET /analyses`
@@ -40,7 +43,7 @@ Documentation interactive : `http://127.0.0.1:8000/docs`
 - Alertes : `GET /alertes`
 
 Les données de démonstration sont chargées depuis les fixtures `sprint-01`
-à `sprint-06`. Le sprint 2 fournit les profils agriculteur,
+à `sprint-07`. Le sprint 2 fournit les profils agriculteur,
 acheteur particulier et acheteur professionnel. Le sprint 3 fournit 15 cultures
 avec Kc par stade, rendements, fourchettes de prix, coûts et compatibilité de sol.
 Les valeurs agronomiques et économiques sont indicatives; les sources de prix
@@ -75,6 +78,15 @@ la température ou la capacité du puits apparaissent séparément dans
 `excluded_crops` et jamais dans `recommendations`. Les formules et hypothèses
 utilisées sont retournées dans la réponse. Les prix et paramètres agronomiques
 restent indicatifs, à confirmer localement.
+
+Le sprint 7 fournit une parcelle, quatre cultures proposées, l'état actuel et
+les hypothèses du puits. Le corps des deux routes contient `allocations`, une
+liste de `{ "crop_id": "...", "area_ha": ... }`. La simulation recalcule le
+revenu, l'eau, l'énergie, le label et l'écart par rapport à la situation
+actuelle; elle retourne aussi les alertes de dépassement de surface ou d'eau.
+L'adoption refuse une surface supérieure à la parcelle. Un dépassement d'eau
+est conservé comme alerte dans le plan adopté. Les plans sont persistés via
+l'entité `Plan` et consultables avec `GET /plans`.
 
 Pour la démonstration, `POST /auth/otp` retourne le code fixe `123456`.
 `POST /auth/verify` reçoit `phone`, `code`, `name`, `role` (`farmer`, `buyer`

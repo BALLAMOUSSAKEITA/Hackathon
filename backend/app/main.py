@@ -28,6 +28,8 @@ from .schemas import (
     OTPVerify,
     ParcelleCreate,
     ParcelleOut,
+    SimulationAllocation,
+    SimulationRequest,
     UserCreate,
     UserOut,
 )
@@ -287,6 +289,7 @@ async def lifespan(_: FastAPI):
             "sprint-04.json",
             "sprint-05.json",
             "sprint-06.json",
+            "sprint-07.json",
         ):
             fixture = FIXTURES_DIR / fixture_name
             data = json.loads(fixture.read_text(encoding="utf-8"))
@@ -335,7 +338,7 @@ async def lifespan(_: FastAPI):
 app = FastAPI(
     title="Ardi API",
     version="1.0.0",
-    description="API FastAPI Ardi, sprints de demonstration 1 a 6.",
+    description="API FastAPI Ardi, sprints de demonstration 1 a 7.",
     lifespan=lifespan,
 )
 app.add_middleware(
@@ -393,6 +396,11 @@ def sprint_05_fixture() -> dict[str, Any]:
 @app.get("/fixture/sprint-06")
 def sprint_06_fixture() -> dict[str, Any]:
     return json.loads((FIXTURES_DIR / "sprint-06.json").read_text(encoding="utf-8"))
+
+
+@app.get("/fixture/sprint-07")
+def sprint_07_fixture() -> dict[str, Any]:
+    return json.loads((FIXTURES_DIR / "sprint-07.json").read_text(encoding="utf-8"))
 
 
 @app.post("/auth/otp", response_model=OTPResponse)
@@ -818,6 +826,70 @@ def list_analyses(db: Session = Depends(get_db)):
     return db.query(models.Analyse).all()
 
 
+@app.post("/parcelles/{parcel_id}/simulation")
+def simulate_parcelle(
+    parcel_id: str,
+    payload: SimulationRequest,
+    db: Session = Depends(get_db),
+) -> dict[str, Any]:
+    parcel = db.get(models.Parcelle, parcel_id)
+    if parcel is None:
+        raise HTTPException(404, "Parcel not found")
+    context, crops, current_allocations = simulation_inputs(parcel, db)
+    return calculate_plan_simulation(
+        parcel,
+        payload.allocations,
+        crops,
+        current_allocations,
+        context,
+    )
+
+
+@app.post("/parcelles/{parcel_id}/plan")
+def adopt_parcel_plan(
+    parcel_id: str,
+    payload: SimulationRequest,
+    db: Session = Depends(get_db),
+) -> dict[str, Any]:
+    parcel = db.get(models.Parcelle, parcel_id)
+    if parcel is None:
+        raise HTTPException(404, "Parcel not found")
+    context, crops, current_allocations = simulation_inputs(parcel, db)
+    simulation = calculate_plan_simulation(
+        parcel,
+        payload.allocations,
+        crops,
+        current_allocations,
+        context,
+    )
+    if simulation["surface_exceeded"]:
+        raise HTTPException(
+            422,
+            detail={
+                "message": "Allocated area exceeds parcel area",
+                "allocated_area_ha": simulation["allocated_area_ha"],
+                "parcel_area_ha": simulation["parcel_area_ha"],
+                "surface_excess_ha": simulation["surface_excess_ha"],
+            },
+        )
+
+    plan_id = f"plan-sprint-07-{parcel_id}"
+    plan_data = {
+        "sprint": "sprint-07",
+        "allocations": [allocation.model_dump() for allocation in payload.allocations],
+        "simulation": simulation,
+    }
+    plan = db.get(models.Plan, plan_id)
+    if plan is None:
+        plan = models.Plan(id=plan_id, parcel_id=parcel_id, data=plan_data)
+        db.add(plan)
+    else:
+        plan.data = plan_data
+    db.commit()
+    db.refresh(plan)
+    return {"plan_id": plan.id, "status": "adopted", **simulation}
+
+
 def culture_payload(culture: models.Culture, detail: models.CultureDetail | None) -> dict[str, Any]:
     item = {
         "id": culture.id,
@@ -853,6 +925,32 @@ DEFAULT_STAGE_WEIGHTS = {
     "mid_season": 0.4,
     "late_season": 0.2,
 }
+
+
+def crop_water_requirement(
+    crop: dict[str, Any], context: dict[str, Any]
+) -> dict[str, float]:
+    details = crop.get("details", crop)
+    stage_weights = context.get("stage_weights", DEFAULT_STAGE_WEIGHTS)
+    mean_kc = sum(
+        float(details["kc_by_stage"][stage]) * float(stage_weights[stage])
+        for stage in RECOMMENDATION_STAGES
+    )
+    crop_days = min(int(crop["duration_days"]), int(context["season_days"]))
+    etc_mm = float(context["et0_daily_mm"]) * mean_kc * crop_days
+    effective_rain_mm = (
+        float(context["effective_rain_mm"]) * crop_days / context["season_days"]
+    )
+    water_m3_ha = (
+        max(0.0, etc_mm - effective_rain_mm)
+        / float(context["irrigation_efficiency"])
+        * 10
+    )
+    return {
+        "etc_mm": etc_mm,
+        "effective_rain_mm": effective_rain_mm,
+        "water_m3_ha": water_m3_ha,
+    }
 
 
 def recommendation_inputs(
@@ -956,8 +1054,6 @@ def calculate_recommendation(
     first_production_days = []
     exclusion_reasons: set[str] = set()
     soil_texture = context["soil_texture"].strip().lower().replace("-", "_")
-    season_days = context["season_days"]
-    stage_weights = context.get("stage_weights", DEFAULT_STAGE_WEIGHTS)
 
     for component in components:
         crop = cultures_by_id.get(component["crop_id"])
@@ -968,19 +1064,10 @@ def calculate_recommendation(
             )
         details = crop.get("details", crop)
         share = float(component["area_share"])
-        kc_by_stage = details["kc_by_stage"]
-        mean_kc = sum(
-            float(kc_by_stage[stage]) * float(stage_weights[stage])
-            for stage in RECOMMENDATION_STAGES
-        )
-        crop_days = min(int(crop["duration_days"]), int(season_days))
-        crop_etc_mm = float(context["et0_daily_mm"]) * mean_kc * crop_days
-        crop_rain_mm = float(context["effective_rain_mm"]) * crop_days / season_days
-        crop_water_m3_ha = (
-            max(0.0, crop_etc_mm - crop_rain_mm)
-            / float(context["irrigation_efficiency"])
-            * 10
-        )
+        water_requirements = crop_water_requirement(crop, context)
+        crop_etc_mm = water_requirements["etc_mm"]
+        crop_rain_mm = water_requirements["effective_rain_mm"]
+        crop_water_m3_ha = water_requirements["water_m3_ha"]
         costs = details["costs_tnd_ha"]
         typical_cost = costs["typical"] if isinstance(costs, dict) else costs
 
@@ -1075,6 +1162,302 @@ def calculate_recommendation(
         "exclusion_reasons": sorted(exclusion_reasons),
     }
     return result, sorted(exclusion_reasons)
+
+
+def simulation_inputs(
+    parcel: models.Parcelle, db: Session
+) -> tuple[dict[str, Any], list[dict[str, Any]], list[dict[str, Any]]]:
+    fixture = json.loads((FIXTURES_DIR / "sprint-07.json").read_text(encoding="utf-8"))
+    fixture_parcel_ids = {row["id"] for row in fixture["parcelles"]}
+    if parcel.id in fixture_parcel_ids:
+        if parcel.pump_flow_m3_h is None or parcel.well_depth_m is None:
+            raise HTTPException(422, "Parcel needs well flow and depth for simulation")
+        water = fixture["water"]
+        context = {
+            **fixture["analysis_context"],
+            "season_days": water["season_days"],
+            "available_water_m3": round(
+                parcel.pump_flow_m3_h
+                * water["pump_hours_per_day"]
+                * water["season_days"],
+                2,
+            ),
+            "pump_hours_per_day": water["pump_hours_per_day"],
+            "water_capacity_source": "pump_flow_m3_h * pump_hours_per_day * season_days",
+            "irrigation_method": water["irrigation_method"],
+            "irrigation_efficiency": water["irrigation_efficiency"],
+            "energy_efficiency": water["energy_efficiency"],
+            "energy_price_tnd_kwh": water["energy_price_tnd_kwh"],
+        }
+        return (
+            context,
+            fixture["cultures"],
+            fixture["current_situation"]["allocations"],
+        )
+
+    analysis = (
+        db.query(models.Analyse)
+        .filter(models.Analyse.parcel_id == parcel.id)
+        .first()
+    )
+    if analysis is None:
+        raise HTTPException(409, "Analyze the parcel before simulating a plan")
+    if parcel.well_depth_m is None:
+        raise HTTPException(422, "Parcel needs well depth for energy simulation")
+    detail = db.get(models.AnalyseDetail, analysis.id)
+    assumptions = detail.assumptions if detail is not None else {}
+    season_days = assumptions.get("season_days", 180)
+    climate_period_days = assumptions.get("climate_period_days") or 365
+    context = {
+        "et0_daily_mm": analysis.et0_mm,
+        "effective_rain_mm": (
+            analysis.rain_mm * min(season_days / climate_period_days, 1) * 0.75
+        ),
+        "season_days": season_days,
+        "stage_weights": assumptions.get("stage_weights", DEFAULT_STAGE_WEIGHTS),
+        "available_water_m3": analysis.available_water_m3,
+        "pump_hours_per_day": assumptions.get("pump_hours_per_day"),
+        "water_capacity_source": "available water from the latest parcel analysis",
+        "irrigation_method": assumptions.get("irrigation_method", "drip"),
+        "irrigation_efficiency": assumptions.get("irrigation_efficiency", 0.9),
+        "energy_efficiency": assumptions.get("efficiency", 0.5),
+        "energy_price_tnd_kwh": assumptions.get("energy_price_tnd_kwh", 0.3),
+    }
+    crops = [
+        culture_payload(culture, db.get(models.CultureDetail, culture.id))
+        for culture in db.query(models.Culture).order_by(models.Culture.id).all()
+    ]
+    current_allocations = (
+        [{"crop_id": parcel.current_crop_id, "area_ha": parcel.area_ha}]
+        if parcel.current_crop_id
+        else []
+    )
+    return context, crops, current_allocations
+
+
+def calculate_plan_simulation(
+    parcel: models.Parcelle,
+    allocations: list[SimulationAllocation],
+    crops: list[dict[str, Any]],
+    current_allocations: list[dict[str, Any]],
+    context: dict[str, Any],
+) -> dict[str, Any]:
+    if parcel.well_depth_m is None:
+        raise HTTPException(422, "Parcel needs well depth for energy simulation")
+    numeric_inputs = (
+        "season_days",
+        "et0_daily_mm",
+        "effective_rain_mm",
+        "available_water_m3",
+        "irrigation_efficiency",
+        "energy_efficiency",
+        "energy_price_tnd_kwh",
+    )
+    if any(
+        isinstance(context[key], bool)
+        or not isinstance(context[key], (int, float))
+        or not math.isfinite(context[key])
+        for key in numeric_inputs
+    ):
+        raise HTTPException(422, "Simulation inputs must be finite numbers")
+    if (
+        context["season_days"] <= 0
+        or context["et0_daily_mm"] <= 0
+        or context["effective_rain_mm"] < 0
+        or context["available_water_m3"] < 0
+        or not 0 < context["irrigation_efficiency"] <= 1
+        or not 0 < context["energy_efficiency"] <= 1
+        or context["energy_price_tnd_kwh"] < 0
+    ):
+        raise HTTPException(422, "Simulation inputs are outside valid ranges")
+    stage_weights = context.get("stage_weights", DEFAULT_STAGE_WEIGHTS)
+    if not isinstance(stage_weights, dict) or any(
+        stage not in stage_weights for stage in RECOMMENDATION_STAGES
+    ):
+        raise HTTPException(422, "Kc stage weights are incomplete")
+    if any(
+        isinstance(stage_weights[stage], bool)
+        or not isinstance(stage_weights[stage], (int, float))
+        or not math.isfinite(stage_weights[stage])
+        for stage in RECOMMENDATION_STAGES
+    ):
+        raise HTTPException(422, "Kc stage weights must be finite numbers")
+    if (
+        any(float(stage_weights[stage]) < 0 for stage in RECOMMENDATION_STAGES)
+        or not math.isclose(
+            sum(float(stage_weights[stage]) for stage in RECOMMENDATION_STAGES),
+            1.0,
+            abs_tol=0.001,
+        )
+    ):
+        raise HTTPException(422, "Kc stage weights must sum to 1")
+
+    cultures_by_id = {crop["id"]: crop for crop in crops}
+    energy_kwh_m3 = (
+        0.00272 * float(parcel.well_depth_m) / float(context["energy_efficiency"])
+    )
+
+    def summarize_plan(rows: list[dict[str, Any]]) -> dict[str, Any]:
+        crop_results = []
+        seen_crop_ids = set()
+        allocated_area_ha = 0.0
+        water_demand_m3 = 0.0
+        energy_kwh = 0.0
+        gross_revenue_tnd = 0.0
+        production_cost_tnd = 0.0
+        for row in rows:
+            crop_id = row["crop_id"]
+            if crop_id in seen_crop_ids:
+                raise HTTPException(422, f"Crop {crop_id} is allocated more than once")
+            seen_crop_ids.add(crop_id)
+            crop = cultures_by_id.get(crop_id)
+            if crop is None:
+                raise HTTPException(422, f"Unknown proposed crop: {crop_id}")
+            area_ha = float(row["area_ha"])
+            details = crop.get("details", crop)
+            water_requirements = crop_water_requirement(crop, context)
+            water_per_ha_m3 = water_requirements["water_m3_ha"]
+            water_m3 = water_per_ha_m3 * area_ha
+            energy = water_m3 * energy_kwh_m3
+            gross_revenue = float(crop["yield_t_ha"]) * float(crop["price_tnd_t"]) * area_ha
+            costs = details["costs_tnd_ha"]
+            typical_cost = costs["typical"] if isinstance(costs, dict) else costs
+            production_cost = float(typical_cost) * area_ha
+            energy_cost = energy * float(context["energy_price_tnd_kwh"])
+            net_revenue = gross_revenue - production_cost - energy_cost
+            name = crop.get("name", {})
+            if isinstance(name, dict):
+                name = name.get("fr", crop_id)
+
+            allocated_area_ha += area_ha
+            water_demand_m3 += water_m3
+            energy_kwh += energy
+            gross_revenue_tnd += gross_revenue
+            production_cost_tnd += production_cost
+            crop_results.append(
+                {
+                    "crop_id": crop_id,
+                    "name": name,
+                    "area_ha": round(area_ha, 4),
+                    "water_m3": round(water_m3, 2),
+                    "energy_kwh": round(energy, 2),
+                    "gross_revenue_tnd": round(gross_revenue, 2),
+                    "production_cost_tnd": round(production_cost, 2),
+                    "energy_cost_tnd": round(energy_cost, 2),
+                    "net_revenue_tnd": round(net_revenue, 2),
+                }
+            )
+
+        energy_cost_tnd = energy_kwh * float(context["energy_price_tnd_kwh"])
+        net_revenue_tnd = gross_revenue_tnd - production_cost_tnd - energy_cost_tnd
+        revenue_dt_m3 = (
+            net_revenue_tnd / water_demand_m3 if water_demand_m3 > 0 else 0.0
+        )
+        surface_excess_ha = max(0.0, allocated_area_ha - parcel.area_ha)
+        water_excess_m3 = max(
+            0.0, water_demand_m3 - float(context["available_water_m3"])
+        )
+        surface_exceeded = surface_excess_ha > 0.000001
+        water_exceeded = water_excess_m3 > 0.01
+        warnings = []
+        if surface_exceeded:
+            warnings.append(
+                {
+                    "code": "surface_exceeded",
+                    "message": "Allocated area exceeds parcel area",
+                }
+            )
+        if water_exceeded:
+            warnings.append(
+                {
+                    "code": "water_capacity_exceeded",
+                    "message": "Water demand exceeds well capacity",
+                }
+            )
+
+        if surface_exceeded or water_exceeded:
+            label = "E"
+        elif (
+            revenue_dt_m3 >= 2.2
+            and context["irrigation_method"] == "drip"
+        ):
+            label = "A"
+        elif revenue_dt_m3 >= 1.5:
+            label = "B"
+        elif revenue_dt_m3 >= 1.1:
+            label = "C"
+        elif revenue_dt_m3 >= 0.8:
+            label = "D"
+        else:
+            label = "E"
+        return {
+            "allocated_area_ha": round(allocated_area_ha, 4),
+            "surface_excess_ha": round(surface_excess_ha, 4),
+            "surface_exceeded": surface_exceeded,
+            "unallocated_area_ha": round(max(0.0, parcel.area_ha - allocated_area_ha), 4),
+            "water_demand_m3": round(water_demand_m3, 2),
+            "water_excess_m3": round(water_excess_m3, 2),
+            "water_exceeded": water_exceeded,
+            "energy_kwh": round(energy_kwh, 2),
+            "gross_revenue_tnd": round(gross_revenue_tnd, 2),
+            "production_cost_tnd": round(production_cost_tnd, 2),
+            "energy_cost_tnd": round(energy_cost_tnd, 2),
+            "net_revenue_tnd": round(net_revenue_tnd, 2),
+            "revenue_dt_m3": round(revenue_dt_m3, 2),
+            "label": label,
+            "crop_results": crop_results,
+            "warnings": warnings,
+        }
+
+    requested_rows = [allocation.model_dump() for allocation in allocations]
+    proposed = summarize_plan(requested_rows)
+    current = summarize_plan(current_allocations) if current_allocations else None
+    comparison = None
+    if current is not None:
+        comparison = {
+            "water_saved_m3": round(
+                current["water_demand_m3"] - proposed["water_demand_m3"], 2
+            ),
+            "energy_saved_kwh": round(current["energy_kwh"] - proposed["energy_kwh"], 2),
+            "net_revenue_delta_tnd": round(
+                proposed["net_revenue_tnd"] - current["net_revenue_tnd"], 2
+            ),
+            "revenue_dt_m3_delta": round(
+                proposed["revenue_dt_m3"] - current["revenue_dt_m3"], 2
+            ),
+            "current_label": current["label"],
+            "proposed_label": proposed["label"],
+        }
+
+    return {
+        "parcel_id": parcel.id,
+        "parcel_area_ha": parcel.area_ha,
+        "available_water_m3": round(float(context["available_water_m3"]), 2),
+        **proposed,
+        "allocations": requested_rows,
+        "current_situation": current,
+        "comparison": comparison,
+        "assumptions": {
+            "et0_daily_mm": context["et0_daily_mm"],
+            "effective_rain_mm": context["effective_rain_mm"],
+            "season_days": context["season_days"],
+            "irrigation_method": context["irrigation_method"],
+            "irrigation_efficiency": context["irrigation_efficiency"],
+            "well_depth_m": parcel.well_depth_m,
+            "energy_efficiency": context["energy_efficiency"],
+            "energy_kwh_m3": round(energy_kwh_m3, 4),
+            "energy_price_tnd_kwh": context["energy_price_tnd_kwh"],
+            "pump_flow_m3_h": parcel.pump_flow_m3_h,
+            "pump_hours_per_day": context.get("pump_hours_per_day"),
+            "water_capacity_formula": context["water_capacity_source"],
+            "water_formula": (
+                "ETc = ET0 * sum(Kc_stage * stage_weight); "
+                "irrigation = max(ETc - effective_rain, 0) / irrigation_efficiency; "
+                "1 mm/ha = 10 m3"
+            ),
+            "stage_weights": stage_weights,
+        },
+    }
 
 
 @app.get("/labels")

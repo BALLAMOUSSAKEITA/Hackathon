@@ -42,6 +42,15 @@ class AnalyseRequest(BaseModel):
     efficiency: float | None = Field(default=None, gt=0, le=1)
 
 
+class SimulationAllocation(BaseModel):
+    crop_id: str = Field(min_length=1)
+    area_ha: float = Field(ge=0, allow_inf_nan=False)
+
+
+class SimulationRequest(BaseModel):
+    allocations: list[SimulationAllocation] = Field(min_length=1)
+
+
 class ParcelleCreate(ORMModel):
     id: str
     owner_id: str

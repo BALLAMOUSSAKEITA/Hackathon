@@ -264,6 +264,108 @@ def test_recommendations_sort_rejects_unknown_mode():
     assert response.status_code == 422
 
 
+def test_sprint_07_simulation_recalculates_plan_and_compares_current_situation():
+    with TestClient(app) as client:
+        fixture = client.get("/fixture/sprint-07")
+        response = client.post(
+            "/parcelles/parcel-sprint-07/simulation",
+            json={
+                "allocations": [
+                    {"crop_id": "barley", "area_ha": 1.2},
+                    {"crop_id": "capers", "area_ha": 1.2},
+                ]
+            },
+        )
+
+    assert fixture.status_code == 200
+    assert len(fixture.json()["cultures"]) == 4
+    assert response.status_code == 200
+    simulation = response.json()
+    assert simulation["allocated_area_ha"] == 2.4
+    assert simulation["surface_exceeded"] is False
+    assert simulation["water_exceeded"] is False
+    assert simulation["current_situation"]["water_exceeded"] is True
+    assert simulation["comparison"]["water_saved_m3"] > 0
+    assert simulation["comparison"]["energy_saved_kwh"] > 0
+    assert simulation["label"] in {"A", "B", "C", "D", "E"}
+
+
+def test_sprint_07_simulation_signals_water_and_surface_overruns():
+    with TestClient(app) as client:
+        simulation = client.post(
+            "/parcelles/parcel-sprint-07/simulation",
+            json={"allocations": [{"crop_id": "tomato", "area_ha": 2.4}]},
+        )
+        over_surface = client.post(
+            "/parcelles/parcel-sprint-07/simulation",
+            json={"allocations": [{"crop_id": "barley", "area_ha": 2.8}]},
+        )
+
+    assert simulation.status_code == 200
+    assert simulation.json()["water_exceeded"] is True
+    expected_tomato_water = (
+        (4.8 * 0.91 * 150 - 56 * 150 / 180) / 0.9 * 10 * 2.4
+    )
+    assert abs(
+        simulation.json()["water_demand_m3"] - expected_tomato_water
+    ) < 0.02
+    assert simulation.json()["label"] == "E"
+    assert {
+        warning["code"] for warning in simulation.json()["warnings"]
+    } == {"water_capacity_exceeded"}
+    assert over_surface.status_code == 200
+    assert over_surface.json()["surface_exceeded"] is True
+    assert over_surface.json()["water_exceeded"] is True
+    assert {
+        warning["code"] for warning in over_surface.json()["warnings"]
+    } == {"surface_exceeded", "water_capacity_exceeded"}
+
+
+def test_sprint_07_plan_adoption_rejects_area_overrun_and_persists_water_warning():
+    with TestClient(app) as client:
+        adopted = client.post(
+            "/parcelles/parcel-sprint-07/plan",
+            json={"allocations": [{"crop_id": "tomato", "area_ha": 2.4}]},
+        )
+        saved = client.get("/plans")
+        rejected = client.post(
+            "/parcelles/parcel-sprint-07/plan",
+            json={"allocations": [{"crop_id": "barley", "area_ha": 2.8}]},
+        )
+        saved_after_rejection = client.get("/plans")
+
+    assert adopted.status_code == 200
+    assert adopted.json()["status"] == "adopted"
+    assert adopted.json()["water_exceeded"] is True
+    plan_id = adopted.json()["plan_id"]
+    assert any(plan["id"] == plan_id for plan in saved.json())
+    assert rejected.status_code == 422
+    assert "surface_excess_ha" in rejected.json()["detail"]
+    assert next(plan for plan in saved_after_rejection.json() if plan["id"] == plan_id)[
+        "data"
+    ]["allocations"] == [{"crop_id": "tomato", "area_ha": 2.4}]
+
+
+def test_sprint_07_simulation_rejects_unknown_and_duplicate_crops():
+    with TestClient(app) as client:
+        unknown = client.post(
+            "/parcelles/parcel-sprint-07/simulation",
+            json={"allocations": [{"crop_id": "unknown", "area_ha": 1}]},
+        )
+        duplicate = client.post(
+            "/parcelles/parcel-sprint-07/simulation",
+            json={
+                "allocations": [
+                    {"crop_id": "barley", "area_ha": 0.5},
+                    {"crop_id": "barley", "area_ha": 0.5},
+                ]
+            },
+        )
+
+    assert unknown.status_code == 422
+    assert duplicate.status_code == 422
+
+
 def test_sprint_04_parcel_post_recalculates_area():
     with TestClient(app) as client:
         fixture = client.get("/fixture/sprint-04").json()
