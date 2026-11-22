@@ -106,3 +106,9 @@ PostGIS conformément à `api/alembic/README.md`.
 - `GET /acheteurs/{id}/impact` agrège eau, énergie, fermes et produits label A.
 - `GET /acheteurs/{id}/rapport` exporte les lignes nécessaires au rapport.
 - `POST /acheteurs/{id}/commandes-gros` crée une commande professionnelle simulée.
+
+## Sprint 16
+
+- `GET /cache/analyse` sert l'analyse et le classement depuis le cache.
+- `POST /file/parcelles` exige un consentement explicite avant mise en file.
+- `POST /file/parcelles/{id}/envoyer` synchronise la parcelle mise en attente.

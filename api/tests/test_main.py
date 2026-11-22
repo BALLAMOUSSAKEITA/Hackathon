@@ -452,3 +452,31 @@ def test_sprint_fifteen_professional_report_and_bulk_order() -> None:
     assert bulk.status_code == 200
     assert bulk.json()["status"] == "en_attente"
     assert bulk.json()["paiement_reel"] is False
+
+
+def test_sprint_sixteen_cache_returns_analysis_and_ranking() -> None:
+    response = client.get("/cache/analyse")
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["cache"] is True
+    assert payload["analyse"]["kwh_m3"] == 0.3264
+    assert len(payload["classement"]) == 3
+
+
+def test_sprint_sixteen_queue_requires_location_consent() -> None:
+    refused = client.post(
+        "/file/parcelles",
+        json={"id": "parcelle-test", "location_consent": False},
+    )
+    assert refused.status_code == 422
+
+    queued = client.post(
+        "/file/parcelles",
+        json={"id": "parcelle-test", "location_consent": True},
+    )
+    assert queued.status_code == 200
+    assert queued.json()["status"] == "en_attente"
+
+    sent = client.post("/file/parcelles/parcelle-test/envoyer")
+    assert sent.status_code == 200
+    assert sent.json()["status"] == "envoyee"

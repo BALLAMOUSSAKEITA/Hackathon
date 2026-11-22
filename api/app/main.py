@@ -36,6 +36,7 @@ SPRINT_12_FIXTURE_PATH = Path(__file__).resolve().parents[2] / "fixtures" / "spr
 SPRINT_13_FIXTURE_PATH = Path(__file__).resolve().parents[2] / "fixtures" / "sprint-13.json"
 SPRINT_14_FIXTURE_PATH = Path(__file__).resolve().parents[2] / "fixtures" / "sprint-14.json"
 SPRINT_15_FIXTURE_PATH = Path(__file__).resolve().parents[2] / "fixtures" / "sprint-15.json"
+SPRINT_16_FIXTURE_PATH = Path(__file__).resolve().parents[2] / "fixtures" / "sprint-16.json"
 ALLOWED_ROLES = {"agriculteur", "acheteur_particulier", "acheteur_professionnel"}
 DEMO_OTP = "123456"
 pending_profiles: dict[str, dict[str, str]] = {}
@@ -820,6 +821,57 @@ def list_bulk_orders(acheteur_id: str) -> dict[str, Any]:
     if acheteur_id != fixture["acheteur"]["id"]:
         raise HTTPException(status_code=404, detail="Acheteur introuvable.")
     return {"commandes": fixture["commandes_gros"]}
+
+
+offline_queue: dict[str, dict[str, Any]] = {}
+
+
+@app.get("/demo/sprint-16")
+def demo_sprint_16() -> dict[str, Any]:
+    with SPRINT_16_FIXTURE_PATH.open("r", encoding="utf-8") as fixture_file:
+        return json.load(fixture_file)
+
+
+@app.get("/cache/analyse")
+def cached_analysis() -> dict[str, Any]:
+    with SPRINT_16_FIXTURE_PATH.open("r", encoding="utf-8") as fixture_file:
+        fixture = json.load(fixture_file)
+    return {
+        "cache": True,
+        "analyse": fixture["analyse"],
+        "classement": fixture["classement"],
+        "hypotheses": fixture["hypotheses"],
+    }
+
+
+@app.post("/file/parcelles")
+def queue_parcel(payload: dict[str, Any]) -> dict[str, Any]:
+    with SPRINT_16_FIXTURE_PATH.open("r", encoding="utf-8") as fixture_file:
+        fixture = json.load(fixture_file)
+
+    consent = payload.get("location_consent")
+    if consent is not True:
+        raise HTTPException(status_code=422, detail="Consentement localisation requis.")
+
+    parcel = dict(payload)
+    parcel_id = str(parcel.get("id") or fixture["parcelle_a_envoyer"]["id"])
+    offline_queue[parcel_id] = {
+        "id": parcel_id,
+        "status": "en_attente",
+        "location_consent": True,
+        "geometry": parcel.get("geometry", fixture["parcelle_a_envoyer"]["geometry"]),
+        "photo": payload.get("photo", fixture["photo"]),
+    }
+    return offline_queue[parcel_id]
+
+
+@app.post("/file/parcelles/{parcel_id}/envoyer")
+def send_queued_parcel(parcel_id: str) -> dict[str, Any]:
+    parcel = offline_queue.get(parcel_id)
+    if parcel is None:
+        raise HTTPException(status_code=404, detail="Parcelle absente de la file.")
+    parcel["status"] = "envoyee"
+    return parcel
 
 
 @app.post("/produits/publish")

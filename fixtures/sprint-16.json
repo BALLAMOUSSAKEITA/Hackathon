@@ -1,0 +1,61 @@
+{
+  "sprint": 16,
+  "analyse": {
+    "texture": "limono-sableuse",
+    "ph": 7.4,
+    "matiere_organique_pct": 1.8,
+    "pluie_mm": 180,
+    "temperature_c": 24,
+    "et0_mm": 980,
+    "eau_disponible_m3": 3840,
+    "kwh_m3": 0.3264,
+    "source": "Cache Ardi",
+    "hypothese": "Puits 60 m · η 0,5"
+  },
+  "classement": [
+    {"name":"Olivier","dt_m3":2.42,"m3_ha":1800,"label":"A"},
+    {"name":"Palmier dattier","dt_m3":1.82,"m3_ha":2500,"label":"B"},
+    {"name":"Grenadier","dt_m3":1.68,"m3_ha":3800,"label":"B"}
+  ],
+  "parcelle_a_envoyer": {
+    "id": "parcelle-hors-ligne-16",
+    "name": "Bloc sud",
+    "surface_hectares": 2.5,
+    "geometry": {
+      "type": "Polygon",
+      "coordinates": [[[9.8,35.6],[9.81,35.6],[9.81,35.59],[9.8,35.59],[9.8,35.6]]]
+    },
+    "location_consent": true
+  },
+  "photo": {
+    "id": "photo-sol-16",
+    "source": "fixture://photo-sol.jpg",
+    "size_kb": 4200,
+    "compressed_size_kb": 420,
+    "format": "JPEG",
+    "quality_pct": 70
+  },
+  "translations": {
+    "darija": {
+      "offline": "El donnees wreya.",
+      "analysis": "El terre",
+      "ranking": "Chno najmou nzra3ou",
+      "queue": "Fi lista ll'envoi",
+      "synced": "Tou twa7ed"
+    },
+    "fr": {
+      "offline": "Donnees hors ligne disponibles.",
+      "analysis": "Analyse",
+      "ranking": "Classement",
+      "queue": "File d'envoi",
+      "synced": "Synchronise"
+    }
+  },
+  "hypotheses": {
+    "offline": true,
+    "cache_limit_seconds": 10,
+    "touch_target_px": 44,
+    "contrast": "WCAG AA",
+    "consent_location": "Consentement explicite requis"
+  }
+}
