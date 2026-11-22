@@ -38,3 +38,9 @@ PostGIS conformément à `api/alembic/README.md`.
 - `GET /demo/sprint-04` sert la parcelle prétracée.
 - `POST /parcelles` calcule la surface côté serveur et rejette les polygones
   ouverts ou d'aire nulle.
+
+## Sprint 5
+
+- `GET /demo/sprint-05` sert l'analyse de démonstration.
+- `POST /parcelles/{id}/analyse` recalcul l'eau disponible et l'énergie
+  de pompage. À 60 m avec η = 0,5, le résultat est environ 0,3264 kWh/m³.

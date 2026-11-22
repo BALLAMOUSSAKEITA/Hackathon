@@ -17,6 +17,7 @@ FIXTURE_PATH = Path(__file__).resolve().parents[2] / "fixtures" / "sprint-01.jso
 SPRINT_2_FIXTURE_PATH = Path(__file__).resolve().parents[2] / "fixtures" / "sprint-02.json"
 SPRINT_3_FIXTURE_PATH = Path(__file__).resolve().parents[2] / "fixtures" / "sprint-03.json"
 SPRINT_4_FIXTURE_PATH = Path(__file__).resolve().parents[2] / "fixtures" / "sprint-04.json"
+SPRINT_5_FIXTURE_PATH = Path(__file__).resolve().parents[2] / "fixtures" / "sprint-05.json"
 ALLOWED_ROLES = {"agriculteur", "acheteur_particulier", "acheteur_professionnel"}
 DEMO_OTP = "123456"
 pending_profiles: dict[str, dict[str, str]] = {}
@@ -141,6 +142,41 @@ def list_cultures(sol: str | None = None) -> dict[str, Any]:
 def demo_sprint_4() -> dict[str, Any]:
     with SPRINT_4_FIXTURE_PATH.open("r", encoding="utf-8") as fixture_file:
         return json.load(fixture_file)
+
+
+@app.get("/demo/sprint-05")
+def demo_sprint_5() -> dict[str, Any]:
+    with SPRINT_5_FIXTURE_PATH.open("r", encoding="utf-8") as fixture_file:
+        return json.load(fixture_file)
+
+
+@app.post("/parcelles/{parcelle_id}/analyse")
+def analyse_parcelle(parcelle_id: str) -> dict[str, Any]:
+    with SPRINT_5_FIXTURE_PATH.open("r", encoding="utf-8") as fixture_file:
+        fixture = json.load(fixture_file)
+
+    if parcelle_id != fixture["parcelle"]["id"]:
+        raise HTTPException(status_code=404, detail="Parcelle introuvable.")
+
+    water_available = (
+        fixture["eau"]["debit_m3_h"] * fixture["eau"]["heures_pompage_saison"]
+    )
+    kwh_per_m3 = (
+        0.00272
+        * fixture["eau"]["profondeur_m"]
+        / fixture["energie"]["efficacite_pompe"]
+    )
+    return {
+        **fixture,
+        "eau": {
+            **fixture["eau"],
+            "eau_disponible_m3": round(water_available, 2),
+        },
+        "energie": {
+            **fixture["energie"],
+            "kwh_m3": round(kwh_per_m3, 4),
+        },
+    }
 
 
 @app.post("/auth/otp", status_code=200)

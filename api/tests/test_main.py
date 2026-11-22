@@ -129,3 +129,16 @@ def test_sprint_four_fixture_and_api_surface_are_consistent() -> None:
     )
     assert response.status_code == 201
     assert response.json()["surface_hectares"] == parcel["surface_hectares"]
+
+
+def test_sprint_five_analysis_60m_pumping_energy() -> None:
+    response = client.post("/parcelles/parcelle-sprint-05/analyse")
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["eau"]["eau_disponible_m3"] == 3840
+    assert abs(payload["energie"]["kwh_m3"] - 0.3264) < 0.001
+
+
+def test_sprint_five_analysis_unknown_parcel() -> None:
+    response = client.post("/parcelles/inconnue/analyse")
+    assert response.status_code == 404
