@@ -1,14 +1,10 @@
 export type RootStackParamList = {
   Welcome: undefined;
+  // Parcours agriculteur
   Home: undefined;
-  Farmer: undefined;
-  Buyer: undefined;
-  Cultures: undefined;
-  Fiche: { cultureId: string };
   Parcelle: undefined;
   Analyse: undefined;
   Planter: undefined;
-  AccueilFermier: undefined;
   Simulateur: undefined;
   Assistant: undefined;
   Label: undefined;
@@ -16,15 +12,17 @@ export type RootStackParamList = {
   Suivi: undefined;
   Ventes: undefined;
   Notifications: undefined;
+  Cultures: undefined;
+  Fiche: { cultureId: string };
+  // Parcours acheteur
   Marche: undefined;
-  Demo: undefined;
+  Produit: { id: string };
+  Scanner: undefined;
+  Panier: undefined;
   Impact: undefined;
-  HorsLigne: undefined;
+  // Outils
   Reglages: undefined;
+  Demo: undefined;
+  HorsLigne: undefined;
   Admin: undefined;
-};
-
-export type FarmerStackParamList = {
-  Menu: undefined;
-  Empty: { screenId: string };
 };

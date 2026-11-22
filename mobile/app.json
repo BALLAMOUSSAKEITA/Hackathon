@@ -20,6 +20,22 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "plugins": [
+      "expo-font",
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Ardi utilise la caméra pour scanner le QR code des produits labellisés."
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Ardi utilise tes photos pour affiner l'analyse du sol.",
+          "cameraPermission": "Ardi utilise la caméra pour photographier ton sol ou ta parcelle."
+        }
+      ]
+    ]
   }
 }

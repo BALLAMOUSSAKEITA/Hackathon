@@ -29,11 +29,16 @@ export async function ecrireLangue(langue: Lang): Promise<void> {
 }
 
 export async function lireCompte(): Promise<Compte | null> {
-  const brut = await AsyncStorage.getItem(COMPTE);
+  const brut = await AsyncStorage.getItem(COMPTE).catch(() => null);
   if (!brut) {
     return null;
   }
-  const compte = JSON.parse(brut) as Compte;
+  let compte: Compte;
+  try {
+    compte = JSON.parse(brut) as Compte;
+  } catch {
+    return null;
+  }
   if (!compte?.id || !langueValide(compte.langue)) {
     return null;
   }
@@ -42,4 +47,8 @@ export async function lireCompte(): Promise<Compte | null> {
 
 export async function ecrireCompte(compte: Compte): Promise<void> {
   await AsyncStorage.setItem(COMPTE, JSON.stringify(compte));
+}
+
+export async function effacerCompte(): Promise<void> {
+  await AsyncStorage.removeItem(COMPTE);
 }

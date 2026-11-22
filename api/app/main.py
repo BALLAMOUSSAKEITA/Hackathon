@@ -1,6 +1,17 @@
+import os
+import pathlib
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
+
+# Charge api/.env sans dépendance externe.
+_env = pathlib.Path(__file__).parent.parent / ".env"
+if _env.exists():
+    for _line in _env.read_text(encoding="utf-8").splitlines():
+        _line = _line.strip()
+        if _line and not _line.startswith("#") and "=" in _line:
+            _k, _v = _line.split("=", 1)
+            os.environ.setdefault(_k.strip(), _v.strip())
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import func, select
 

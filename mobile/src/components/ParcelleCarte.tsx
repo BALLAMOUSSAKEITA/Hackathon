@@ -1,4 +1,4 @@
-import MapView, { Polygon, Polyline } from "react-native-maps";
+import MapView, { Circle, Polygon, Polyline } from "react-native-maps";
 import { StyleSheet } from "react-native";
 
 import type { Anneau } from "../surface";
@@ -8,9 +8,11 @@ type Props = {
   anneau: Anneau;
   ferme: boolean;
   onAjouter: (point: [number, number]) => void;
+  /** Hauteur de la carte. Elle prend toute la largeur disponible, sans coins arrondis. */
+  hauteur?: number;
 };
 
-export function ParcelleCarte({ anneau, ferme, onAjouter }: Props) {
+export function ParcelleCarte({ anneau, ferme, onAjouter, hauteur = 255 }: Props) {
   const points = anneau.length ? anneau : [[9.48578, 35.038075] as [number, number]];
   const utiles = ferme && points.length > 1 ? points.slice(0, -1) : points;
   const latitude = utiles.reduce((somme, point) => somme + point[1], 0) / utiles.length;
@@ -19,10 +21,11 @@ export function ParcelleCarte({ anneau, ferme, onAjouter }: Props) {
 
   return (
     <MapView
-      style={styles.carte}
+      style={[styles.carte, { height: hauteur }]}
       mapType="satellite"
       initialRegion={{
-        latitude,
+        // On décale un peu le centre vers le haut : le bas de la carte porte les pastilles.
+        latitude: latitude - 0.0003,
         longitude,
         latitudeDelta: 0.004,
         longitudeDelta: 0.004,
@@ -36,23 +39,28 @@ export function ParcelleCarte({ anneau, ferme, onAjouter }: Props) {
       }}
     >
       {ferme && coordonnees.length >= 3 ? (
-        <Polygon
-          coordinates={coordonnees}
-          fillColor="rgba(35,79,50,0.35)"
-          strokeColor={colors.olive}
-          strokeWidth={3}
-        />
+        <Polygon coordinates={coordonnees} fillColor="rgba(46,94,58,0.28)" strokeColor={colors.olive} strokeWidth={3} />
       ) : coordonnees.length >= 2 ? (
-        <Polyline coordinates={coordonnees} strokeColor={colors.clay} strokeWidth={3} />
+        <Polyline coordinates={coordonnees} strokeColor={colors.olive} strokeWidth={3} />
       ) : null}
+      {anneau.length
+        ? coordonnees.map((point, index) => (
+            <Circle
+              key={`${point.latitude}-${point.longitude}-${index}`}
+              center={point}
+              radius={4}
+              fillColor={colors.white}
+              strokeColor={colors.olive}
+              strokeWidth={3}
+            />
+          ))
+        : null}
     </MapView>
   );
 }
 
 const styles = StyleSheet.create({
   carte: {
-    height: 280,
-    borderRadius: 16,
-    overflow: "hidden",
+    width: "100%",
   },
 });

@@ -23,7 +23,7 @@ export const sprint02 = profilsDemo as {
   profils: ProfilDemo[];
 };
 
-export const API_URL = process.env.EXPO_PUBLIC_API_URL ?? "http://localhost:8000";
+export { API_URL } from "./api";
 
 export type CultureFiche = {
   id: string;

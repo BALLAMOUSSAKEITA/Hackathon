@@ -2,15 +2,15 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { useI18n } from "../i18n";
 import type { Lang } from "../types";
-import { colors, tap } from "../theme";
+import { colors, police, tap } from "../theme";
 
-const CHOICES: { id: Lang; label: "langFr" | "langAr" | "langDarija" }[] = [
-  { id: "fr", label: "langFr" },
-  { id: "ar", label: "langAr" },
-  { id: "darija", label: "langDarija" },
+const CHOICES: { id: Lang; label: "langFr" | "langAr" | "langDarija"; fixe: string }[] = [
+  { id: "darija", label: "langDarija", fixe: "Darija" },
+  { id: "ar", label: "langAr", fixe: "العربية" },
+  { id: "fr", label: "langFr", fixe: "Français" },
 ];
 
-export function LanguageSwitch() {
+export function LanguageSwitch({ onGreen = false }: { onGreen?: boolean }) {
   const { lang, setLang, t } = useI18n();
 
   return (
@@ -23,9 +23,11 @@ export function LanguageSwitch() {
             accessibilityRole="button"
             accessibilityState={{ selected }}
             onPress={() => setLang(choice.id)}
-            style={[styles.chip, selected && styles.chipOn]}
+            style={[styles.chip, onGreen && styles.chipGreen, selected && (onGreen ? styles.chipGreenOn : styles.chipOn)]}
           >
-            <Text style={[styles.chipText, selected && styles.chipTextOn]}>{t(choice.label)}</Text>
+            <Text style={[styles.chipText, onGreen && styles.chipTextGreen, selected && (onGreen ? styles.chipTextGreenOn : styles.chipTextOn)]}>
+              {onGreen ? choice.fixe : t(choice.label)}
+            </Text>
           </Pressable>
         );
       })}
@@ -40,9 +42,9 @@ const styles = StyleSheet.create({
   },
   chip: {
     flex: 1,
-    minHeight: tap.minHeight,
+    minHeight: 48,
     minWidth: tap.minWidth,
-    borderRadius: 12,
+    borderRadius: 14,
     borderWidth: 1,
     borderColor: colors.line,
     backgroundColor: colors.white,
@@ -57,9 +59,26 @@ const styles = StyleSheet.create({
   chipText: {
     color: colors.ink,
     fontSize: 14,
-    fontWeight: "600",
+    ...police("700"),
   },
   chipTextOn: {
     color: colors.white,
+  },
+  chipGreen: {
+    backgroundColor: "transparent",
+    borderColor: "rgba(255,255,255,0.35)",
+  },
+  chipGreenOn: {
+    backgroundColor: colors.white,
+    borderColor: colors.white,
+    borderWidth: 2,
+  },
+  chipTextGreen: {
+    color: colors.white,
+    ...police("700"),
+  },
+  chipTextGreenOn: {
+    color: colors.olive,
+    ...police("800"),
   },
 });

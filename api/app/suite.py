@@ -1,13 +1,36 @@
 """Routes des sprints 7 à 18. Chaque route lit le fichier de son sprint."""
 
+import json
 import math
+import os
 import re
 from datetime import date
 
+import httpx
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
 from app.database import load_fixture
+
+DEEPSEEK_API_KEY = os.getenv("DEEPSEEK_API_KEY", "")
+DEEPSEEK_URL = "https://api.deepseek.com/chat/completions"
+
+SYSTEM_PROMPT = """Tu es Ardi, un assistant agricole expert et amical pour les agriculteurs tunisiens.
+Tu aides avec : les cultures adaptées au sol et au climat tunisien, l'irrigation et l'optimisation de l'eau, l'énergie solaire pour le pompage agricole, les techniques agricoles, les prix et marchés agricoles en Tunisie, le Label Eau.
+
+RÈGLES :
+1. Les salutations, remerciements et messages de politesse ("bonjour", "merci", "salam", "bahi"…) reçoivent une réponse courte et chaleureuse — refus=false.
+2. Les questions clairement hors sujet (sport, politique, cuisine générale, célébrités…) reçoivent refus=true.
+3. En cas de doute, réponds normalement — mieux vaut répondre que refuser.
+4. La langue de réponse dépend du champ "langue" : "darija" = darija en lettres latines avec 3/7/9 pour les sons, "ar" = arabe standard, "fr" = français.
+5. "traduction_fr" est TOUJOURS en français, même si texte est en darija ou arabe.
+6. Réponses courtes et pratiques (2-4 phrases max).
+
+Réponds UNIQUEMENT avec ce JSON (sans markdown, sans bloc de code) :
+{"texte": "...", "traduction_fr": "...", "refus": false}
+
+Message de refus si vraiment hors sujet :
+{"texte": "Manerafedch, ana mkhasses ghir lel filaha w el ma w el ta9a.", "traduction_fr": "Désolé, je réponds uniquement aux questions sur l'agriculture, l'eau et l'énergie.", "refus": true}"""
 
 router = APIRouter()
 
@@ -138,16 +161,29 @@ def lire_label(qr: str) -> dict:
 
 
 @router.post("/assistant")
-def assistant(corps: dict) -> dict:
+async def assistant(corps: dict) -> dict:
     fiche = load_fixture("09")
-    question = str(corps.get("question", "")).strip().lower()
+    question = str(corps.get("question", "")).strip()
+    langue = str(corps.get("langue", "darija"))
+
+    # Essaie DeepSeek si la clé est configurée.
+    if DEEPSEEK_API_KEY:
+        try:
+            reponse = await _deepseek(question, langue)
+            if reponse:
+                return reponse
+        except Exception:
+            pass  # Repli sur les fixtures.
+
+    # Repli : correspondance exacte dans les fixtures.
+    q = question.lower()
     for connue in fiche["questions"]:
-        if question in {connue["darija"].lower(), connue["fr"].lower()}:
+        if q in {connue["darija"].lower(), connue["fr"].lower()}:
             return {
                 "texte": connue["reponse"],
                 "traduction_fr": connue["traduction_fr"],
                 "audio": connue["reponse"],
-                "sources": connue["sources"],
+                "sources": connue.get("sources", []),
                 "carte": fiche["cartes"].get(connue["carte"]) if connue.get("carte") else None,
                 "refus": False,
             }
@@ -158,6 +194,37 @@ def assistant(corps: dict) -> dict:
         "sources": [],
         "carte": None,
         "refus": True,
+    }
+
+
+async def _deepseek(question: str, langue: str) -> dict | None:
+    """Appelle l'API DeepSeek et renvoie la réponse au format de l'assistant."""
+    payload = {
+        "model": "deepseek-chat",
+        "messages": [
+            {"role": "system", "content": SYSTEM_PROMPT},
+            {"role": "user", "content": f'langue: {langue}\nquestion: {question}'},
+        ],
+        "response_format": {"type": "json_object"},
+        "temperature": 0.4,
+        "max_tokens": 400,
+    }
+    async with httpx.AsyncClient(timeout=15) as client:
+        r = await client.post(
+            DEEPSEEK_URL,
+            headers={"Authorization": f"Bearer {DEEPSEEK_API_KEY}", "Content-Type": "application/json"},
+            json=payload,
+        )
+        r.raise_for_status()
+        contenu = r.json()["choices"][0]["message"]["content"]
+        data = json.loads(contenu)
+    return {
+        "texte": str(data.get("texte", "")),
+        "traduction_fr": str(data.get("traduction_fr", "")),
+        "audio": None,
+        "sources": [],
+        "carte": None,
+        "refus": bool(data.get("refus", False)),
     }
 
 

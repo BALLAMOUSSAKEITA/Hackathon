@@ -1,12 +1,26 @@
 import { I18nManager } from "react-native";
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 
+import { ACHETEUR } from "./i18n/acheteur";
+import { APP } from "./i18n/app";
 import { ECRAN0 } from "./i18n/ecran0";
+import { MAQUETTE_A } from "./i18n/maquetteA";
+import { MAQUETTE_B } from "./i18n/maquetteB";
+import { MAQUETTE_C } from "./i18n/maquetteC";
+import { MAQUETTE_D } from "./i18n/maquetteD";
+import { SUITE } from "./i18n/suite";
 import { lireLangue, ecrireLangue } from "./session";
 import type { Lang, Localized } from "./types";
 
 const STRINGS = {
   ...ECRAN0,
+  ...APP,
+  ...ACHETEUR,
+  ...SUITE,
+  ...MAQUETTE_A,
+  ...MAQUETTE_B,
+  ...MAQUETTE_C,
+  ...MAQUETTE_D,
   tagline: {
     fr: "La bonne culture sur la bonne terre",
     ar: "الزراعة المناسبة للأرض المناسبة",
@@ -136,8 +150,11 @@ export type CopyKey = keyof typeof STRINGS;
 type I18nValue = {
   lang: Lang;
   setLang: (lang: Lang) => void;
-  t: (key: CopyKey) => string;
+  t: (key: CopyKey, params?: Record<string, string | number>) => string;
+  /** Texte localisé venant des données (fixtures ou API). */
+  tx: (texte: Localized | string | null | undefined) => string;
   direction: "rtl" | "ltr";
+  align: "left" | "right";
 };
 
 const I18nContext = createContext<I18nValue | null>(null);
@@ -148,6 +165,7 @@ export function I18nProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     lireLangue()
+      .catch(() => null)
       .then((saved) => {
         if (saved) {
           setLang(saved);
@@ -160,11 +178,12 @@ export function I18nProvider({ children }: { children: ReactNode }) {
     if (!ready) {
       return;
     }
-    ecrireLangue(lang);
-    const rtl = lang === "ar";
-    I18nManager.allowRTL(true);
-    if (I18nManager.isRTL !== rtl) {
-      I18nManager.forceRTL(rtl);
+    void ecrireLangue(lang).catch(() => undefined);
+    // Le sens de lecture est porté par le style `direction` de chaque écran.
+    // On neutralise le RTL natif, qui ne s'applique qu'après redémarrage et doublerait l'inversion.
+    if (I18nManager.isRTL) {
+      I18nManager.allowRTL(false);
+      I18nManager.forceRTL(false);
     }
   }, [lang, ready]);
 
@@ -172,8 +191,10 @@ export function I18nProvider({ children }: { children: ReactNode }) {
     () => ({
       lang,
       setLang,
-      t: (key) => STRINGS[key][lang],
+      t: (key, params) => remplir(STRINGS[key][lang], params),
+      tx: (texte) => (texte == null ? "" : typeof texte === "string" ? texte : texte[lang] ?? texte.fr),
       direction: lang === "ar" ? "rtl" : "ltr",
+      align: lang === "ar" ? "right" : "left",
     }),
     [lang],
   );
@@ -183,6 +204,13 @@ export function I18nProvider({ children }: { children: ReactNode }) {
   }
 
   return <I18nContext.Provider value={value}>{children}</I18nContext.Provider>;
+}
+
+function remplir(texte: string, params?: Record<string, string | number>): string {
+  if (!params) {
+    return texte;
+  }
+  return texte.replace(/\{(\w+)\}/g, (entier, cle: string) => (cle in params ? String(params[cle]) : entier));
 }
 
 export function useI18n(): I18nValue {
