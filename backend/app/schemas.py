@@ -16,7 +16,8 @@ class UserCreate(ORMModel):
 
 
 class UserOut(UserCreate):
-    pass
+    role: Literal["farmer", "buyer", "professional", "admin"]
+    is_active: bool
 
 
 class OTPRequest(BaseModel):

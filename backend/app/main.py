@@ -63,9 +63,13 @@ SPRINT_SCHEMA_COLUMNS = {
         "payment_status": "VARCHAR",
         "counteroffer_price_tnd_kg": "FLOAT",
     },
-    "produits": {"photo_url": "VARCHAR"},
     "alertes": {"date": "VARCHAR", "read": "BOOLEAN"},
     "culture_details": {"price_updated_at": "VARCHAR"},
+    "users": {"is_active": "BOOLEAN NOT NULL DEFAULT TRUE"},
+    "produits": {
+        "photo_url": "VARCHAR",
+        "is_active": "BOOLEAN NOT NULL DEFAULT TRUE",
+    },
 }
 
 
@@ -350,6 +354,7 @@ async def lifespan(_: FastAPI):
             "sprint-15.json",
             "sprint-16.json",
             "sprint-17.json",
+            "sprint-18.json",
         ):
             fixture = FIXTURES_DIR / fixture_name
             data = json.loads(fixture.read_text(encoding="utf-8"))
@@ -431,7 +436,7 @@ async def lifespan(_: FastAPI):
 app = FastAPI(
     title="Ardi API",
     version="1.0.0",
-    description="API FastAPI Ardi, sprints de demonstration 1 a 17.",
+    description="API FastAPI Ardi, sprints de demonstration 1 a 18.",
     lifespan=lifespan,
 )
 app.add_middleware(
@@ -585,6 +590,15 @@ def sprint_17_fixture() -> dict[str, Any]:
     return json.loads((FIXTURES_DIR / "sprint-17.json").read_text(encoding="utf-8"))
 
 
+@app.get("/fixture/sprint-18")
+def sprint_18_fixture() -> dict[str, Any]:
+    return load_sprint_18_fixture()
+
+
+def load_sprint_18_fixture() -> dict[str, Any]:
+    return json.loads((FIXTURES_DIR / "sprint-18.json").read_text(encoding="utf-8"))
+
+
 def normalize_assistant_question(question: str) -> str:
     normalized = unicodedata.normalize("NFKD", question.casefold())
     normalized = "".join(
@@ -680,6 +694,8 @@ def verify_otp(payload: OTPVerify, db: Session = Depends(get_db)):
         raise HTTPException(400, "Invalid demo OTP code")
     existing_user = db.query(models.User).filter(models.User.phone == payload.phone).first()
     if existing_user:
+        if not existing_user.is_active:
+            raise HTTPException(403, "User account is deactivated")
         raise HTTPException(409, "Phone number is already registered")
 
     user = models.User(
@@ -712,6 +728,33 @@ def create_user(payload: UserCreate, db: Session = Depends(get_db)):
     return user
 
 
+def require_admin_account(admin_id: str, db: Session) -> models.User:
+    admin = db.get(models.User, admin_id.strip())
+    if admin is None:
+        raise HTTPException(404, "Admin account not found")
+    if admin.role != "admin" or not admin.is_active:
+        raise HTTPException(403, "An active admin account is required")
+    return admin
+
+
+@app.delete("/admin/users/{user_id}")
+def deactivate_user(
+    user_id: str,
+    admin_id: str = Query(min_length=1),
+    db: Session = Depends(get_db),
+) -> dict[str, Any]:
+    admin = require_admin_account(admin_id, db)
+    user = db.get(models.User, user_id)
+    if user is None:
+        raise HTTPException(404, "User not found")
+    if user.id == admin.id:
+        raise HTTPException(409, "An admin cannot deactivate their own account")
+    user.is_active = False
+    db.commit()
+    db.refresh(user)
+    return {"id": user.id, "is_active": user.is_active, "status": "deactivated"}
+
+
 def require_farmer_owner(owner_id: str, db: Session) -> models.User:
     normalized_owner_id = owner_id.strip()
     if not normalized_owner_id:
@@ -719,8 +762,8 @@ def require_farmer_owner(owner_id: str, db: Session) -> models.User:
     owner = db.get(models.User, normalized_owner_id)
     if owner is None:
         raise HTTPException(404, "Parcel owner not found")
-    if owner.role != "farmer":
-        raise HTTPException(403, "Parcel owner must be a farmer")
+    if owner.role != "farmer" or not owner.is_active:
+        raise HTTPException(403, "An active farmer account is required")
     return owner
 
 
@@ -744,8 +787,11 @@ def create_parcelle(payload: ParcelleCreate, db: Session = Depends(get_db)):
             403, "Explicit consent is required before storing parcel location"
         )
     area_ha = calculate_polygon_area_ha(payload.geometry)
-    if db.get(models.User, payload.owner_id) is None:
+    owner = db.get(models.User, payload.owner_id)
+    if owner is None:
         raise HTTPException(404, "Owner not found")
+    if owner.role != "farmer" or not owner.is_active:
+        raise HTTPException(403, "An active farmer account is required")
     if db.get(models.Parcelle, payload.id):
         raise HTTPException(409, "Parcel already exists")
     parcel_data = payload.model_dump()
@@ -1643,6 +1689,11 @@ def adopt_parcel_plan(
     plan_data = {
         "sprint": "sprint-07",
         "allocations": [allocation.model_dump() for allocation in payload.allocations],
+        "impact": {
+            "water_m3": simulation["water_demand_m3"],
+            "energy_kwh": simulation["energy_kwh"],
+            "net_revenue_tnd": simulation["net_revenue_tnd"],
+        },
         "price_snapshot": {
             allocation.crop_id: {
                 "price_tnd_t": next(
@@ -2366,6 +2417,190 @@ def list_labels(db: Session = Depends(get_db)):
     return db.query(models.Label).all()
 
 
+@app.post("/labels/{label_id}/verify")
+def verify_label_against_satellite_data(
+    label_id: str,
+    db: Session = Depends(get_db),
+) -> dict[str, Any]:
+    label = db.get(models.Label, label_id)
+    if label is None:
+        raise HTTPException(404, "Label not found")
+    if label.status not in {"active", "under_review", "suspended"}:
+        raise HTTPException(409, "Label is not eligible for verification")
+
+    parcel = db.get(models.Parcelle, label.parcel_id)
+    if parcel is None:
+        raise HTTPException(409, "Label parcel is missing")
+
+    fixture = load_sprint_18_fixture()
+    sprint18_plan = next(
+        (
+            plan
+            for plan in db.query(models.Plan)
+            .filter(models.Plan.parcel_id == parcel.id)
+            .order_by(models.Plan.id)
+            .all()
+            if plan.data.get("sprint") == "sprint-18"
+        ),
+        None,
+    )
+    if sprint18_plan is None:
+        raise HTTPException(409, "No Sprint 18 irrigation plan found for the parcel")
+    declared_crop_id = sprint18_plan.data.get(
+        "declared_crop_id", parcel.current_crop_id
+    )
+    expected_ndvi = fixture["crop_ndvi_profiles"].get(declared_crop_id)
+    irrigation_plan = sprint18_plan.data.get("irrigation_plan")
+    images = sorted(
+        (
+            image
+            for image in fixture["satellite_images"]
+            if image["parcel_id"] == parcel.id
+        ),
+        key=lambda image: image["captured_at"],
+    )
+    required_images = fixture["verification_thresholds"][
+        "distinct_images_to_suspend"
+    ]
+    if expected_ndvi is None or irrigation_plan is None:
+        raise HTTPException(409, "Verification reference data is missing")
+    if required_images < 1 or len(images) < required_images:
+        raise HTTPException(409, "Not enough distinct satellite images to verify")
+
+    thresholds = fixture["verification_thresholds"]
+    target_moisture = irrigation_plan["soil_moisture_target_pct"]
+    target_et = irrigation_plan["actual_et_target_mm"]
+    if target_moisture <= 0 or target_et <= 0:
+        raise HTTPException(500, "Sprint 18 irrigation plan has invalid targets")
+
+    results = []
+    failed_images: dict[str, set[str]] = {
+        "crop_conformity": set(),
+        "irrigation_conformity": set(),
+    }
+    for image in images:
+        observed_ndvi = image["ndvi_profile"]
+        if len(observed_ndvi) != len(expected_ndvi):
+            raise HTTPException(409, "NDVI profiles have different sample counts")
+        if any(
+            isinstance(value, bool)
+            or not isinstance(value, (int, float))
+            or not math.isfinite(value)
+            or not 0 <= value <= 1
+            for value in observed_ndvi
+        ):
+            raise HTTPException(409, "Satellite NDVI values must be finite and in [0, 1]")
+        ndvi_mae = mean(
+            abs(actual - expected)
+            for actual, expected in zip(observed_ndvi, expected_ndvi)
+        )
+        moisture = image["soil_moisture_pct"]
+        actual_et = image["actual_et_mm"]
+        if any(
+            isinstance(value, bool)
+            or not isinstance(value, (int, float))
+            or not math.isfinite(value)
+            or value < 0
+            for value in (moisture, actual_et)
+        ):
+            raise HTTPException(409, "Water observations must be finite non-negative values")
+
+        moisture_deviation = abs(moisture - target_moisture) / target_moisture
+        et_deviation = abs(actual_et - target_et) / target_et
+        checks = (
+            (
+                "crop_conformity",
+                ndvi_mae > thresholds["ndvi_mean_absolute_error_max"],
+                {
+                    "expected_crop_id": declared_crop_id,
+                    "expected_ndvi_profile": expected_ndvi,
+                    "observed_ndvi_profile": observed_ndvi,
+                    "mean_absolute_error": round(ndvi_mae, 4),
+                    "maximum_allowed_error": thresholds[
+                        "ndvi_mean_absolute_error_max"
+                    ],
+                    "source": image["ndvi_source"],
+                },
+            ),
+            (
+                "irrigation_conformity",
+                (
+                    moisture_deviation
+                    > thresholds["soil_moisture_relative_deviation_max"]
+                    or et_deviation
+                    > thresholds["actual_et_relative_deviation_max"]
+                ),
+                {
+                    "planned_soil_moisture_pct": target_moisture,
+                    "observed_soil_moisture_pct": moisture,
+                    "soil_moisture_relative_deviation": round(
+                        moisture_deviation, 4
+                    ),
+                    "planned_actual_et_mm": target_et,
+                    "observed_actual_et_mm": actual_et,
+                    "actual_et_relative_deviation": round(et_deviation, 4),
+                    "source": image["water_source"],
+                },
+            ),
+        )
+        for kind, discrepancy, evidence in checks:
+            status = "non_conforme" if discrepancy else "conforme"
+            if discrepancy:
+                failed_images[kind].add(image["id"])
+            verification_id = f"verification-s18-{label.id}-{image['id']}-{kind}"
+            verification = db.get(models.Verification, verification_id)
+            verification_evidence = {
+                **evidence,
+                "label_id": label.id,
+                "image_id": image["id"],
+                "captured_at": image["captured_at"],
+                "distinct_image_confirmation_required": required_images,
+            }
+            if verification is None:
+                verification = models.Verification(
+                    id=verification_id,
+                    parcel_id=parcel.id,
+                    kind=kind,
+                    status=status,
+                    evidence=verification_evidence,
+                )
+                db.add(verification)
+            else:
+                verification.status = status
+                verification.evidence = verification_evidence
+            results.append(
+                {
+                    "id": verification_id,
+                    "kind": kind,
+                    "status": status,
+                    "evidence": verification_evidence,
+                }
+            )
+
+    suspension_reasons = [
+        kind
+        for kind, image_ids in failed_images.items()
+        if len(image_ids) >= required_images
+    ]
+    if suspension_reasons:
+        label.status = "suspended"
+    elif label.status != "suspended":
+        label.status = (
+            "under_review"
+            if any(failed_images.values())
+            else "active"
+        )
+    db.commit()
+    db.refresh(label)
+    return {
+        "label_id": label.id,
+        "status": label.status,
+        "images_evaluated": len(images),
+        "suspension_reasons": suspension_reasons,
+        "verifications": results,
+    }
+
+
 def calculate_label_grade(plan: dict[str, Any]) -> str:
     revenue_dt_m3 = float(plan["revenue_dt_m3"])
     if revenue_dt_m3 < 0.8 or int(plan.get("repeated_well_overruns", 0)) > 0:
@@ -2402,12 +2637,18 @@ def public_label(qr_code: str, db: Session = Depends(get_db)):
     if not label:
         raise HTTPException(404, "Label not found")
     if label.status != "active":
-        if label.status == "suspended":
-            raise HTTPException(
-                409,
-                detail={"message": "Label is suspended", "status": label.status},
-            )
-        raise HTTPException(409, "Label is not active")
+        status_messages = {
+            "under_review": "Label is under review",
+            "suspended": "Label is suspended",
+            "contested": "Label is contested",
+        }
+        raise HTTPException(
+            409,
+            detail={
+                "message": status_messages.get(label.status, "Label is not active"),
+                "status": label.status,
+            },
+        )
 
     fixture8 = json.loads((FIXTURES_DIR / "sprint-08.json").read_text(encoding="utf-8"))
     fixture_label = next(
@@ -2450,7 +2691,10 @@ def public_label(qr_code: str, db: Session = Depends(get_db)):
 
     product = (
         db.query(models.Produit)
-        .filter(models.Produit.label_id == label.id)
+        .filter(
+            models.Produit.label_id == label.id,
+            models.Produit.is_active.is_(True),
+        )
         .first()
     )
     product_data = (
@@ -2591,6 +2835,7 @@ def serialize_product(
         "quantity_kg": product.quantity_kg,
         "price_tnd_kg": product.price_tnd_kg,
         "photo_url": product.photo_url,
+        "is_active": product.is_active,
         "farm": farm,
         "label": (
             {
@@ -2613,13 +2858,24 @@ def list_products(
     db: Session = Depends(get_db),
 ):
     _, products = sprint_10_products()
+    products = [
+        item
+        for item in products
+        if (
+            (stored_product := db.get(models.Produit, item["id"])) is None
+            or stored_product.is_active
+        )
+    ]
     sprint11 = json.loads(
         (FIXTURES_DIR / "sprint-11.json").read_text(encoding="utf-8")
     )
     farm = sprint11["farm"]
     for product in (
         db.query(models.Produit)
-        .filter(models.Produit.farm_id == farm["id"])
+        .filter(
+            models.Produit.farm_id == farm["id"],
+            models.Produit.is_active.is_(True),
+        )
         .all()
     ):
         products.append(
@@ -2676,8 +2932,8 @@ def publish_product(payload: ProductCreate, db: Session = Depends(get_db)):
     farmer = db.get(models.User, farm["owner_id"])
     if farmer is None:
         raise HTTPException(404, "Sprint 11 farm owner not found")
-    if farmer.role != "farmer":
-        raise HTTPException(409, "Sprint 11 farm owner is not a farmer")
+    if farmer.role != "farmer" or not farmer.is_active:
+        raise HTTPException(409, "Sprint 11 farm owner is not an active farmer")
 
     label = db.get(models.Label, active_label["id"])
     if label is None or label.status != "active":
@@ -2699,6 +2955,22 @@ def publish_product(payload: ProductCreate, db: Session = Depends(get_db)):
     return serialize_product(product, farm, label)
 
 
+@app.delete("/admin/produits/{product_id}")
+def remove_product(
+    product_id: str,
+    admin_id: str = Query(min_length=1),
+    db: Session = Depends(get_db),
+) -> dict[str, Any]:
+    require_admin_account(admin_id, db)
+    product = db.get(models.Produit, product_id)
+    if product is None:
+        raise HTTPException(404, "Product not found")
+    product.is_active = False
+    db.commit()
+    db.refresh(product)
+    return {"id": product.id, "is_active": product.is_active, "status": "removed"}
+
+
 @app.get("/fermes/{farm_id}/prix-moyens")
 def compare_farm_prices(farm_id: str, db: Session = Depends(get_db)):
     fixture = json.loads(
@@ -2713,7 +2985,8 @@ def compare_farm_prices(farm_id: str, db: Session = Depends(get_db)):
         for product in db.query(models.Produit)
         .filter(models.Produit.farm_id == farm_id)
         .all()
-        if (label := db.get(models.Label, product.label_id)) is not None
+        if product.is_active
+        and (label := db.get(models.Label, product.label_id)) is not None
         and label.status == "active"
     ]
     if not prices:
@@ -2736,6 +3009,8 @@ def build_buyer_impact_report(buyer_id: str, db: Session) -> dict[str, Any]:
         raise HTTPException(404, "Buyer not found")
     if buyer.role not in {"buyer", "professional"}:
         raise HTTPException(403, "Only buyer accounts can view purchase impact")
+    if not buyer.is_active:
+        raise HTTPException(403, "User account is deactivated")
 
     fixture = load_sprint_15_fixture()
     farms = {farm["id"]: farm for farm in fixture["farms"]}
@@ -2825,6 +3100,55 @@ def buyer_impact(buyer_id: str, db: Session = Depends(get_db)):
     return build_buyer_impact_report(buyer_id, db)
 
 
+@app.get("/impact/global")
+def global_impact(db: Session = Depends(get_db)) -> dict[str, Any]:
+    totals = {"water_m3": 0.0, "energy_kwh": 0.0, "net_revenue_tnd": 0.0}
+    impact_plan_count = 0
+    for plan in db.query(models.Plan).all():
+        impact = plan.data.get("impact")
+        if impact is None:
+            simulation = plan.data.get("simulation")
+            if not isinstance(simulation, dict) or not {
+                "water_demand_m3",
+                "energy_kwh",
+                "net_revenue_tnd",
+            } <= simulation.keys():
+                continue
+            impact = {
+                "water_m3": simulation["water_demand_m3"],
+                "energy_kwh": simulation["energy_kwh"],
+                "net_revenue_tnd": simulation["net_revenue_tnd"],
+            }
+        if not isinstance(impact, dict) or not set(totals) <= impact.keys():
+            raise HTTPException(409, f"Plan {plan.id} has incomplete impact data")
+        for key in totals:
+            value = impact[key]
+            if (
+                isinstance(value, bool)
+                or not isinstance(value, (int, float))
+                or not math.isfinite(value)
+            ):
+                raise HTTPException(
+                    409, f"Plan {plan.id} has invalid impact value: {key}"
+                )
+            totals[key] += value
+        impact_plan_count += 1
+
+    label_counts = {
+        status: db.query(models.Label).filter(models.Label.status == status).count()
+        for status in ("active", "under_review", "suspended", "contested")
+    }
+    return {
+        **{key: round(value, 2) for key, value in totals.items()},
+        "plans_counted": impact_plan_count,
+        "labels": {
+            **label_counts,
+            "total": db.query(models.Label).count(),
+        },
+        "methodology": "Aggregates persisted plan snapshots; demonstration estimates.",
+    }
+
+
 @app.get("/acheteurs/{buyer_id}/impact/export")
 def export_buyer_impact(buyer_id: str, db: Session = Depends(get_db)):
     report = build_buyer_impact_report(buyer_id, db)
@@ -2889,12 +3213,17 @@ def create_wholesale_order(
     buyer = db.get(models.User, payload.buyer_id)
     if buyer is None:
         raise HTTPException(404, "Buyer not found")
-    if buyer.role != "professional":
+    if buyer.role != "professional" or not buyer.is_active:
         raise HTTPException(403, "Only professional accounts can place wholesale orders")
 
     product = db.get(models.Produit, payload.product_id)
     label = db.get(models.Label, product.label_id) if product is not None else None
-    if product is None or label is None or label.status != "active":
+    if (
+        product is None
+        or not product.is_active
+        or label is None
+        or label.status != "active"
+    ):
         raise HTTPException(409, "Wholesale product must have an active label")
     if payload.quantity_kg > product.quantity_kg:
         raise HTTPException(422, "Quantity exceeds available product stock")
@@ -2924,6 +3253,9 @@ def create_order(payload: OrderCreate, db: Session = Depends(get_db)):
     )
     if product is None:
         raise HTTPException(404, "Product not found in Sprint 10")
+    stored_product = db.get(models.Produit, payload.product_id)
+    if stored_product is not None and not stored_product.is_active:
+        raise HTTPException(409, "Product has been removed")
     label = next(
         (item for item in fixture["labels"] if item["id"] == product["label_id"]),
         None,
@@ -2936,7 +3268,7 @@ def create_order(payload: OrderCreate, db: Session = Depends(get_db)):
     buyer = db.get(models.User, payload.buyer_id)
     if buyer is None:
         raise HTTPException(404, "Buyer not found")
-    if buyer.role != "buyer":
+    if buyer.role != "buyer" or not buyer.is_active:
         raise HTTPException(403, "Only buyer accounts can place this order")
 
     order = models.Commande(
@@ -2975,7 +3307,7 @@ def update_order(
     sprint11 = json.loads(
         (FIXTURES_DIR / "sprint-11.json").read_text(encoding="utf-8")
     )
-    if product is None or (
+    if product is None or not product.is_active or (
         product.id not in sprint10_product_ids
         and product.farm_id != sprint11["farm"]["id"]
     ):

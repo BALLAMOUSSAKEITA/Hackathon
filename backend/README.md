@@ -34,9 +34,12 @@ Documentation interactive : `http://127.0.0.1:8000/docs`
 - Fixture sprint 15 : `GET /fixture/sprint-15`
 - Fixture sprint 16 : `GET /fixture/sprint-16`
 - Fixture sprint 17 : `GET /fixture/sprint-17`
+- Fixture sprint 18 : `GET /fixture/sprint-18`
 - Demander un code OTP simulé : `POST /auth/otp`
 - Vérifier le code et créer un utilisateur : `POST /auth/verify`
 - Utilisateurs : `GET /users`, `POST /users`
+- Modération : `DELETE /admin/produits/{product_id}?admin_id={admin_id}`,
+  `DELETE /admin/users/{user_id}?admin_id={admin_id}`
 - Parcelles : `GET /parcelles?owner_id={owner_id}`, `POST /parcelles`,
   `GET /parcelles/{parcel_id}?owner_id={owner_id}`
 - Analyse d'une parcelle : `POST /parcelles/{parcel_id}/analyse`
@@ -54,6 +57,8 @@ Documentation interactive : `http://127.0.0.1:8000/docs`
 - Filtrer les cultures par sol : `GET /cultures?soil=sandy`
 - Analyses : `GET /analyses`
 - Labels : `GET /labels`, `GET /labels/{qr_code}`
+- Vérification NDVI/WaPOR : `POST /labels/{label_id}/verify`
+- Impact global : `GET /impact/global`
 - Produits : `GET /produits?label=A&category=huile_olive&region=Sidi%20Bouzid`,
   `POST /produits`
 - Plans : `GET /plans`
@@ -62,7 +67,7 @@ Documentation interactive : `http://127.0.0.1:8000/docs`
 - Alertes : `GET /alertes`, `PATCH /alertes/{id}`
 
 Les données de démonstration sont chargées depuis les fixtures `sprint-01`
-à `sprint-17`. Le sprint 2 fournit les profils agriculteur,
+à `sprint-18`. Le sprint 2 fournit les profils agriculteur,
 acheteur particulier et acheteur professionnel. Le sprint 3 fournit 15 cultures
 avec Kc par stade, rendements, fourchettes de prix, coûts et compatibilité de sol.
 Les valeurs agronomiques et économiques sont indicatives; les sources de prix
@@ -206,6 +211,15 @@ reçoit `min_tnd_t`, `typical_tnd_t`,
 jour alimente le classement des parcelles Sprint 17 et reste en base au
 redémarrage; chaque plan adopté conserve un instantané du prix, de sa source
 et de sa date, sans être modifié lors des mises à jour ultérieures.
+
+Le sprint 18 compare le profil NDVI observé à celui de la culture déclarée et
+les relevés d'humidité/ET réelle WaPOR au plan. Deux images distinctes avec un
+écart au-delà des seuils de la fixture suspendent le label; la fiche QR répond
+alors HTTP 409 avec le statut, sans exposer la note. `/impact/global` agrège les
+instantanés des plans persistés et les statuts des labels. Les mesures Sentinel-2
+et WaPOR et les seuils de la fixture sont des données de démonstration, à valider
+et calibrer sur le terrain. Les routes de modération vérifient le rôle via
+`admin_id`; ce paramètre de démonstration n'est pas une authentification.
 
 ## PostgreSQL + PostGIS
 

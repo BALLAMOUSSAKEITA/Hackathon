@@ -11,6 +11,7 @@ class User(Base):
     name: Mapped[str] = mapped_column(String)
     role: Mapped[str] = mapped_column(String)
     language: Mapped[str] = mapped_column(String)
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
 
 
 class Parcelle(Base):
@@ -132,6 +133,7 @@ class Produit(Base):
     quantity_kg: Mapped[float] = mapped_column(Float)
     price_tnd_kg: Mapped[float] = mapped_column(Float)
     photo_url: Mapped[str | None] = mapped_column(String, nullable=True)
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
 
 
 class Commande(Base):

@@ -331,6 +331,198 @@ def test_suspended_label_remains_openable_and_shows_status():
     assert "grade" not in response.json()["detail"]
 
 
+def test_sprint_18_two_image_discrepancies_suspend_label_and_feed_impact():
+    try:
+        with TestClient(app) as client:
+            fixture = client.get("/fixture/sprint-18")
+            first = client.post("/labels/label-sprint-18-review/verify")
+            second = client.post("/labels/label-sprint-18-review/verify")
+            public = client.get("/labels/ARDI-S18-REVIEW-001")
+            verifications = client.get("/verifications")
+            impact = client.get("/impact/global")
+
+        assert fixture.status_code == 200
+        data = fixture.json()
+        assert len(data["satellite_images"]) == 2
+        assert first.status_code == 200
+        assert first.json()["status"] == "suspended"
+        assert set(first.json()["suspension_reasons"]) == {
+            "crop_conformity",
+            "irrigation_conformity",
+        }
+        assert len(first.json()["verifications"]) == 4
+        assert second.status_code == 200
+        assert second.json()["status"] == "suspended"
+        assert public.status_code == 409
+        assert public.json()["detail"]["status"] == "suspended"
+        assert "grade" not in public.json()["detail"]
+        matching = [
+            row
+            for row in verifications.json()
+            if row["evidence"].get("label_id") == "label-sprint-18-review"
+        ]
+        assert len(matching) == 4
+        assert impact.status_code == 200
+        report = impact.json()
+        assert report["water_m3"] >= 30_000
+        assert report["energy_kwh"] >= 8_400
+        assert report["net_revenue_tnd"] >= 114_000
+        assert report["labels"]["suspended"] >= 2
+        assert report["labels"]["contested"] >= 1
+    finally:
+        db_generator = main_module.get_db()
+        db = next(db_generator)
+        label = db.get(main_module.models.Label, "label-sprint-18-review")
+        label.status = "under_review"
+        for verification in (
+            db.query(main_module.models.Verification)
+            .filter(
+                main_module.models.Verification.parcel_id
+                == "parcel-sprint-18-review"
+            )
+            .all()
+        ):
+            if verification.evidence.get("label_id") == "label-sprint-18-review":
+                db.delete(verification)
+        db.commit()
+        db.close()
+        db_generator.close()
+
+
+def test_sprint_18_single_image_discrepancy_keeps_label_under_review(monkeypatch):
+    fixture = json.loads(json.dumps(main_module.load_sprint_18_fixture()))
+    second_image = fixture["satellite_images"][1]
+    second_image["ndvi_profile"] = fixture["crop_ndvi_profiles"]["olive"]
+    second_image["soil_moisture_pct"] = 28
+    second_image["actual_et_mm"] = 4.5
+    monkeypatch.setattr(
+        main_module, "load_sprint_18_fixture", lambda: fixture
+    )
+
+    try:
+        with TestClient(app) as client:
+            response = client.post("/labels/label-sprint-18-review/verify")
+
+        assert response.status_code == 200
+        assert response.json()["status"] == "under_review"
+        assert response.json()["suspension_reasons"] == []
+        assert sum(
+            result["status"] == "non_conforme"
+            for result in response.json()["verifications"]
+        ) == 2
+    finally:
+        db_generator = main_module.get_db()
+        db = next(db_generator)
+        label = db.get(main_module.models.Label, "label-sprint-18-review")
+        label.status = "under_review"
+        for verification in (
+            db.query(main_module.models.Verification)
+            .filter(
+                main_module.models.Verification.parcel_id
+                == "parcel-sprint-18-review"
+            )
+            .all()
+        ):
+            if verification.evidence.get("label_id") == "label-sprint-18-review":
+                db.delete(verification)
+        db.commit()
+        db.close()
+        db_generator.close()
+
+
+def test_sprint_18_admin_can_remove_products_and_deactivate_accounts():
+    original_user_active = None
+    original_product_active = None
+    original_market_product_active = None
+    try:
+        with TestClient(app) as client:
+            db_generator = main_module.get_db()
+            db = next(db_generator)
+            user = db.get(main_module.models.User, "user-sprint-18-buyer")
+            product = db.get(
+                main_module.models.Produit, "product-sprint-18-reported"
+            )
+            market_product = db.get(
+                main_module.models.Produit, "product-sprint-10-olive-oil"
+            )
+            original_user_active = user.is_active
+            original_product_active = product.is_active
+            original_market_product_active = market_product.is_active
+            db.close()
+            db_generator.close()
+
+            forbidden_product = client.delete(
+                "/admin/produits/product-sprint-18-reported",
+                params={"admin_id": "user-sprint-18-farmer"},
+            )
+            removed = client.delete(
+                "/admin/produits/product-sprint-18-reported",
+                params={"admin_id": "user-sprint-18-admin"},
+            )
+            public = client.get("/labels/ARDI-S18-ACTIVE-001")
+            removed_market = client.delete(
+                "/admin/produits/product-sprint-10-olive-oil",
+                params={"admin_id": "user-sprint-18-admin"},
+            )
+            market_products = client.get("/produits")
+            market_label = client.get("/labels/ARDI-S10-OLIVE-001")
+            deactivated = client.delete(
+                "/admin/users/user-sprint-18-buyer",
+                params={"admin_id": "user-sprint-18-admin"},
+            )
+            listed_users = client.get("/users")
+            blocked_order = client.post(
+                "/commandes",
+                json={
+                    "buyer_id": "user-sprint-18-buyer",
+                    "product_id": "product-sprint-10-dates",
+                    "quantity_kg": 1,
+                    "payment_method": "D17",
+                },
+            )
+
+        assert forbidden_product.status_code == 403
+        assert removed.status_code == 200
+        assert removed.json()["is_active"] is False
+        assert public.status_code == 200
+        assert public.json()["product"] is None
+        assert removed_market.status_code == 200
+        assert "product-sprint-10-olive-oil" not in {
+            product["id"] for product in market_products.json()
+        }
+        assert market_label.status_code == 200
+        assert market_label.json()["product"] is None
+        assert deactivated.status_code == 200
+        assert deactivated.json()["is_active"] is False
+        assert next(
+            user
+            for user in listed_users.json()
+            if user["id"] == "user-sprint-18-buyer"
+        )["is_active"] is False
+        assert blocked_order.status_code == 403
+    finally:
+        if (
+            original_user_active is not None
+            and original_product_active is not None
+            and original_market_product_active is not None
+        ):
+            db_generator = main_module.get_db()
+            db = next(db_generator)
+            user = db.get(main_module.models.User, "user-sprint-18-buyer")
+            product = db.get(
+                main_module.models.Produit, "product-sprint-18-reported"
+            )
+            market_product = db.get(
+                main_module.models.Produit, "product-sprint-10-olive-oil"
+            )
+            user.is_active = original_user_active
+            product.is_active = original_product_active
+            market_product.is_active = original_market_product_active
+            db.commit()
+            db.close()
+            db_generator.close()
+
+
 def test_unknown_public_qr_is_not_found():
     with TestClient(app) as client:
         response = client.get("/labels/UNKNOWN-QR")

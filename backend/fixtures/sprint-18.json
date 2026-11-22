@@ -1,0 +1,203 @@
+{
+  "farms": [
+    {
+      "id": "farm-sprint-18-demo",
+      "name": "Ferme pilote Sidi Bouzid",
+      "region": "Sidi Bouzid",
+      "owner_id": "user-sprint-18-farmer"
+    }
+  ],
+  "users": [
+    {
+      "id": "user-sprint-18-admin",
+      "phone": "+21600000081",
+      "name": "Admin demo Sprint 18",
+      "role": "admin",
+      "language": "fr"
+    },
+    {
+      "id": "user-sprint-18-farmer",
+      "phone": "+21600000082",
+      "name": "Producteur pilote Sprint 18",
+      "role": "farmer",
+      "language": "fr"
+    },
+    {
+      "id": "user-sprint-18-buyer",
+      "phone": "+21600000083",
+      "name": "Compte a moderer Sprint 18",
+      "role": "buyer",
+      "language": "fr"
+    }
+  ],
+  "parcelles": [
+    {
+      "id": "parcel-sprint-18-review",
+      "owner_id": "user-sprint-18-farmer",
+      "name": "Parcelle de verification",
+      "area_ha": 2.2,
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [9.47, 35.04],
+            [9.48, 35.04],
+            [9.48, 35.03],
+            [9.47, 35.03],
+            [9.47, 35.04]
+          ]
+        ]
+      },
+      "location_consent": true,
+      "water_source": "well",
+      "well_depth_m": 45,
+      "pump_flow_m3_h": 12,
+      "energy_type": "solar",
+      "current_crop_id": "olive"
+    },
+    {
+      "id": "parcel-sprint-18-healthy",
+      "owner_id": "user-sprint-18-farmer",
+      "name": "Parcelle pilote suivie",
+      "area_ha": 1.8,
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [9.49, 35.04],
+            [9.5, 35.04],
+            [9.5, 35.03],
+            [9.49, 35.03],
+            [9.49, 35.04]
+          ]
+        ]
+      },
+      "location_consent": true,
+      "water_source": "gda",
+      "well_depth_m": null,
+      "pump_flow_m3_h": null,
+      "energy_type": "steg",
+      "current_crop_id": "pomegranate"
+    }
+  ],
+  "labels": [
+    {
+      "id": "label-sprint-18-active",
+      "farm_id": "farm-sprint-18-demo",
+      "parcel_id": "parcel-sprint-18-healthy",
+      "grade": "A",
+      "qr_code": "ARDI-S18-ACTIVE-001",
+      "status": "active"
+    },
+    {
+      "id": "label-sprint-18-review",
+      "farm_id": "farm-sprint-18-demo",
+      "parcel_id": "parcel-sprint-18-review",
+      "grade": "A",
+      "qr_code": "ARDI-S18-REVIEW-001",
+      "status": "under_review"
+    },
+    {
+      "id": "label-sprint-18-suspended",
+      "farm_id": "farm-sprint-18-demo",
+      "parcel_id": "parcel-sprint-18-review",
+      "grade": "A",
+      "qr_code": "ARDI-S18-SUSPENDED-001",
+      "status": "suspended"
+    },
+    {
+      "id": "label-sprint-18-contested",
+      "farm_id": "farm-sprint-18-demo",
+      "parcel_id": "parcel-sprint-18-healthy",
+      "grade": "B",
+      "qr_code": "ARDI-S18-CONTESTED-001",
+      "status": "contested"
+    }
+  ],
+  "products": [
+    {
+      "id": "product-sprint-18-reported",
+      "farm_id": "farm-sprint-18-demo",
+      "label_id": "label-sprint-18-active",
+      "name": "Huile pilote signalee",
+      "category": "huile_olive",
+      "quantity_kg": 40,
+      "price_tnd_kg": 24,
+      "photo_url": "/assets/sprint-18-reported-oil.jpg"
+    }
+  ],
+  "plans": [
+    {
+      "id": "plan-sprint-18-review",
+      "parcel_id": "parcel-sprint-18-review",
+      "data": {
+        "sprint": "sprint-18",
+        "declared_crop_id": "olive",
+        "irrigation_plan": {
+          "soil_moisture_target_pct": 28,
+          "actual_et_target_mm": 4.5
+        },
+        "impact": {
+          "water_m3": 18000,
+          "energy_kwh": 5400,
+          "net_revenue_tnd": 48000
+        }
+      }
+    },
+    {
+      "id": "plan-sprint-18-healthy",
+      "parcel_id": "parcel-sprint-18-healthy",
+      "data": {
+        "sprint": "sprint-18",
+        "declared_crop_id": "pomegranate",
+        "irrigation_plan": {
+          "soil_moisture_target_pct": 30,
+          "actual_et_target_mm": 4.2
+        },
+        "impact": {
+          "water_m3": 12000,
+          "energy_kwh": 3000,
+          "net_revenue_tnd": 66000
+        }
+      }
+    }
+  ],
+  "crop_ndvi_profiles": {
+    "olive": [0.45, 0.52, 0.61, 0.55],
+    "pomegranate": [0.4, 0.48, 0.58, 0.51]
+  },
+  "satellite_images": [
+    {
+      "id": "image-sprint-18-review-2026-09-10",
+      "parcel_id": "parcel-sprint-18-review",
+      "captured_at": "2026-09-10",
+      "ndvi_profile": [0.2, 0.24, 0.19, 0.22],
+      "soil_moisture_pct": 14,
+      "actual_et_mm": 1.8,
+      "ndvi_source": "Sentinel-2 demo snapshot",
+      "water_source": "FAO WaPOR demo snapshot"
+    },
+    {
+      "id": "image-sprint-18-review-2026-09-20",
+      "parcel_id": "parcel-sprint-18-review",
+      "captured_at": "2026-09-20",
+      "ndvi_profile": [0.22, 0.25, 0.2, 0.24],
+      "soil_moisture_pct": 13,
+      "actual_et_mm": 1.7,
+      "ndvi_source": "Sentinel-2 demo snapshot",
+      "water_source": "FAO WaPOR demo snapshot"
+    }
+  ],
+  "verification_thresholds": {
+    "ndvi_mean_absolute_error_max": 0.18,
+    "soil_moisture_relative_deviation_max": 0.25,
+    "actual_et_relative_deviation_max": 0.25,
+    "distinct_images_to_suspend": 2
+  },
+  "moderation_queue": {
+    "labels_to_review": ["label-sprint-18-review"],
+    "reported_products": ["product-sprint-18-reported"],
+    "accounts_to_review": ["user-sprint-18-buyer"]
+  },
+  "calibration_notice": "Seuils indicatifs pour la demonstration; validation terrain et calibration locale necessaires."
+}
