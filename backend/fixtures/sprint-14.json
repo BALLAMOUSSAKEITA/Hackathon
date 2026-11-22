@@ -1,0 +1,178 @@
+{
+  "farm": {
+    "id": "farm-sprint-14",
+    "name": "Ferme demo Sidi Bouzid",
+    "region": "Sidi Bouzid",
+    "owner_id": "user-sprint-14"
+  },
+  "users": [
+    {
+      "id": "user-sprint-14",
+      "phone": "+21600000051",
+      "name": "Producteur demo Sprint 14",
+      "role": "farmer",
+      "language": "fr"
+    }
+  ],
+  "parcelles": [
+    {
+      "id": "parcel-sprint-14",
+      "owner_id": "user-sprint-14",
+      "name": "Parcelle suivie par satellite",
+      "area_ha": 2.4,
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [9.48, 35.0286],
+            [9.4816933, 35.0286],
+            [9.4816933, 35.03],
+            [9.48, 35.03],
+            [9.48, 35.0286]
+          ]
+        ]
+      },
+      "water_source": "well",
+      "well_depth_m": 60,
+      "pump_flow_m3_h": 18,
+      "energy_type": "solar",
+      "current_crop_id": "crop-wheat"
+    }
+  ],
+  "zones": [
+    {
+      "id": "zone-sprint-14-nord",
+      "name": "Zone nord",
+      "area_ha": 1.2,
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [9.48, 35.0293],
+            [9.4816933, 35.0293],
+            [9.4816933, 35.03],
+            [9.48, 35.03],
+            [9.48, 35.0293]
+          ]
+        ]
+      },
+      "ndvi": 0.28,
+      "soil_moisture_pct": 18
+    },
+    {
+      "id": "zone-sprint-14-sud",
+      "name": "Zone sud",
+      "area_ha": 1.2,
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [9.48, 35.0286],
+            [9.4816933, 35.0286],
+            [9.4816933, 35.0293],
+            [9.48, 35.0293],
+            [9.48, 35.0286]
+          ]
+        ]
+      },
+      "ndvi": 0.48,
+      "soil_moisture_pct": 33
+    }
+  ],
+  "ndvi_source": "Sentinel-2 L2A, serie mensuelle de demonstration",
+  "ndvi_monthly": [
+    {"month": "2025-12", "value": 0.31},
+    {"month": "2026-01", "value": 0.34},
+    {"month": "2026-02", "value": 0.38},
+    {"month": "2026-03", "value": 0.43},
+    {"month": "2026-04", "value": 0.49},
+    {"month": "2026-05", "value": 0.54},
+    {"month": "2026-06", "value": 0.57},
+    {"month": "2026-07", "value": 0.53},
+    {"month": "2026-08", "value": 0.47},
+    {"month": "2026-09", "value": 0.42},
+    {"month": "2026-10", "value": 0.37},
+    {"month": "2026-11", "value": 0.33}
+  ],
+  "water_plan": {
+    "period_start": "2026-11-01",
+    "period_end": "2026-11-30",
+    "planned_water_m3": 120,
+    "actual_water_m3": 132,
+    "forecast": {
+      "precipitation_mm": 7,
+      "probability_pct": 75,
+      "source": "Open-Meteo (snapshot de demonstration)"
+    }
+  },
+  "plans": [
+    {
+      "id": "plan-sprint-14-water",
+      "parcel_id": "parcel-sprint-14",
+      "data": {
+        "planned_water_m3": 120,
+        "actual_water_m3": 132,
+        "period_start": "2026-11-01",
+        "period_end": "2026-11-30"
+      }
+    }
+  ],
+  "thresholds": {
+    "minimum_ndvi_for_stress": 0.3,
+    "minimum_soil_moisture_pct": 20,
+    "rain_alert_precipitation_mm": 5,
+    "rain_alert_probability_pct": 60,
+    "maximum_cloud_cover_pct": 20,
+    "expected_image_interval_days": 5
+  },
+  "images": [
+    {
+      "id": "image-sprint-14-2026-11-12",
+      "captured_at": "2026-11-12",
+      "source": "Sentinel-2 L2A",
+      "cloud_cover_pct": 6,
+      "exploitable": true,
+      "irrigation_deviation_detected": true,
+      "zones": [
+        {
+          "zone_id": "zone-sprint-14-nord",
+          "ndvi": 0.29,
+          "soil_moisture_pct": 19
+        },
+        {
+          "zone_id": "zone-sprint-14-sud",
+          "ndvi": 0.47,
+          "soil_moisture_pct": 32
+        }
+      ]
+    },
+    {
+      "id": "image-sprint-14-2026-11-17",
+      "captured_at": "2026-11-17",
+      "source": "Sentinel-2 L2A",
+      "cloud_cover_pct": 8,
+      "exploitable": true,
+      "irrigation_deviation_detected": true,
+      "zones": [
+        {
+          "zone_id": "zone-sprint-14-nord",
+          "ndvi": 0.28,
+          "soil_moisture_pct": 18
+        },
+        {
+          "zone_id": "zone-sprint-14-sud",
+          "ndvi": 0.48,
+          "soil_moisture_pct": 33
+        }
+      ]
+    }
+  ],
+  "alerts": [
+    {
+      "id": "alert-sprint-14-irrigation-plan",
+      "type": "irrigation_non_conforme",
+      "message": "La consommation d'eau depasse le plan de la parcelle.",
+      "severity": "warning"
+    }
+  ]
+}

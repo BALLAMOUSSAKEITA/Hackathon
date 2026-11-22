@@ -536,6 +536,91 @@ def test_sprint_13_solar_sizing_rejects_non_finite_inputs():
     assert error.value.status_code == 422
 
 
+def test_sprint_14_satellite_tracking_processes_images_and_calculates_alerts():
+    alert_ids = (
+        "alert-sprint-14-irrigation-plan",
+        "alert-sprint-14-stress-zone-sprint-14-nord",
+        "alert-sprint-14-rain",
+    )
+
+    def clear_sprint_14_state():
+        session_generator = main_module.get_db()
+        db = next(session_generator)
+        tracking = db.get(main_module.models.SuiviSatellite, "parcel-sprint-14")
+        if tracking is not None:
+            db.delete(tracking)
+        for alert_id in alert_ids:
+            alert = db.get(main_module.models.Alerte, alert_id)
+            if alert is not None:
+                db.delete(alert)
+        db.commit()
+        session_generator.close()
+
+    clear_sprint_14_state()
+    try:
+        with TestClient(app) as client:
+            fixture_response = client.get("/fixture/sprint-14")
+            first = client.get("/parcelles/parcel-sprint-14/suivi")
+            second = client.get("/parcelles/parcel-sprint-14/suivi")
+            persisted_alerts = client.get("/alertes")
+            missing = client.get("/parcelles/unknown-parcel/suivi")
+
+        fixture = fixture_response.json()
+        first_data = first.json()
+        second_data = second.json()
+        irrigation_alert = next(
+            alert
+            for alert in second_data["alerts"]
+            if alert["type"] == "irrigation_non_conforme"
+        )
+        alert_types = {alert["type"] for alert in second_data["alerts"]}
+        persisted_ids = {alert["id"] for alert in persisted_alerts.json()}
+
+        assert fixture_response.status_code == 200
+        assert len(fixture["ndvi_monthly"]) == 12
+        assert all(
+            image["source"].startswith("Sentinel-2")
+            for image in fixture["images"]
+        )
+        assert first.status_code == 200
+        assert first_data["image_update"]["pending_images"] == 2
+        assert second_data["image_update"]["pending_images"] == 0
+        assert (
+            second_data["image_update"]["last_image_id"]
+            == fixture["images"][-1]["id"]
+        )
+        assert second_data["water_usage"]["usage_percent"] == 110
+        assert second_data["water_usage"]["excess_water_m3"] == 12
+        assert irrigation_alert["status"] == "écart confirmé"
+        assert len(irrigation_alert["evidence_image_ids"]) == 2
+        assert alert_types == {
+            "irrigation_non_conforme",
+            "stress_hydrique",
+            "pluie_prevue",
+        }
+        assert set(alert_ids) <= persisted_ids
+        assert missing.status_code == 404
+
+        one_image_diverges = json.loads(
+            (main_module.FIXTURES_DIR / "sprint-14.json").read_text(
+                encoding="utf-8"
+            )
+        )
+        one_image_diverges["images"][1]["irrigation_deviation_detected"] = False
+        candidate_alerts = main_module.evaluate_sprint_14_alerts(
+            one_image_diverges, one_image_diverges["zones"]
+        )
+        candidate = next(
+            alert
+            for alert in candidate_alerts
+            if alert["type"] == "irrigation_non_conforme"
+        )
+        assert candidate["status"] == "à confirmer"
+        assert len(candidate["evidence_image_ids"]) == 1
+    finally:
+        clear_sprint_14_state()
+
+
 def test_sprint_02_fixture_has_all_demo_roles():
     with TestClient(app) as client:
         response = client.get("/fixture/sprint-02")

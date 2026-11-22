@@ -12,7 +12,7 @@ from time import perf_counter
 from typing import Any, Literal
 from uuid import uuid4
 
-from fastapi import Depends, FastAPI, HTTPException, Query
+from fastapi import BackgroundTasks, Depends, FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 import httpx
 from pyproj import Geod
@@ -332,11 +332,15 @@ async def lifespan(_: FastAPI):
             "sprint-11.json",
             "sprint-12.json",
             "sprint-13.json",
+            "sprint-14.json",
         ):
             fixture = FIXTURES_DIR / fixture_name
             data = json.loads(fixture.read_text(encoding="utf-8"))
             for section, model in ENTITY_MODELS.items():
                 if fixture_name == "sprint-12.json" and section == "cultures":
+                    continue
+                if fixture_name == "sprint-14.json" and section == "alertes":
+                    # These are alert templates, not initial database alerts.
                     continue
                 if section == "users":
                     rows = data.get("users", data.get("profiles", []))
@@ -382,7 +386,7 @@ async def lifespan(_: FastAPI):
 app = FastAPI(
     title="Ardi API",
     version="1.0.0",
-    description="API FastAPI Ardi, sprints de demonstration 1 a 13.",
+    description="API FastAPI Ardi, sprints de demonstration 1 a 14.",
     lifespan=lifespan,
 )
 app.add_middleware(
@@ -504,6 +508,11 @@ def sprint_12_fixture(db: Session = Depends(get_db)) -> dict[str, Any]:
 @app.get("/fixture/sprint-13")
 def sprint_13_fixture() -> dict[str, Any]:
     return json.loads((FIXTURES_DIR / "sprint-13.json").read_text(encoding="utf-8"))
+
+
+@app.get("/fixture/sprint-14")
+def sprint_14_fixture() -> dict[str, Any]:
+    return json.loads((FIXTURES_DIR / "sprint-14.json").read_text(encoding="utf-8"))
 
 
 def normalize_assistant_question(question: str) -> str:
@@ -967,6 +976,258 @@ def solar_sizing(parcel_id: str, db: Session = Depends(get_db)):
         "assistance_information": fixture["assistance_information"],
         "assumptions": fixture["system"],
         **sizing,
+    }
+
+
+def evaluate_sprint_14_alerts(
+    fixture: dict[str, Any], zones: list[dict[str, Any]]
+) -> list[dict[str, Any]]:
+    thresholds = fixture["thresholds"]
+    water_plan = fixture["water_plan"]
+    usable_images = [
+        image
+        for image in fixture["images"]
+        if image["exploitable"]
+        and image["cloud_cover_pct"] <= thresholds["maximum_cloud_cover_pct"]
+    ]
+    alerts = []
+
+    if water_plan["actual_water_m3"] > water_plan["planned_water_m3"]:
+        template = next(
+            alert
+            for alert in fixture["alerts"]
+            if alert["type"] == "irrigation_non_conforme"
+        )
+        evidence_image_ids = [
+            image["id"]
+            for image in usable_images
+            if image.get("irrigation_deviation_detected", False)
+        ]
+        alerts.append(
+            {
+                **template,
+                "parcel_id": fixture["parcelles"][0]["id"],
+                "message": (
+                    f"{template['message']} "
+                    f"Consommation {water_plan['actual_water_m3']} m3 pour "
+                    f"{water_plan['planned_water_m3']} m3 prevus."
+                ),
+                "date": water_plan["period_end"],
+                "read": False,
+                "status": (
+                    "écart confirmé"
+                    if len(evidence_image_ids) >= 2
+                    else "à confirmer"
+                ),
+                "evidence_image_ids": evidence_image_ids,
+            }
+        )
+
+    for zone in zones:
+        if (
+            zone["ndvi"] <= thresholds["minimum_ndvi_for_stress"]
+            or zone["soil_moisture_pct"]
+            <= thresholds["minimum_soil_moisture_pct"]
+        ):
+            alerts.append(
+                {
+                    "id": f"alert-sprint-14-stress-{zone['id']}",
+                    "parcel_id": fixture["parcelles"][0]["id"],
+                    "type": "stress_hydrique",
+                    "message": (
+                        f"Stress hydrique potentiel detecte dans {zone['name']}."
+                    ),
+                    "severity": "warning",
+                    "date": fixture["images"][-1]["captured_at"],
+                    "read": False,
+                    "status": "actif",
+                    "zone_id": zone["id"],
+                }
+            )
+
+    forecast = water_plan["forecast"]
+    if (
+        forecast["precipitation_mm"]
+        >= thresholds["rain_alert_precipitation_mm"]
+        and forecast["probability_pct"]
+        >= thresholds["rain_alert_probability_pct"]
+    ):
+        alerts.append(
+            {
+                "id": "alert-sprint-14-rain",
+                "parcel_id": fixture["parcelles"][0]["id"],
+                "type": "pluie_prevue",
+                "message": (
+                    f"Pluie prevue: {forecast['precipitation_mm']} mm "
+                    f"({forecast['probability_pct']} % de probabilite)."
+                ),
+                "severity": "info",
+                "date": water_plan["period_end"],
+                "read": False,
+                "status": "actif",
+                "source": forecast["source"],
+            }
+        )
+    return alerts
+
+
+def process_sprint_14_images(parcel_id: str) -> None:
+    fixture = json.loads(
+        (FIXTURES_DIR / "sprint-14.json").read_text(encoding="utf-8")
+    )
+    fixture_parcel_ids = {row["id"] for row in fixture["parcelles"]}
+    if parcel_id not in fixture_parcel_ids:
+        raise ValueError(f"No Sprint 14 image fixture for parcel {parcel_id}")
+
+    session_generator = get_db()
+    db = next(session_generator)
+    try:
+        tracking = db.get(models.SuiviSatellite, parcel_id)
+        zones = (
+            [dict(zone) for zone in tracking.zones]
+            if tracking is not None
+            else [dict(zone) for zone in fixture["zones"]]
+        )
+        zones_by_id = {zone["id"]: zone for zone in zones}
+        processed_image_ids = (
+            list(tracking.processed_image_ids) if tracking is not None else []
+        )
+        processed_ids = set(processed_image_ids)
+        latest_image_id = tracking.last_image_id if tracking is not None else None
+        latest_image_at = tracking.last_image_at if tracking is not None else None
+        updated_image = False
+
+        for image in sorted(fixture["images"], key=lambda item: item["captured_at"]):
+            if (
+                image["id"] in processed_ids
+                or not image["exploitable"]
+                or image["cloud_cover_pct"]
+                > fixture["thresholds"]["maximum_cloud_cover_pct"]
+            ):
+                continue
+            processed_image_ids.append(image["id"])
+            processed_ids.add(image["id"])
+            if latest_image_at is None or image["captured_at"] >= latest_image_at:
+                for reading in image["zones"]:
+                    zone = zones_by_id[reading["zone_id"]]
+                    zone["ndvi"] = reading["ndvi"]
+                    zone["soil_moisture_pct"] = reading["soil_moisture_pct"]
+                    zone["source"] = image["source"]
+                latest_image_id = image["id"]
+                latest_image_at = image["captured_at"]
+                updated_image = True
+
+        if tracking is None:
+            tracking = models.SuiviSatellite(
+                parcel_id=parcel_id,
+                zones=zones,
+                processed_image_ids=processed_image_ids,
+                last_image_id=latest_image_id,
+                last_image_at=latest_image_at,
+                updated_at=datetime.now(timezone.utc).isoformat(),
+            )
+            db.add(tracking)
+        else:
+            tracking.zones = zones
+            tracking.processed_image_ids = processed_image_ids
+            tracking.last_image_id = latest_image_id
+            tracking.last_image_at = latest_image_at
+            if updated_image:
+                tracking.updated_at = datetime.now(timezone.utc).isoformat()
+
+        for alert_data in evaluate_sprint_14_alerts(fixture, zones):
+            alert = db.get(models.Alerte, alert_data["id"])
+            if alert is None:
+                db.add(
+                    models.Alerte(
+                        id=alert_data["id"],
+                        parcel_id=alert_data["parcel_id"],
+                        type=alert_data["type"],
+                        message=alert_data["message"],
+                        severity=alert_data["severity"],
+                        date=alert_data["date"],
+                        read=False,
+                    )
+                )
+            else:
+                alert.message = alert_data["message"]
+                alert.severity = alert_data["severity"]
+        db.commit()
+    finally:
+        session_generator.close()
+
+
+@app.get("/parcelles/{parcel_id}/suivi")
+def parcel_suivi(
+    parcel_id: str,
+    background_tasks: BackgroundTasks,
+    db: Session = Depends(get_db),
+):
+    if db.get(models.Parcelle, parcel_id) is None:
+        raise HTTPException(404, "Parcel not found")
+
+    fixture = json.loads(
+        (FIXTURES_DIR / "sprint-14.json").read_text(encoding="utf-8")
+    )
+    if parcel_id not in {row["id"] for row in fixture["parcelles"]}:
+        raise HTTPException(404, "Satellite monitoring is unavailable for this parcel")
+
+    tracking = db.get(models.SuiviSatellite, parcel_id)
+    zones = tracking.zones if tracking is not None else fixture["zones"]
+    processed_image_ids = (
+        set(tracking.processed_image_ids) if tracking is not None else set()
+    )
+    usable_images = [
+        image
+        for image in fixture["images"]
+        if image["exploitable"]
+        and image["cloud_cover_pct"]
+        <= fixture["thresholds"]["maximum_cloud_cover_pct"]
+    ]
+    pending_image_count = sum(
+        image["id"] not in processed_image_ids for image in usable_images
+    )
+    background_tasks.add_task(process_sprint_14_images, parcel_id)
+
+    water_plan = fixture["water_plan"]
+    actual_water_m3 = water_plan["actual_water_m3"]
+    planned_water_m3 = water_plan["planned_water_m3"]
+    return {
+        "parcel_id": parcel_id,
+        "zones": zones,
+        "ndvi_monthly": fixture["ndvi_monthly"],
+        "ndvi_source": fixture["ndvi_source"],
+        "images": [
+            {
+                "id": image["id"],
+                "captured_at": image["captured_at"],
+                "source": image["source"],
+                "cloud_cover_pct": image["cloud_cover_pct"],
+                "exploitable": image["exploitable"],
+            }
+            for image in fixture["images"]
+        ],
+        "water_usage": {
+            "planned_water_m3": planned_water_m3,
+            "actual_water_m3": actual_water_m3,
+            "excess_water_m3": round(
+                max(0, actual_water_m3 - planned_water_m3), 2
+            ),
+            "usage_percent": round(actual_water_m3 / planned_water_m3 * 100, 1),
+            "period_start": water_plan["period_start"],
+            "period_end": water_plan["period_end"],
+        },
+        "rain_forecast": water_plan["forecast"],
+        "alerts": evaluate_sprint_14_alerts(fixture, zones),
+        "image_update": {
+            "status": "queued" if pending_image_count else "up_to_date",
+            "pending_images": pending_image_count,
+            "expected_interval_days": fixture["thresholds"][
+                "expected_image_interval_days"
+            ],
+            "last_image_id": tracking.last_image_id if tracking else None,
+            "last_image_at": tracking.last_image_at if tracking else None,
+        },
     }
 
 

@@ -106,6 +106,18 @@ class Verification(Base):
     evidence: Mapped[dict] = mapped_column(JSON)
 
 
+class SuiviSatellite(Base):
+    __tablename__ = "suivi_satellite"
+    parcel_id: Mapped[str] = mapped_column(
+        String, ForeignKey("parcelles.id"), primary_key=True
+    )
+    zones: Mapped[list] = mapped_column(JSON)
+    processed_image_ids: Mapped[list] = mapped_column(JSON)
+    last_image_id: Mapped[str | None] = mapped_column(String, nullable=True)
+    last_image_at: Mapped[str | None] = mapped_column(String, nullable=True)
+    updated_at: Mapped[str] = mapped_column(String)
+
+
 class Produit(Base):
     __tablename__ = "produits"
     id: Mapped[str] = mapped_column(String, primary_key=True)

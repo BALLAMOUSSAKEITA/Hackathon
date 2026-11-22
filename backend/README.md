@@ -1,4 +1,4 @@
-# Ardi API - Sprints 1 a 13
+# Ardi API - Sprints 1 a 14
 
 API FastAPI pour le socle technique Ardi.
 
@@ -30,12 +30,14 @@ Documentation interactive : `http://127.0.0.1:8000/docs`
 - Fixture sprint 11 : `GET /fixture/sprint-11`
 - Fixture sprint 12 : `GET /fixture/sprint-12`
 - Fixture sprint 13 : `GET /fixture/sprint-13`
+- Fixture sprint 14 : `GET /fixture/sprint-14`
 - Demander un code OTP simulé : `POST /auth/otp`
 - Vérifier le code et créer un utilisateur : `POST /auth/verify`
 - Utilisateurs : `GET /users`, `POST /users`
 - Parcelles : `GET /parcelles`, `POST /parcelles`, `GET /parcelles/{parcel_id}`
 - Analyse d'une parcelle : `POST /parcelles/{parcel_id}/analyse`
 - Dimensionnement solaire : `GET /parcelles/{parcel_id}/solaire`
+- Suivi satellite : `GET /parcelles/{parcel_id}/suivi`
 - Recommandations de cultures : `GET /parcelles/{parcel_id}/recommandations`
 - Simuler un plan : `POST /parcelles/{parcel_id}/simulation`
 - Adopter un plan : `POST /parcelles/{parcel_id}/plan`
@@ -52,7 +54,7 @@ Documentation interactive : `http://127.0.0.1:8000/docs`
 - Alertes : `GET /alertes`, `PATCH /alertes/{id}`
 
 Les données de démonstration sont chargées depuis les fixtures `sprint-01`
-à `sprint-13`. Le sprint 2 fournit les profils agriculteur,
+à `sprint-14`. Le sprint 2 fournit les profils agriculteur,
 acheteur particulier et acheteur professionnel. Le sprint 3 fournit 15 cultures
 avec Kc par stade, rendements, fourchettes de prix, coûts et compatibilité de sol.
 Les valeurs agronomiques et économiques sont indicatives; les sources de prix
@@ -153,6 +155,16 @@ les coûts d'exploitation par saison comparés au gasoil et à la STEG, et le
 temps d'amortissement. Les prix et paramètres de dimensionnement de la fixture
 sont indicatifs, pas un devis. Une parcelle sans profondeur ou débit retourne
 `available: false`; les aides restent informatives, sans promesse d'éligibilité.
+
+Le sprint 14 fournit deux images Sentinel-2 de démonstration espacées de cinq
+jours, les zones de la parcelle, l'humidité, une série NDVI mensuelle sur
+12 mois et le plan d'eau. `GET /parcelles/{parcel_id}/suivi` retourne ces
+éléments, le volume consommé par rapport au plan et les alertes calculées
+(stress hydrique, pluie prévue, dépassement du plan). Les images exploitables
+non traitées sont mises à jour en tâche de fond et une seule alerte d'irrigation
+est conservée par parcelle. Un seul signal d'image reste « à confirmer »; deux
+images concordantes passent à « écart confirmé ». Les images et seuils sont des
+instantanés indicatifs, pas une connexion à un flux satellite temps réel.
 
 Pour la démonstration, `POST /auth/otp` retourne le code fixe `123456`.
 `POST /auth/verify` reçoit `phone`, `code`, `name`, `role` (`farmer`, `buyer`
