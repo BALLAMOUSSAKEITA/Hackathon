@@ -4,11 +4,13 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { WelcomeScreen } from "../screens/WelcomeScreen";
 import { EmptyStateScreen } from "../screens/EmptyStateScreen";
 import { FarmerHomeScreen } from "../screens/FarmerHomeScreen";
+import { CulturesScreen } from "../screens/CulturesScreen";
 
 export type RootStackParamList = {
   Welcome: undefined;
   FarmerHome: undefined;
   BuyerMarket: undefined;
+  Cultures: undefined;
   [key: string]: undefined;
 };
 
@@ -36,7 +38,7 @@ const emptyTitles: Record<number, string> = {
 export function AppNavigator() {
   return (
     <Stack.Navigator
-      initialRouteName="Welcome"
+      initialRouteName="Cultures"
       screenOptions={{
         headerShown: false,
         contentStyle: { backgroundColor: "#f4f7ef" },
@@ -44,6 +46,7 @@ export function AppNavigator() {
     >
       <Stack.Screen name="Welcome" component={WelcomeScreen} />
       <Stack.Screen name="FarmerHome" component={FarmerHomeScreen} />
+      <Stack.Screen name="Cultures" component={CulturesScreen} />
       {Object.entries(emptyTitles).map(([number, title]) => (
         <Stack.Screen
           key={number}

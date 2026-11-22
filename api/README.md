@@ -26,3 +26,9 @@ PostGIS conformément à `api/alembic/README.md`.
   `acheteur_particulier` et `acheteur_professionnel`.
 - `POST /auth/verify` accepte le code fixe de démonstration `123456`.
 - `GET /demo/sprint-02` sert les trois profils et les traductions du Sprint 2.
+
+## Sprint 3
+
+- `GET /cultures` retourne les 15 cultures avec noms, Kc, rendement, prix,
+  coûts, sols, tolérances et durée.
+- `GET /cultures?sol=argileux` filtre les cultures compatibles avec le sol.

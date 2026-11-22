@@ -1,0 +1,28 @@
+{
+  "sprint": 3,
+  "languages": ["fr", "ar", "darija"],
+  "cultures": [
+    {"id":"olivier","names":{"fr":"Olivier","ar":"زيتون","darija":"Zitoune"},"kc":{"initial":0.65,"development":0.7,"mid":0.7,"late":0.65},"yield_t_ha":3.5,"price":{"min":1.8,"typical":2.2,"max":2.8,"source":"ONAGRI"},"costs_tnd_ha":1800,"soils":["limoneux","argileux","calcaire"],"salinity_tolerance":"elevee","heat_tolerance":"elevee","duration_months":36},
+    {"id":"pistachier","names":{"fr":"Pistachier","ar":"فستق حلبي","darija":"Foustok"},"kc":{"initial":0.4,"development":0.65,"mid":1.1,"late":0.45},"yield_t_ha":2.2,"price":{"min":8.0,"typical":10.0,"max":13.0,"source":"ONAGRI"},"costs_tnd_ha":2600,"soils":["limoneux","calcaire","sableux"],"salinity_tolerance":"moyenne","heat_tolerance":"elevee","duration_months":60},
+    {"id":"grenadier","names":{"fr":"Grenadier","ar":"رمان","darija":"Roummane"},"kc":{"initial":0.5,"development":0.75,"mid":1.05,"late":0.8},"yield_t_ha":12,"price":{"min":1.2,"typical":1.8,"max":2.5,"source":"ONAGRI"},"costs_tnd_ha":4200,"soils":["limoneux","argileux","calcaire"],"salinity_tolerance":"moyenne","heat_tolerance":"elevee","duration_months":24},
+    {"id":"figuier_barbarie","names":{"fr":"Figuier de Barbarie","ar":"تين شوكي","darija":"Hendiya"},"kc":{"initial":0.3,"development":0.4,"mid":0.5,"late":0.4},"yield_t_ha":8,"price":{"min":0.8,"typical":1.2,"max":1.8,"source":"Marché de gros"},"costs_tnd_ha":1500,"soils":["sableux","calcaire","limoneux"],"salinity_tolerance":"elevee","heat_tolerance":"elevee","duration_months":18},
+    {"id":"dattier","names":{"fr":"Palmier dattier","ar":"نخلة","darija":"Nakhl"},"kc":{"initial":0.9,"development":0.95,"mid":1.0,"late":0.9},"yield_t_ha":6,"price":{"min":3.5,"typical":5.0,"max":7.0,"source":"ONAGRI"},"costs_tnd_ha":3000,"soils":["sableux","limoneux","calcaire"],"salinity_tolerance":"elevee","heat_tolerance":"elevee","duration_months":48},
+    {"id":"oignon","names":{"fr":"Oignon","ar":"بصل","darija":"Basla"},"kc":{"initial":0.7,"development":0.85,"mid":1.05,"late":0.75},"yield_t_ha":35,"price":{"min":0.45,"typical":0.7,"max":1.2,"source":"ONAGRI"},"costs_tnd_ha":5200,"soils":["limoneux","sableux"],"salinity_tolerance":"faible","heat_tolerance":"moyenne","duration_months":5},
+    {"id":"tomate","names":{"fr":"Tomate","ar":"طماطم","darija":"Maticha"},"kc":{"initial":0.6,"development":0.85,"mid":1.15,"late":0.8},"yield_t_ha":55,"price":{"min":0.5,"typical":0.9,"max":1.6,"source":"ONAGRI"},"costs_tnd_ha":9500,"soils":["limoneux","argileux"],"salinity_tolerance":"faible","heat_tolerance":"moyenne","duration_months":4},
+    {"id":"pasteque","names":{"fr":"Pastèque","ar":"بطيخ","darija":"Della3"},"kc":{"initial":0.4,"development":0.7,"mid":1.0,"late":0.75},"yield_t_ha":30,"price":{"min":0.35,"typical":0.55,"max":0.9,"source":"Marché de gros"},"costs_tnd_ha":4800,"soils":["sableux","limoneux"],"salinity_tolerance":"moyenne","heat_tolerance":"elevee","duration_months":3},
+    {"id":"orge","names":{"fr":"Orge","ar":"شعير","darija":"Cha3ir"},"kc":{"initial":0.3,"development":0.7,"mid":1.15,"late":0.25},"yield_t_ha":3,"price":{"min":0.35,"typical":0.45,"max":0.6,"source":"ONAGRI"},"costs_tnd_ha":1400,"soils":["argileux","limoneux","calcaire","sableux"],"salinity_tolerance":"moyenne","heat_tolerance":"elevee","duration_months":5},
+    {"id":"capres","names":{"fr":"Câpres","ar":"قبار","darija":"Kabar"},"kc":{"initial":0.3,"development":0.5,"mid":0.75,"late":0.55},"yield_t_ha":2,"price":{"min":2.5,"typical":4.0,"max":6.0,"source":"Marché de gros"},"costs_tnd_ha":2200,"soils":["calcaire","sableux","limoneux"],"salinity_tolerance":"elevee","heat_tolerance":"elevee","duration_months":12},
+    {"id":"amandier","names":{"fr":"Amandier","ar":"لوز","darija":"Louz"},"kc":{"initial":0.4,"development":0.65,"mid":1.1,"late":0.65},"yield_t_ha":2,"price":{"min":5.0,"typical":7.0,"max":9.0,"source":"ONAGRI"},"costs_tnd_ha":2800,"soils":["limoneux","calcaire","sableux"],"salinity_tolerance":"faible","heat_tolerance":"elevee","duration_months":36},
+    {"id":"caroubier","names":{"fr":"Caroubier","ar":"خروب","darija":"Khroub"},"kc":{"initial":0.5,"development":0.65,"mid":0.85,"late":0.55},"yield_t_ha":4,"price":{"min":0.8,"typical":1.2,"max":1.8,"source":"Marché de gros"},"costs_tnd_ha":1700,"soils":["calcaire","sableux","limoneux"],"salinity_tolerance":"elevee","heat_tolerance":"elevee","duration_months":48},
+    {"id":"artichaut","names":{"fr":"Artichaut","ar":"خرشوف","darija":"Qarnoun"},"kc":{"initial":0.5,"development":0.75,"mid":1.0,"late":0.95},"yield_t_ha":12,"price":{"min":0.8,"typical":1.1,"max":1.5,"source":"ONAGRI"},"costs_tnd_ha":6500,"soils":["limoneux","argileux"],"salinity_tolerance":"moyenne","heat_tolerance":"moyenne","duration_months":9},
+    {"id":"fenouil","names":{"fr":"Fenouil","ar":"شمروخ","darija":"Basbas"},"kc":{"initial":0.5,"development":0.75,"mid":1.05,"late":0.9},"yield_t_ha":18,"price":{"min":0.6,"typical":0.9,"max":1.3,"source":"Marché de gros"},"costs_tnd_ha":3900,"soils":["limoneux","sableux"],"salinity_tolerance":"moyenne","heat_tolerance":"moyenne","duration_months":4},
+    {"id":"pois_chiche","names":{"fr":"Pois chiche","ar":"حمص","darija":"Homs"},"kc":{"initial":0.4,"development":0.75,"mid":1.0,"late":0.35},"yield_t_ha":1.8,"price":{"min":1.8,"typical":2.2,"max":3.0,"source":"ONAGRI"},"costs_tnd_ha":1300,"soils":["argileux","limoneux","calcaire"],"salinity_tolerance":"moyenne","heat_tolerance":"elevee","duration_months":5}
+  ],
+  "hypotheses": {
+    "currency": "TND",
+    "yield_unit": "tonnes/ha",
+    "kc_source": "FAO-56",
+    "price_source_note": "Prix initiaux issus d'ONAGRI ou du marché de gros",
+    "compatible_soils": ["limoneux", "argileux", "calcaire", "sableux"]
+  }
+}

@@ -83,3 +83,27 @@ def test_unknown_role_is_rejected() -> None:
         },
     )
     assert response.status_code == 422
+
+
+def test_sprint_three_returns_15_complete_cultures() -> None:
+    response = client.get("/cultures")
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["count"] == 15
+    for culture in payload["cultures"]:
+        assert set(culture["names"]) == {"fr", "ar", "darija"}
+        assert culture["kc"]
+        assert culture["yield_t_ha"] > 0
+        assert culture["price"]["min"] <= culture["price"]["typical"] <= culture["price"]["max"]
+        assert culture["price"]["source"]
+        assert culture["costs_tnd_ha"] > 0
+        assert culture["soils"]
+        assert culture["duration_months"] > 0
+
+
+def test_sprint_three_filters_by_compatible_soil() -> None:
+    response = client.get("/cultures", params={"sol": "argileux"})
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["count"] > 0
+    assert all("argileux" in culture["soils"] for culture in payload["cultures"])
